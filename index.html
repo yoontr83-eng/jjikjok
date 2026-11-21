@@ -98,10 +98,17 @@
           <p class="text-[11px] text-slate-300 mt-1">시험 전날 밤 벼락치기 · 국어 · 영어 · 통합과학 · 통합사회</p>
         </div>
       </div>
-      <button type="button" onclick="openFeedbackModal()" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition text-xs font-bold text-volt-400 flex items-center gap-1 cursor-pointer">
-        <span>💬</span>
-        <span>베타 후기</span>
-      </button>
+      <div class="flex items-center gap-1.5">
+        <button type="button" onclick="openArchiveModal()" class="px-2.5 py-1.5 rounded-xl bg-electric-600 hover:bg-electric-500 active:scale-95 transition text-xs font-extrabold text-white flex items-center gap-1 shadow-xs cursor-pointer">
+          <span>📚</span>
+          <span>보관함</span>
+          <span id="headerArchiveCount" class="px-1.5 py-0.2 rounded-full bg-volt-400 text-slate-950 text-[10px] font-black">0</span>
+        </button>
+        <button type="button" onclick="openFeedbackModal()" class="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition text-xs font-bold text-volt-400 flex items-center gap-1 cursor-pointer">
+          <span>💬</span>
+          <span>후기</span>
+        </button>
+      </div>
     </header>
 
     <!-- 메인 영역 -->
@@ -116,7 +123,7 @@
         <div id="inAppBrowserNotice" class="hidden bg-amber-50 border border-amber-300 rounded-2xl p-3 text-xs text-amber-950 flex items-start gap-2">
           <span class="text-base shrink-0">💡</span>
           <p class="leading-snug">
-            <strong>카톡 화면에서 열렸어요!</strong> A4 시험지 PDF 파일 저장이 안 될 때는 우측 하단 <code class="bg-amber-200/70 px-1 rounded font-bold">⋮</code> → <strong>[다른 브라우저로 열기]</strong>를 눌러주세요.
+            <strong>카톡 화면에서 열렸어요!</strong> 만든 족보 보관과 A4 PDF 파일 저장을 안정적으로 쓰려면 우측 하단 <code class="bg-amber-200/70 px-1 rounded font-bold">⋮</code> → <strong>[다른 브라우저로 열기]</strong>를 눌러주세요.
           </p>
         </div>
 
@@ -126,12 +133,32 @@
             <span class="text-[11px] font-extrabold uppercase tracking-wider bg-white/15 px-2 py-0.5 rounded-full">
               🏫 우리 학교 벼락치기 베타 테스트
             </span>
-            <span class="text-xs font-bold text-volt-400">A4 PDF 저장 지원</span>
+            <span class="text-xs font-bold text-volt-400">자동 저장 · A4 PDF</span>
           </div>
           <h2 class="text-base font-extrabold leading-snug mt-1.5">
             과목 고르고 프린트 1~3장 올리면<br>
             <span class="text-volt-400">원리 이해 풀이 · 예시 해부 · 함정 OX</span> 완성!
           </h2>
+        </div>
+
+        <!-- 📚 내 족보 자동 보관함 (다시 보기) 안내 & 빠른 접근 카드 -->
+        <div class="bg-white border-2 border-electric-100 rounded-3xl p-4 shadow-xs space-y-2.5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <span class="text-base">🗂️</span>
+              <h3 class="text-xs font-black text-slate-900">내 족보 자동 보관함 (다시 보기)</h3>
+            </div>
+            <button type="button" onclick="openArchiveModal()" class="text-[11px] font-extrabold text-electric-600 hover:text-electric-700 bg-electric-50 px-2.5 py-1 rounded-full cursor-pointer">
+              전체 <span id="cardArchiveCount">0</span>개 보기 ›
+            </button>
+          </div>
+
+          <p class="text-[11px] text-slate-600 leading-relaxed bg-slate-50 rounded-2xl p-2.5 border border-slate-200/70">
+            🔒 <strong>로그인 없이 자동 저장돼요!</strong> 한 번 만든 족보는 내 스마트폰 브라우저에 최대 <strong>20개까지 자동 보관</strong>되어, 등굣길 버스나 쉬는 시간에 터치 한 번으로 빈칸 암기와 OX 퀴즈를 다시 풀 수 있습니다.
+          </p>
+
+          <!-- 최근 만든 족보 2개 빠른 미리보기 리스트 -->
+          <div id="recentArchivePreviewList" class="space-y-1.5"></div>
         </div>
 
         <!-- Step 1: 과목 선택 (국어 · 영어 · 통합과학 · 통합사회) -->
@@ -227,7 +254,7 @@
         <div class="flex items-center justify-between gap-2">
           <button type="button" onclick="backToInput()" class="shrink-0 px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-xs font-extrabold text-slate-700 flex items-center gap-1 active:scale-95 transition cursor-pointer">
             <span>←</span>
-            <span>다른 프린트</span>
+            <span>홈 / 보관함</span>
           </button>
           <span id="resultSubjectBadge" class="truncate text-xs font-black text-electric-700 bg-electric-100 px-3 py-1 rounded-full">
             핵심 벼락치기 족보
@@ -236,6 +263,15 @@
             <span>📄</span>
             <span>A4 PDF</span>
           </button>
+        </div>
+
+        <!-- 자동 저장 완료 안내 뱃지 -->
+        <div id="savedStatusBanner" class="bg-emerald-50 border border-emerald-200 rounded-2xl px-3.5 py-2 flex items-center justify-between text-[11px] text-emerald-900">
+          <span class="font-bold flex items-center gap-1.5">
+            <span>✅</span>
+            <span>내 스마트폰 <strong>[보관함]</strong>에 자동 저장되었습니다!</span>
+          </span>
+          <button type="button" onclick="openArchiveModal()" class="font-black underline text-emerald-700 cursor-pointer">목록 열기</button>
         </div>
 
         <!-- AI 서버 연결 진단 안내 배너 (오류 발생 시에만 표시) -->
@@ -370,6 +406,42 @@
   </div>
 
   <!-- ============================================== -->
+  <!-- 내 족보 자동 보관함 (다시 보기) 전체 모달       -->
+  <!-- ============================================== -->
+  <div id="archiveModal" class="hidden fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs flex items-end sm:items-center justify-center p-3 sm:p-4">
+    <div class="bg-white w-full max-w-md max-h-[86vh] flex flex-col rounded-3xl p-5 shadow-2xl animate-pop">
+      <div class="flex items-start justify-between gap-2 pb-3 border-b border-slate-100 shrink-0">
+        <div>
+          <h3 class="text-base font-black text-slate-900 flex items-center gap-1.5">
+            <span>📚</span>
+            <span>내 족보 자동 보관함 (다시 보기)</span>
+          </h3>
+          <p class="text-[11px] text-slate-500 mt-0.5">생성한 족보가 내 기기에 자동 저장됩니다 (최대 20개)</p>
+        </div>
+        <button type="button" onclick="closeArchiveModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-sm flex items-center justify-center cursor-pointer">✕</button>
+      </div>
+
+      <!-- 보관함 활용 팁 안내 박스 -->
+      <div class="mt-3 bg-electric-50/80 border border-electric-100 rounded-2xl p-3 text-[11px] text-slate-700 leading-relaxed shrink-0">
+        <strong class="text-electric-700 block mb-0.5">💡 이렇게 복습하면 효과가 2배!</strong>
+        저장된 족보를 다시 열면 <strong>원리 풀이 · 빈칸 암기 · 함정 OX 퀴즈 · 3분 오디오 · A4 PDF 저장</strong>까지 처음 만든 그대로 즉시 복습할 수 있어요. <em>(단, 브라우저 방문 기록/캐시를 지우면 초기화되니 중요한 시험지는 PDF로도 저장해 두세요!)</em>
+      </div>
+
+      <!-- 보관된 족보 목록 리스트 -->
+      <div id="archiveModalList" class="flex-1 overflow-y-auto py-3 space-y-2"></div>
+
+      <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2 shrink-0">
+        <button type="button" onclick="clearAllArchive()" class="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-red-50 text-slate-500 hover:text-red-600 text-xs font-bold transition cursor-pointer">
+          전체 비우기
+        </button>
+        <button type="button" onclick="closeArchiveModal()" class="flex-1 py-2.5 rounded-xl bg-slate-900 text-volt-400 text-xs font-black transition cursor-pointer">
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
   <!-- A4 시험지 미리보기 & PDF 저장 모달 (단일 통일) -->
   <!-- ============================================== -->
   <div id="a4PreviewModal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-xs flex flex-col">
@@ -419,7 +491,7 @@
 
         <div>
           <label for="feedbackText" class="block text-xs font-bold text-slate-700 mb-1">의견 / 요청 기능 (익명)</label>
-          <textarea id="feedbackText" rows="3" placeholder="예: PDF 바로 저장돼서 굿노트에 불러오기 좋아요! / 서술형 문제도 뽑아주면 좋겠어요!" class="w-full rounded-2xl border border-slate-200 p-3 text-xs text-slate-800 focus:outline-none focus:border-electric-500"></textarea>
+          <textarea id="feedbackText" rows="3" placeholder="예: 보관함에서 다시 볼 수 있어서 좋아요! / 서술형 문제도 뽑아주면 좋겠어요!" class="w-full rounded-2xl border border-slate-200 p-3 text-xs text-slate-800 focus:outline-none focus:border-electric-500"></textarea>
         </div>
       </div>
 
@@ -1076,6 +1148,10 @@
       }
     };
 
+    // 로컬 저장소 키 및 보관함 관리 상수
+    const ARCHIVE_STORAGE_KEY = "jjikjok_saved_archive_v1";
+    const MAX_ARCHIVE_ITEMS = 20;
+
     // 앱 전역 상태
     let selectedSubjectKey = "korean";
     let uploadedImages = [];
@@ -1091,6 +1167,195 @@
     let audioPauseTimer = null;
     let availableKoVoices = [];
     let selectedVoiceURI = "";
+
+    // ==============================================
+    // 📚 내 족보 자동 보관함 (localStorage) 기능
+    // ==============================================
+    function getSavedArchiveList() {
+      try {
+        const raw = localStorage.getItem(ARCHIVE_STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function setSavedArchiveList(list) {
+      try {
+        localStorage.setItem(ARCHIVE_STORAGE_KEY, JSON.stringify(list));
+      } catch (e) {
+        // 용량 초과 시 오래된 항목 절반 비우고 재시도
+        try {
+          const trimmed = list.slice(0, Math.max(3, Math.floor(list.length / 2)));
+          localStorage.setItem(ARCHIVE_STORAGE_KEY, JSON.stringify(trimmed));
+        } catch (_) {}
+      }
+    }
+
+    function formatKoreanDateTime(ts) {
+      const d = new Date(ts);
+      const month = d.getMonth() + 1;
+      const day = d.getDate();
+      const hour = String(d.getHours()).padStart(2, "0");
+      const min = String(d.getMinutes()).padStart(2, "0");
+      return `${month}/${day} ${hour}:${min}`;
+    }
+
+    function saveJokboToArchive(jokboData, subjKey) {
+      if (!jokboData || !jokboData.subjectTitle) return;
+      const list = getSavedArchiveList();
+      const cfg = SUBJECT_CONFIG[subjKey] || { name: "전 과목", icon: "📘" };
+
+      const newEntry = {
+        id: "jk_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+        createdAt: Date.now(),
+        subjectKey: subjKey,
+        subjectName: cfg.name,
+        subjectIcon: cfg.icon,
+        title: jokboData.subjectTitle,
+        data: jokboData
+      };
+
+      list.unshift(newEntry);
+      if (list.length > MAX_ARCHIVE_ITEMS) {
+        list.length = MAX_ARCHIVE_ITEMS;
+      }
+
+      setSavedArchiveList(list);
+      renderArchiveUI();
+    }
+
+    function renderArchiveUI() {
+      const list = getSavedArchiveList();
+      const headerBadge = document.getElementById("headerArchiveCount");
+      const cardBadge = document.getElementById("cardArchiveCount");
+      if (headerBadge) headerBadge.textContent = String(list.length);
+      if (cardBadge) cardBadge.textContent = String(list.length);
+
+      // 1) 첫 화면 최근 2개 미리보기 영역
+      const previewBox = document.getElementById("recentArchivePreviewList");
+      if (previewBox) {
+        previewBox.innerHTML = "";
+        if (list.length === 0) {
+          previewBox.innerHTML = `
+            <div class="text-center py-3 px-2 rounded-2xl border border-dashed border-slate-200 text-[11px] text-slate-400">
+              아직 저장된 족보가 없어요. 아래에서 프린트를 올리면 이곳에 자동 저장됩니다!
+            </div>
+          `;
+        } else {
+          list.slice(0, 2).forEach(item => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.onclick = () => openSavedJokboById(item.id);
+            btn.className = "w-full p-2.5 rounded-2xl bg-slate-50 hover:bg-electric-50/70 border border-slate-200/90 hover:border-electric-400 flex items-center justify-between gap-2 text-left transition active:scale-[0.99] cursor-pointer";
+            btn.innerHTML = `
+              <div class="min-w-0 flex items-center gap-2">
+                <span class="shrink-0 px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-[10px] font-black text-electric-700">${item.subjectIcon} ${escapeHtml(item.subjectName)}</span>
+                <span class="truncate text-xs font-extrabold text-slate-800">${escapeHtml(item.title)}</span>
+              </div>
+              <span class="shrink-0 text-[10px] font-bold text-slate-400">${formatKoreanDateTime(item.createdAt)} ›</span>
+            `;
+            previewBox.appendChild(btn);
+          });
+        }
+      }
+
+      // 2) 전체 보관함 모달 리스트 영역
+      const modalList = document.getElementById("archiveModalList");
+      if (modalList) {
+        modalList.innerHTML = "";
+        if (list.length === 0) {
+          modalList.innerHTML = `
+            <div class="text-center py-12 space-y-1.5">
+              <div class="text-3xl">📭</div>
+              <p class="text-xs font-extrabold text-slate-600">보관함이 아직 비어 있어요</p>
+              <p class="text-[11px] text-slate-400">프린트 사진이나 샘플로 족보를 만들면 자동으로 저장됩니다.</p>
+            </div>
+          `;
+        } else {
+          list.forEach(item => {
+            const row = document.createElement("div");
+            row.className = "p-3 rounded-2xl bg-slate-50 hover:bg-electric-50/50 border border-slate-200 flex items-center justify-between gap-2 transition";
+            row.innerHTML = `
+              <button type="button" class="open-item-btn flex-1 min-w-0 text-left space-y-1 cursor-pointer">
+                <div class="flex items-center gap-1.5">
+                  <span class="px-2 py-0.5 rounded-md bg-electric-100 text-electric-700 text-[10px] font-black">${item.subjectIcon} ${escapeHtml(item.subjectName)}</span>
+                  <span class="text-[10px] font-semibold text-slate-400">${formatKoreanDateTime(item.createdAt)} 저장</span>
+                </div>
+                <p class="text-xs font-black text-slate-900 truncate">${escapeHtml(item.title)}</p>
+              </button>
+              <button type="button" title="삭제" class="del-item-btn shrink-0 w-7 h-7 rounded-xl bg-white hover:bg-red-50 border border-slate-200 text-slate-400 hover:text-red-600 text-xs font-black flex items-center justify-center cursor-pointer">✕</button>
+            `;
+            row.querySelector(".open-item-btn").onclick = () => openSavedJokboById(item.id);
+            row.querySelector(".del-item-btn").onclick = (e) => {
+              e.stopPropagation();
+              deleteArchiveItemById(item.id);
+            };
+            modalList.appendChild(row);
+          });
+        }
+      }
+    }
+
+    function openSavedJokboById(itemId) {
+      const list = getSavedArchiveList();
+      const found = list.find(it => it.id === itemId);
+      if (!found || !found.data) {
+        showToast("해당 족보를 찾을 수 없습니다.", "⚠️");
+        return;
+      }
+
+      if (found.subjectKey && SUBJECT_CONFIG[found.subjectKey]) {
+        selectedSubjectKey = found.subjectKey;
+      }
+      currentJokboData = JSON.parse(JSON.stringify(found.data));
+
+      closeArchiveModal();
+      hideFallbackDiagnostic();
+      renderJokboResult(currentJokboData);
+
+      const banner = document.getElementById("savedStatusBanner");
+      if (banner) {
+        banner.innerHTML = `
+          <span class="font-bold flex items-center gap-1.5">
+            <span>📚</span>
+            <span>보관함에서 불러온 자료 (${formatKoreanDateTime(found.createdAt)} 저장)</span>
+          </span>
+          <button type="button" onclick="openArchiveModal()" class="font-black underline text-emerald-700 cursor-pointer">목록 열기</button>
+        `;
+      }
+
+      document.getElementById("view-input").classList.add("hidden");
+      document.getElementById("view-result").classList.remove("hidden");
+      switchResultTab("summary");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      showToast("보관함에서 족보를 불러왔어요! 바로 복습하세요 📖", "📚");
+    }
+
+    function deleteArchiveItemById(itemId) {
+      const list = getSavedArchiveList().filter(it => it.id !== itemId);
+      setSavedArchiveList(list);
+      renderArchiveUI();
+      showToast("선택한 족보를 보관함에서 삭제했습니다.", "🗑️");
+    }
+
+    function clearAllArchive() {
+      const list = getSavedArchiveList();
+      if (list.length === 0) return;
+      setSavedArchiveList([]);
+      renderArchiveUI();
+      showToast("보관함을 모두 비웠습니다.", "🗑️");
+    }
+
+    function openArchiveModal() {
+      renderArchiveUI();
+      document.getElementById("archiveModal").classList.remove("hidden");
+    }
+
+    function closeArchiveModal() {
+      document.getElementById("archiveModal").classList.add("hidden");
+    }
 
     // 2. 토스트 알림
     let toastTimer = null;
@@ -1174,7 +1439,7 @@
       renderSubjectSampleButtons();
     }
 
-    // 4. 다중 이미지 업로드 (모바일 초경량 최적화: 960px / 0.65 품질 -> ~150KB 초고속 전송)
+    // 4. 다중 이미지 업로드 (모바일 초경량 최적화: 960px / 0.65 품질)
     function compressSingleImageFile(file) {
       return new Promise((resolve, reject) => {
         const objectUrl = URL.createObjectURL(file);
@@ -1308,7 +1573,7 @@
       renderUploadedImagesGrid();
     }
 
-    // 5. AI 벼락치기 족보 생성 실행
+    // 5. AI 벼락치기 족보 생성 실행 (성공 시 자동 보관함 저장)
     async function generateJokbo() {
       const text = document.getElementById("printTextInput").value.trim();
       const subjectName = SUBJECT_CONFIG[selectedSubjectKey].name;
@@ -1340,13 +1605,27 @@
           currentJokboData = await callMultimodalJokboAI(uploadedImages, text, subjectName);
         }
 
+        // 정상 생성 시 내 족보 보관함에 자동 저장!
+        saveJokboToArchive(currentJokboData, selectedSubjectKey);
+
+        const banner = document.getElementById("savedStatusBanner");
+        if (banner) {
+          banner.innerHTML = `
+            <span class="font-bold flex items-center gap-1.5">
+              <span>✅</span>
+              <span>내 스마트폰 <strong>[보관함]</strong>에 자동 저장되었습니다!</span>
+            </span>
+            <button type="button" onclick="openArchiveModal()" class="font-black underline text-emerald-700 cursor-pointer">목록 열기</button>
+          `;
+        }
+
         hideFallbackDiagnostic();
         renderJokboResult(currentJokboData);
         document.getElementById("view-input").classList.add("hidden");
         document.getElementById("view-result").classList.remove("hidden");
         switchResultTab("summary");
         window.scrollTo({ top: 0, behavior: "smooth" });
-        showToast(`[${subjectName}] 원리 이해 중심 족보가 완성되었습니다!`, "🎉");
+        showToast(`[${subjectName}] 족보 완성 & 보관함에 자동 저장됐어요!`, "🎉");
       } catch (err) {
         const diagMsg = err?.name === "AbortError"
           ? "서버 응답 대기 시간(55초)을 초과했습니다. Vercel 서버의 maxDuration 설정을 확인해 주세요."
@@ -1720,6 +1999,7 @@ ${subjectGuides[subjectName] || ""}
 
     function backToInput() {
       stopAudioBriefing();
+      renderArchiveUI();
       document.getElementById("view-result").classList.add("hidden");
       document.getElementById("view-input").classList.remove("hidden");
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -2202,6 +2482,7 @@ ${subjectGuides[subjectName] || ""}
     // 초기 구동 및 브라우저 보이스 로드 이벤트 등록
     window.addEventListener("DOMContentLoaded", () => {
       renderSubjectSampleButtons();
+      renderArchiveUI();
       if ("speechSynthesis" in window) {
         loadBestKoreanVoices();
         window.speechSynthesis.onvoiceschanged = loadBestKoreanVoices;
