@@ -1100,7 +1100,7 @@
       toastTimer = setTimeout(() => {
         box.classList.remove("opacity-100", "translate-y-0");
         box.classList.add("opacity-0", "-translate-y-2");
-      }, 2800);
+      }, 3400);
     }
 
     // 3. 과목 선택 & 샘플 버튼 동적 렌더링
@@ -1167,15 +1167,14 @@
       renderSubjectSampleButtons();
     }
 
-    // 4. 다중 이미지 업로드 (모바일 고화질 사진 Vercel 4.5MB 제한 방지 초경량 압축)
+    // 4. 다중 이미지 업로드 (작은 글씨 선명도 + 모바일 초경량 최적화 균형)
     function compressSingleImageFile(file) {
       return new Promise((resolve, reject) => {
         const objectUrl = URL.createObjectURL(file);
         const img = new Image();
         img.onload = () => {
           URL.revokeObjectURL(objectUrl);
-          // 글씨는 선명하게 읽히면서 3장 합쳐도 1MB 미만이 되도록 960px + 0.65 품질로 최적화
-          const MAX_SIZE = 960;
+          const MAX_SIZE = 1150;
           let width = img.width;
           let height = img.height;
 
@@ -1197,7 +1196,7 @@
           ctx.fillRect(0, 0, width, height);
           ctx.drawImage(img, 0, 0, width, height);
 
-          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.65);
+          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.75);
           resolve({
             mimeType: "image/jpeg",
             base64: compressedDataUrl.split(",")[1],
@@ -1302,7 +1301,7 @@
       renderUploadedImagesGrid();
     }
 
-    // 5. AI 벼락치기 족보 생성 실행 (모바일 무한 로딩 방지 28초 안전 타임아웃 포함)
+    // 5. AI 벼락치기 족보 생성 실행 (55초 여유 타임아웃 + 상세 오류 안내)
     async function generateJokbo() {
       const text = document.getElementById("printTextInput").value.trim();
       const subjectName = SUBJECT_CONFIG[selectedSubjectKey].name;
@@ -1341,12 +1340,15 @@
         window.scrollTo({ top: 0, behavior: "smooth" });
         showToast(`[${subjectName}] 원리 이해 중심 족보가 완성되었습니다!`, "🎉");
       } catch (err) {
+        const reason = err?.name === "AbortError"
+          ? "분석 시간 초과(55초)로 기본 가이드가 표시되었습니다."
+          : `일시적 지연(${err?.message || "연결 확인"})으로 기본 가이드가 표시되었습니다.`;
         currentJokboData = buildDynamicFallbackJokbo(text, uploadedImages.length, subjectName);
         renderJokboResult(currentJokboData);
         document.getElementById("view-input").classList.add("hidden");
         document.getElementById("view-result").classList.remove("hidden");
         switchResultTab("summary");
-        showToast(`[${subjectName}] 핵심 요약 및 원리 풀이 족보로 변환되었어요!`, "⚡");
+        showToast(reason, "⚠️");
       } finally {
         btn.disabled = false;
         icon.textContent = "⚡";
@@ -1354,7 +1356,7 @@
       }
     }
 
-    async function fetchWithTimeout(url, options, timeoutMs = 28000) {
+    async function fetchWithTimeout(url, options, timeoutMs = 55000) {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeoutMs);
       try {
@@ -1371,24 +1373,25 @@
         mimeType: img.mimeType
       }));
 
-      try {
-        if (window.location.protocol.startsWith("http") && !window.location.hostname.includes("usercontent")) {
-          const serverRes = await fetchWithTimeout("/api/generate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ images: cleanImages, text, subject: subjectName })
-          }, 28000);
+      if (window.location.protocol.startsWith("http") && !window.location.hostname.includes("usercontent")) {
+        const serverRes = await fetchWithTimeout("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ images: cleanImages, text, subject: subjectName })
+        }, 55000);
 
-          if (serverRes.ok) {
-            const serverData = await serverRes.json();
-            if (serverData && serverData.subjectTitle) {
-              return serverData;
-            }
+        if (serverRes.ok) {
+          const serverData = await serverRes.json();
+          if (serverData && serverData.subjectTitle) {
+            return serverData;
           }
-          throw new Error(`Server status ${serverRes.status}`);
         }
-      } catch (e) {
-        throw e;
+        let errDetail = `HTTP ${serverRes.status}`;
+        try {
+          const errJson = await serverRes.json();
+          if (errJson?.error) errDetail = `${serverRes.status} · ${errJson.error}`;
+        } catch (_) {}
+        throw new Error(errDetail);
       }
 
       const apiKey = "";
@@ -1482,7 +1485,7 @@ ${subjectGuides[subjectName] || ""}
             }
           }
         })
-      }, 28000);
+      }, 55000);
 
       if (!response.ok) throw new Error(`API HTTP ${response.status}`);
       const result = await response.json();
@@ -1521,7 +1524,7 @@ ${subjectGuides[subjectName] || ""}
         cards.push({
           title: `${subjectName} 프린트 ${imageCount || 1}장 세트 통합 분석`,
           coreSummary: `업로드된 ${imageCount || 1}장의 ${subjectName} 프린트 세트 핵심 내용이 하나의 흐름으로 정리되었습니다.`,
-          whyExplanation: `여러 장으로 구성된 수업 프린트는 보통 앞장에서 기본 개념과 원리를 정의하고, 뒷장에서 예외 조항과 심화 사례를 다루는 구조로 출제됩니다. 사진이 너무 흐리거나 일시적 네트워크 지연이 있을 경우 핵심 원리 가이드가 먼저 표시됩니다.`,
+          whyExplanation: `여러 장으로 구성된 수업 프린트는 보통 앞장에서 기본 개념과 원리를 정의하고, 뒷장에서 예외 조항과 심화 사례를 다루는 구조로 출제됩니다. 일시적인 응답 시간 초과가 발생했을 경우 핵심 원리 가이드가 먼저 표시됩니다.`,
           stepByStepExample: `① 세트 프린트 학습 순서:\n• 1단계: 1쪽의 핵심 개념 정의 및 성립 조건 확인\n• 2단계: 2~3쪽의 예외 사례를 1쪽 원리와 연결해 비교 정리`,
           isStarred: true
         });
