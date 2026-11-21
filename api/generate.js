@@ -70,7 +70,7 @@ ${subjectGuides[subjectName] || ""}
         : `첨부된 총 ${imageList.length}장 세트의 [${subjectName}] 수업 프린트 사진을 순서대로 통합 분석해서, 억지 비유 없이 원리 이해 풀이와 예시 단계별 해부가 담긴 벼락치기 4종 세트를 만들어줘.`
     });
 
-    // 무료 티어 지원 최신 모델 (gemini-4-hydrogen)
+    // 무료 티어 지원 최신 모델 (gemini-4-hydrogen) + 초고속 응답 설정
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-4-hydrogen:generateContent?key=${apiKey}`;
 
     const response = await fetch(apiUrl, {
@@ -82,7 +82,7 @@ ${subjectGuides[subjectName] || ""}
         generationConfig: {
           maxOutputTokens: 8192,
           thinkingConfig: {
-            thinkingLevel: "medium"
+            thinkingLevel: "low"
           },
           responseMimeType: "application/json",
           responseSchema: {
@@ -137,7 +137,8 @@ ${subjectGuides[subjectName] || ""}
       return res.status(500).json({ error: "AI 응답이 비어 있습니다." });
     }
 
-    return res.status(200).json(JSON.parse(rawText));
+    const cleanedJson = rawText.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
+    return res.status(200).json(JSON.parse(cleanedJson));
   } catch (error) {
     return res.status(500).json({ error: "서버 처리 중 예외가 발생했습니다.", message: error.message });
   }
