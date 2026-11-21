@@ -67,72 +67,82 @@ ${subjectGuides[subjectName] || ""}
         : `첨부된 [${subjectName}] 프린트 사진(${imageList.length}장) 속 글씨와 필기를 읽고 핵심 원리 풀이 4종 세트 JSON을 만들어줘.`
     });
 
-    const requestBody = {
-      contents: [{ parts }],
-      systemInstruction: { parts: [{ text: systemPrompt }] },
-      generationConfig: {
-        maxOutputTokens: 3500,
-        thinkingConfig: {
-          thinkingLevel: "low"
+    const responseSchema = {
+      type: "OBJECT",
+      properties: {
+        subjectTitle: { type: "STRING" },
+        teacherPicks: { type: "ARRAY", items: { type: "STRING" } },
+        summaryCards: {
+          type: "ARRAY",
+          items: {
+            type: "OBJECT",
+            properties: {
+              title: { type: "STRING" },
+              coreSummary: { type: "STRING" },
+              whyExplanation: { type: "STRING" },
+              stepByStepExample: { type: "STRING" },
+              isStarred: { type: "BOOLEAN" }
+            },
+            required: ["title", "coreSummary", "whyExplanation", "stepByStepExample", "isStarred"]
+          }
         },
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: "OBJECT",
-          properties: {
-            subjectTitle: { type: "STRING" },
-            teacherPicks: { type: "ARRAY", items: { type: "STRING" } },
-            summaryCards: {
-              type: "ARRAY",
-              items: {
-                type: "OBJECT",
-                properties: {
-                  title: { type: "STRING" },
-                  coreSummary: { type: "STRING" },
-                  whyExplanation: { type: "STRING" },
-                  stepByStepExample: { type: "STRING" },
-                  isStarred: { type: "BOOLEAN" }
-                },
-                required: ["title", "coreSummary", "whyExplanation", "stepByStepExample", "isStarred"]
-              }
+        blankItems: { type: "ARRAY", items: { type: "STRING" } },
+        oxQuiz: {
+          type: "ARRAY",
+          items: {
+            type: "OBJECT",
+            properties: {
+              question: { type: "STRING" },
+              answer: { type: "STRING" },
+              trapExplanation: { type: "STRING" }
             },
-            blankItems: { type: "ARRAY", items: { type: "STRING" } },
-            oxQuiz: {
-              type: "ARRAY",
-              items: {
-                type: "OBJECT",
-                properties: {
-                  question: { type: "STRING" },
-                  answer: { type: "STRING" },
-                  trapExplanation: { type: "STRING" }
-                },
-                required: ["question", "answer", "trapExplanation"]
-              }
-            },
-            audioScript: { type: "STRING" }
-          },
-          required: ["subjectTitle", "teacherPicks", "summaryCards", "blankItems", "oxQuiz", "audioScript"]
-        }
-      }
+            required: ["question", "answer", "trapExplanation"]
+          }
+        },
+        audioScript: { type: "STRING" }
+      },
+      required: ["subjectTitle", "teacherPicks", "summaryCards", "blankItems", "oxQuiz", "audioScript"]
     };
 
-    // 1순위: 2~4초 초고속 멀티모달 경량 모델 -> 2순위: 고성능 Flash 모델
-    const models = ["gemini-3.5-flash-lite", "gemini-3.8-flash"];
+    // 구글 서버 혼잡(503) 자동 우회용 5개 차선 (한산하고 빠른 모델 우선 배치)
+    const modelCandidates = [
+      { name: "gemini-3.6-flash", useThinking: false },
+      { name: "gemini-3.1-flash-lite", useThinking: false },
+      { name: "gemini-3.5-flash-lite", useThinking: false },
+      { name: "gemini-3.8-flash", useThinking: true },
+      { name: "gemini-4-hydrogen", useThinking: true }
+    ];
+
     let lastStatus = 500;
     let lastErrorDetail = "";
 
-    for (const modelName of models) {
+    for (const candidate of modelCandidates) {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 22000);
+      const timer = setTimeout(() => controller.abort(), 14000);
+
+      const generationConfig = {
+        maxOutputTokens: 3500,
+        responseMimeType: "application/json",
+        responseSchema
+      };
+
+      if (candidate.useThinking) {
+        generationConfig.thinkingConfig = { thinkingLevel: "low" };
+      }
 
       try {
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${candidate.name}:generateContent`;
         const response = await fetch(apiUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "x-goog-api-key": apiKey
           },
-          body: JSON.stringify(requestBody),
+          body: JSON.stringify({
+            contents: [{ parts }],
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            generationConfig
+          }),
           signal: controller.signal
         });
 
@@ -147,12 +157,12 @@ ${subjectGuides[subjectName] || ""}
           }
         } else {
           lastStatus = response.status;
-          lastErrorDetail = await response.text();
+          lastErrorDetail = `[${candidate.name}] ${await response.text()}`;
         }
       } catch (fetchErr) {
         clearTimeout(timer);
         lastStatus = 504;
-        lastErrorDetail = `${modelName} 응답 지연 (${fetchErr.message})`;
+        lastErrorDetail = `[${candidate.name}] 응답 지연 (${fetchErr.message})`;
       }
     }
 
