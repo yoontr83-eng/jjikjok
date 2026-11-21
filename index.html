@@ -1,0 +1,2179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>찍으면 족보 - 시험 전날 밤 벼락치기 AI 족보</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- A4 PDF 직접 저장용 라이브러리 (Preview·모바일·PC 100% 작동) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- 현대 한글 + 중세 국어(옛한글) 깨짐 방지 전용 웹폰트 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://hangeul.pstatic.net/hangeul_static/css/nanum-barun-gothic-yethangul.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans KR"', '"NanumBarunGothicYetHangul"', '"Apple SD Gothic Neo"', '"Malgun Gothic"', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            electric: {
+              50: '#EEF2FF',
+              100: '#E0E7FF',
+              500: '#4F46E5',
+              600: '#4338CA',
+              700: '#3730A3',
+            },
+            volt: {
+              400: '#FACC15',
+              500: '#EAB308',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body, button, input, textarea, select {
+      font-family: "Noto Sans KR", "NanumBarunGothicYetHangul", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .animate-pop {
+      animation: popIn 0.25s ease-out forwards;
+    }
+    .blank-pill {
+      transition: all 0.18s ease;
+    }
+    .audio-sentence {
+      transition: all 0.2s ease;
+    }
+    .audio-sentence-active {
+      background-color: rgba(250, 204, 21, 0.24);
+      color: #FEF08A;
+      border-radius: 6px;
+      padding: 2px 5px;
+      font-weight: 700;
+    }
+    .print-avoid-break {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-800 antialiased selection:bg-volt-400 selection:text-slate-900">
+
+  <!-- 모바일 앱 컨테이너 -->
+  <div id="appContainer" class="max-w-md mx-auto min-h-screen bg-slate-50 shadow-2xl flex flex-col relative overflow-x-hidden">
+
+    <!-- 상단 헤더 -->
+    <header class="sticky top-0 z-30 bg-slate-900 text-white px-4 py-3.5 flex items-center justify-between shadow-md">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-volt-400 text-slate-950 flex items-center justify-center text-xl font-black shadow-sm">
+          ⚡
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <h1 class="text-base font-black tracking-tight leading-none">찍으면 족보</h1>
+            <span class="px-1.5 py-0.5 rounded-md bg-electric-500 text-[10px] font-extrabold text-white">벼락치기</span>
+          </div>
+          <p class="text-[11px] text-slate-300 mt-1">시험 전날 밤 벼락치기 · 국어 · 영어 · 통합과학 · 통합사회</p>
+        </div>
+      </div>
+      <button type="button" onclick="openFeedbackModal()" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition text-xs font-bold text-volt-400 flex items-center gap-1 cursor-pointer">
+        <span>💬</span>
+        <span>베타 후기</span>
+      </button>
+    </header>
+
+    <!-- 메인 영역 -->
+    <main class="flex-1 pb-24">
+
+      <!-- ============================================== -->
+      <!-- 1. 입력 화면: 과목 선택 / 프린트 촬영 / 샘플   -->
+      <!-- ============================================== -->
+      <section id="view-input" class="p-4 space-y-4 animate-pop">
+
+        <!-- 카카오톡 인앱 브라우저 접속 시 안내 배너 -->
+        <div id="inAppBrowserNotice" class="hidden bg-amber-50 border border-amber-300 rounded-2xl p-3 text-xs text-amber-950 flex items-start gap-2">
+          <span class="text-base shrink-0">💡</span>
+          <p class="leading-snug">
+            <strong>카톡 화면에서 열렸어요!</strong> A4 시험지 PDF 파일 저장이 안 될 때는 우측 하단 <code class="bg-amber-200/70 px-1 rounded font-bold">⋮</code> → <strong>[다른 브라우저로 열기]</strong>를 눌러주세요.
+          </p>
+        </div>
+
+        <!-- 상단 안내 배너 -->
+        <div class="bg-gradient-to-r from-electric-600 to-indigo-700 rounded-2xl p-4 text-white shadow-md">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] font-extrabold uppercase tracking-wider bg-white/15 px-2 py-0.5 rounded-full">
+              🏫 우리 학교 벼락치기 베타 테스트
+            </span>
+            <span class="text-xs font-bold text-volt-400">A4 PDF 저장 지원</span>
+          </div>
+          <h2 class="text-base font-extrabold leading-snug mt-1.5">
+            과목 고르고 프린트 1~3장 올리면<br>
+            <span class="text-volt-400">원리 이해 풀이 · 예시 해부 · 함정 OX</span> 완성!
+          </h2>
+        </div>
+
+        <!-- Step 1: 과목 선택 (국어 · 영어 · 통합과학 · 통합사회) -->
+        <div class="bg-white border border-slate-200 rounded-3xl p-4 shadow-xs space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
+              <span class="w-5 h-5 rounded-full bg-slate-900 text-white text-[11px] flex items-center justify-center">1</span>
+              <span>과목 선택 (과목별 출제 함정 자동 적용)</span>
+            </span>
+            <span id="selectedSubjectBadge" class="text-[11px] font-extrabold text-electric-600 bg-electric-50 px-2.5 py-0.5 rounded-full">📚 국어 선택됨</span>
+          </div>
+
+          <div class="grid grid-cols-4 gap-1.5">
+            <button type="button" id="subj-korean" onclick="selectSubject('korean')" class="subj-btn py-2.5 px-1 rounded-2xl border-2 border-electric-500 bg-electric-50 text-electric-700 font-black text-xs text-center transition active:scale-95 cursor-pointer">
+              📚<br>국어
+            </button>
+            <button type="button" id="subj-english" onclick="selectSubject('english')" class="subj-btn py-2.5 px-1 rounded-2xl border border-slate-200 bg-slate-50 text-slate-700 font-extrabold text-xs text-center hover:border-electric-400 transition active:scale-95 cursor-pointer">
+              📘<br>영어
+            </button>
+            <button type="button" id="subj-science" onclick="selectSubject('science')" class="subj-btn py-2.5 px-1 rounded-2xl border border-slate-200 bg-slate-50 text-slate-700 font-extrabold text-xs text-center hover:border-electric-400 transition active:scale-95 cursor-pointer">
+              🧪<br>통합과학
+            </button>
+            <button type="button" id="subj-social" onclick="selectSubject('social')" class="subj-btn py-2.5 px-1 rounded-2xl border border-slate-200 bg-slate-50 text-slate-700 font-extrabold text-xs text-center hover:border-electric-400 transition active:scale-95 cursor-pointer">
+              🌍<br>통합사회
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: 프린트 사진 촬영/업로드 (최대 3장 세트 지원) -->
+        <div class="bg-white border border-slate-200 rounded-3xl p-4 shadow-xs space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
+              <span class="w-5 h-5 rounded-full bg-slate-900 text-white text-[11px] flex items-center justify-center">2</span>
+              <span>학교 프린트 세트 촬영 (최대 3장)</span>
+            </span>
+            <span id="imageCountBadge" class="text-[11px] text-electric-600 font-extrabold bg-electric-50 px-2 py-0.5 rounded-full">0 / 3장 선택됨</span>
+          </div>
+
+          <label for="printImageInput" id="uploadPlaceholder" class="border-2 border-dashed border-slate-300 hover:border-electric-500 bg-slate-50/80 hover:bg-electric-50/40 rounded-2xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition">
+            <div class="w-11 h-11 rounded-2xl bg-electric-100 text-electric-600 flex items-center justify-center text-xl mb-1.5">
+              📸
+            </div>
+            <p class="text-xs font-extrabold text-slate-800">터치해서 프린트 1~3장 한 번에 선택 또는 촬영</p>
+            <p class="text-[11px] text-slate-400 mt-0.5">앞뒷면·연속 프린트 3장까지 한 세트로 묶어 분석해요</p>
+          </label>
+          <input id="printImageInput" type="file" accept="image/*" multiple onchange="handleImageUpload(event)" class="hidden" />
+
+          <div id="imageSetContainer" class="hidden space-y-2.5">
+            <div id="imageThumbGrid" class="grid grid-cols-3 gap-2"></div>
+            <div class="flex items-center justify-between bg-slate-900 text-volt-400 text-[11px] font-bold px-3 py-2 rounded-xl">
+              <span>✨ 세트 사진 자동 용량 최적화 완료!</span>
+              <button type="button" onclick="clearAllUploadedImages()" class="text-slate-300 hover:text-white underline cursor-pointer">전체 삭제</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: 과목별 핵심 샘플 & 프린트 텍스트 직접 입력 -->
+        <div class="bg-white border border-slate-200 rounded-3xl p-4 shadow-xs space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
+              <span class="w-5 h-5 rounded-full bg-slate-900 text-white text-[11px] flex items-center justify-center">3</span>
+              <span>과목별 샘플 체험 또는 프린트 본문 입력</span>
+            </span>
+          </div>
+
+          <div>
+            <p id="sampleSectionTitle" class="text-[11px] font-bold text-slate-500 mb-1.5">⚡ [국어] 핵심 프린트 1초 불러오기</p>
+            <div id="sampleButtonsGrid" class="grid grid-cols-3 gap-1.5"></div>
+          </div>
+
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="printTextInput" class="text-[11px] font-bold text-slate-600">프린트 본문 / 선생님 강조 필기 내용</label>
+              <button type="button" onclick="clearTextInput()" class="text-[11px] text-slate-400 hover:text-slate-600 cursor-pointer">내용 지우기</button>
+            </div>
+            <textarea id="printTextInput" rows="5" placeholder="여기에 수업 프린트 텍스트를 붙여넣거나, 위 핵심 단원 샘플 버튼을 눌러 바로 테스트해 보세요!" class="w-full rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white p-3 text-xs text-slate-800 leading-relaxed placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-electric-500/40 focus:border-electric-500 transition"></textarea>
+          </div>
+
+          <button type="button" id="generateBtn" onclick="generateJokbo()" class="w-full py-4 rounded-2xl bg-slate-900 hover:bg-slate-800 disabled:opacity-60 text-volt-400 font-black text-sm shadow-lg active:scale-[0.99] transition flex items-center justify-center gap-2 cursor-pointer">
+            <span id="generateBtnIcon" class="text-lg">⚡</span>
+            <span id="generateBtnText">원리 이해 벼락치기 족보 생성하기</span>
+          </button>
+        </div>
+
+      </section>
+
+      <!-- ============================================== -->
+      <!-- 2. 결과 화면: 4종 벼락치기 무기 세트           -->
+      <!-- ============================================== -->
+      <section id="view-result" class="hidden p-4 space-y-4 animate-pop">
+
+        <!-- 상단 돌아가기 & 단원 제목 & A4 PDF 버튼 -->
+        <div class="flex items-center justify-between gap-2">
+          <button type="button" onclick="backToInput()" class="shrink-0 px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-xs font-extrabold text-slate-700 flex items-center gap-1 active:scale-95 transition cursor-pointer">
+            <span>←</span>
+            <span>다른 프린트</span>
+          </button>
+          <span id="resultSubjectBadge" class="truncate text-xs font-black text-electric-700 bg-electric-100 px-3 py-1 rounded-full">
+            핵심 벼락치기 족보
+          </span>
+          <button type="button" onclick="openA4PreviewModal()" class="shrink-0 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-volt-400 text-xs font-black flex items-center gap-1 shadow-xs active:scale-95 transition cursor-pointer">
+            <span>📄</span>
+            <span>A4 PDF</span>
+          </button>
+        </div>
+
+        <!-- 선생님 별표/출제 1순위 하이라이트 박스 -->
+        <div class="bg-slate-900 text-white rounded-3xl p-4 shadow-md border border-slate-800 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-black text-volt-400 flex items-center gap-1.5">
+              <span>🎯</span>
+              <span>출제자 시선 · 함정 & 별표(★) 1순위</span>
+            </span>
+            <span class="text-[10px] font-bold bg-white/10 px-2 py-0.5 rounded-full text-slate-300">필수 암기</span>
+          </div>
+          <ul id="teacherPicksList" class="space-y-1.5 text-xs text-slate-100 leading-relaxed"></ul>
+        </div>
+
+        <!-- 4종 무기 전환 탭 -->
+        <div class="grid grid-cols-4 gap-1.5 bg-slate-200/80 p-1.5 rounded-2xl">
+          <button type="button" id="tab-summary" onclick="switchResultTab('summary')" class="res-tab py-2 rounded-xl bg-white text-slate-900 font-black text-xs shadow-xs transition cursor-pointer">
+            📖 원리 족보
+          </button>
+          <button type="button" id="tab-blank" onclick="switchResultTab('blank')" class="res-tab py-2 rounded-xl text-slate-600 font-bold text-xs hover:text-slate-900 transition cursor-pointer">
+            🟩 빈칸 암기
+          </button>
+          <button type="button" id="tab-ox" onclick="switchResultTab('ox')" class="res-tab py-2 rounded-xl text-slate-600 font-bold text-xs hover:text-slate-900 transition cursor-pointer">
+            ⚔️ 함정 OX
+          </button>
+          <button type="button" id="tab-audio" onclick="switchResultTab('audio')" class="res-tab py-2 rounded-xl text-slate-600 font-bold text-xs hover:text-slate-900 transition cursor-pointer">
+            🎧 3분 오디오
+          </button>
+        </div>
+
+        <!-- [탭 1] 원리 이해 1페이지 족보 -->
+        <div id="panel-summary" class="space-y-3 animate-pop">
+          <div id="summaryCardsContainer" class="space-y-3"></div>
+          <button type="button" onclick="copyAllSummary()" class="w-full py-3 rounded-2xl bg-white border border-slate-300 hover:bg-slate-100 text-slate-800 font-extrabold text-xs shadow-xs active:scale-95 transition flex items-center justify-center gap-1.5 cursor-pointer">
+            <span>📋</span>
+            <span>원리 이해 족보 텍스트 전체 복사하기</span>
+          </button>
+        </div>
+
+        <!-- [탭 2] 빈칸 뚫기 암기 시트 -->
+        <div id="panel-blank" class="hidden space-y-3 animate-pop">
+          <div class="bg-white border border-slate-200 rounded-3xl p-4 space-y-3 shadow-xs">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-slate-800">노란 빈칸을 터치해 정답을 확인하세요!</span>
+              <div class="flex gap-1">
+                <button type="button" onclick="toggleAllBlanks(false)" class="px-2 py-1 rounded-lg bg-slate-100 text-[11px] font-bold text-slate-600 cursor-pointer">모두 가리기</button>
+                <button type="button" onclick="toggleAllBlanks(true)" class="px-2 py-1 rounded-lg bg-electric-100 text-[11px] font-bold text-electric-700 cursor-pointer">정답 보기</button>
+              </div>
+            </div>
+            <div id="blankListContainer" class="space-y-2.5"></div>
+          </div>
+        </div>
+
+        <!-- [탭 3] 출제자 말장난 함정 OX 퀴즈 -->
+        <div id="panel-ox" class="hidden space-y-3 animate-pop">
+          <div class="bg-white border border-slate-200 rounded-2xl p-3 flex items-center justify-between">
+            <span class="text-xs font-extrabold text-slate-700">내신 말장난 함정 돌파 현황</span>
+            <span id="oxScoreBadge" class="px-2.5 py-1 rounded-full bg-electric-100 text-electric-700 text-xs font-black">0 / 5 문제 완료</span>
+          </div>
+          <div id="oxQuizContainer" class="space-y-3"></div>
+        </div>
+
+        <!-- [탭 4] 등굣길 3분 오디오 브리핑 -->
+        <div id="panel-audio" class="hidden space-y-3 animate-pop">
+          <div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-3xl p-5 shadow-lg space-y-4">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <span class="text-[11px] font-bold text-volt-400">🎧 호흡 튜닝 · 등굣길 이어폰 벼락치기</span>
+                <h3 class="text-base font-black mt-0.5">1타 강사 시험 직전 핵심 브리핑</h3>
+              </div>
+              <select id="audioRateSelect" onchange="updateAudioRate()" class="shrink-0 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-bold px-2.5 py-1.5 focus:outline-none">
+                <option value="0.95" class="text-slate-900">0.95x 차분</option>
+                <option value="1.05" selected class="text-slate-900">1.05x 자연</option>
+                <option value="1.2" class="text-slate-900">1.2x 집중</option>
+                <option value="1.35" class="text-slate-900">1.35x 벼락</option>
+              </select>
+            </div>
+
+            <!-- 기기 내 최고급 한국어 보이스 자동 선택 및 변경 바 -->
+            <div class="bg-white/10 border border-white/15 rounded-2xl p-2.5 flex items-center justify-between gap-2">
+              <span class="text-[11px] font-bold text-slate-300 shrink-0">🗣️ 목소리 선택</span>
+              <select id="voiceSelect" onchange="onVoiceChange()" class="flex-1 min-w-0 bg-slate-900/70 text-volt-400 text-[11px] font-bold rounded-xl px-2.5 py-1.5 border border-white/10 focus:outline-none truncate">
+                <option value="">기기 최적 한국어 보이스 탐색 중...</option>
+              </select>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button type="button" id="audioPlayBtn" onclick="toggleAudioBriefing()" class="flex-1 py-3.5 rounded-2xl bg-volt-400 hover:bg-volt-500 text-slate-950 font-black text-sm shadow-md active:scale-95 transition flex items-center justify-center gap-2 cursor-pointer">
+                <span id="audioPlayIcon">▶️</span>
+                <span id="audioPlayLabel">자연스러운 호흡으로 재생하기</span>
+              </button>
+              <button type="button" onclick="stopAudioBriefing()" class="px-4 py-3.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs transition cursor-pointer">
+                ⏹️ 정지
+              </button>
+            </div>
+
+            <!-- 문장별 하이라이트 대본 박스 -->
+            <div class="bg-white/10 rounded-2xl p-3.5 text-xs text-slate-200 leading-loose space-y-1">
+              <div id="audioScriptContainer"></div>
+            </div>
+            <p class="text-[10px] text-slate-400 leading-snug">
+              💡 문장마다 자연스러운 숨 고르기(0.25초)를 적용해 기계음 느낌을 줄였어요. 기기에 따라 아이폰(Yuna/Sora)·크롬(Google 한국의) 보이스가 가장 자연스럽습니다.
+            </p>
+          </div>
+        </div>
+
+        <!-- 하단 A4 PDF 저장 및 단톡방 공유 버튼 -->
+        <div class="space-y-2 pt-1">
+          <button type="button" onclick="openA4PreviewModal()" class="w-full py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-volt-400 font-black text-xs shadow-md active:scale-[0.99] transition flex items-center justify-center gap-2 cursor-pointer">
+            <span class="text-base">📥</span>
+            <span>A4 시험지 미리보기 · PDF 저장 (저장 후 인쇄)</span>
+          </button>
+          <button type="button" onclick="copyShareChallenge()" class="w-full py-3.5 rounded-2xl bg-[#FEE500] hover:bg-[#FADA0A] text-[#191919] font-black text-xs shadow-md active:scale-[0.99] transition flex items-center justify-center gap-2 cursor-pointer">
+            <span class="text-base">💬</span>
+            <span>반 단톡방에 함정 OX 퀴즈 복사해서 친구랑 내기하기</span>
+          </button>
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- ============================================== -->
+  <!-- A4 시험지 미리보기 & PDF 저장 모달 (단일 통일) -->
+  <!-- ============================================== -->
+  <div id="a4PreviewModal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-xs flex flex-col">
+    <!-- 상단 고정 툴바 -->
+    <div class="bg-slate-900 text-white px-4 py-3 border-b border-slate-800 flex items-center justify-between gap-2 shrink-0">
+      <div class="min-w-0">
+        <h3 class="text-sm font-black text-volt-400 truncate">📄 찍으면 족보 · A4 벼락치기 시험지</h3>
+        <p class="text-[10px] text-slate-300">PDF로 저장한 뒤 프린터로 인쇄하거나 굿노트에서 바로 풀어보세요!</p>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button type="button" id="downloadPdfBtn" onclick="downloadA4Pdf()" class="px-3.5 py-2 rounded-xl bg-volt-400 hover:bg-volt-500 disabled:opacity-60 text-slate-950 text-xs font-black shadow-sm active:scale-95 transition flex items-center gap-1.5 cursor-pointer">
+          <span>📥</span>
+          <span id="downloadPdfLabel">A4 PDF 저장</span>
+        </button>
+        <button type="button" onclick="closeA4PreviewModal()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 font-black text-sm flex items-center justify-center cursor-pointer">✕</button>
+      </div>
+    </div>
+
+    <!-- 스크롤 가능한 A4 용지 뷰어 -->
+    <div class="flex-1 overflow-y-auto p-3 sm:p-6 flex justify-center">
+      <div id="a4PaperWrapper" class="w-full max-w-[794px] bg-white text-slate-900 shadow-2xl rounded-lg p-5 sm:p-8 h-fit">
+        <div id="a4PreviewContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- 학생 베타 후기 모달                            -->
+  <!-- ============================================== -->
+  <div id="feedbackModal" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md rounded-3xl p-5 space-y-4 shadow-2xl animate-pop">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-black text-slate-900">💬 찍으면 족보 베타 테스터 후기</h3>
+          <p class="text-xs text-slate-500 mt-0.5">불편한 점이나 추가됐으면 하는 기능을 자유롭게 적어주세요!</p>
+        </div>
+        <button type="button" onclick="closeFeedbackModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 font-bold text-sm cursor-pointer">✕</button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">원리 이해와 벼락치기에 얼마나 도움이 되었나요?</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" onclick="selectRating('🔥 이해 쏙쏙됨')" class="rating-btn py-2 rounded-xl border-2 border-electric-500 bg-electric-50 text-electric-700 text-xs font-extrabold cursor-pointer">🔥 이해 쏙쏙됨</button>
+            <button type="button" onclick="selectRating('👍 꽤 쓸만함')" class="rating-btn py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-bold cursor-pointer">👍 꽤 쓸만함</button>
+            <button type="button" onclick="selectRating('🛠️ 보완 필요')" class="rating-btn py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-bold cursor-pointer">🛠️ 보완 필요</button>
+          </div>
+        </div>
+
+        <div>
+          <label for="feedbackText" class="block text-xs font-bold text-slate-700 mb-1">의견 / 요청 기능 (익명)</label>
+          <textarea id="feedbackText" rows="3" placeholder="예: PDF 바로 저장돼서 굿노트에 불러오기 좋아요! / 서술형 문제도 뽑아주면 좋겠어요!" class="w-full rounded-2xl border border-slate-200 p-3 text-xs text-slate-800 focus:outline-none focus:border-electric-500"></textarea>
+        </div>
+      </div>
+
+      <button type="button" onclick="submitBetaFeedback()" class="w-full py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-volt-400 font-black text-xs shadow-md active:scale-95 transition cursor-pointer">
+        베타 의견 남기기
+      </button>
+    </div>
+  </div>
+
+  <!-- 토스트 알림 -->
+  <div id="toastBox" class="fixed top-16 left-1/2 -translate-x-1/2 z-[60] pointer-events-none opacity-0 transition-all duration-300 transform -translate-y-2">
+    <div id="toastMessage" class="bg-slate-950/95 text-white px-4 py-2.5 rounded-2xl shadow-xl text-xs font-bold flex items-center gap-2 whitespace-nowrap border border-white/10">
+      <span>⚡</span>
+      <span>알림</span>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- JavaScript 핵심 동작 로직                      -->
+  <!-- ============================================== -->
+  <script>
+    // 1. 4대 핵심 과목 (국어 · 영어 · 통합과학 · 통합사회) 메타정보 & 원리 이해 중심 샘플 데이터
+    // 중세 국어 옛한글은 깨짐 방지를 위해 표준 유니코드 첫가끝 조합형으로 작성
+    const SUBJECT_CONFIG = {
+      korean: {
+        name: "국어",
+        icon: "📚",
+        placeholder: "국어 문법·문학·독서 프린트 본문을 붙여넣거나, 위 [음운 변동 / 품사·문장 / 중세 국어] 샘플 버튼을 눌러보세요!",
+        samples: [
+          {
+            key: "kor_phonology",
+            btnTitle: "1️⃣ 음운 변동",
+            btnSub: "교체·탈락·축약",
+            rawText: `[국어 문법 핵심 프린트 - 음운의 변동 (총 2쪽 세트)]
+★1. 음절의 끝소리 규칙(교체): 받침 'ㄱ, ㄴ, ㄷ, ㄹ, ㅁ, ㅂ, ㅇ' 7개 자음만 발음됨. 예) 부엌[부억], 빚[빋], 잎[입]. (주의: 겹받침이 하나만 남는 것은 '자음군 단순화'로 탈락에 해당함! 예: 값[갑], 닭[닥])
+★2. 비음화와 유음화(교체): 파열음 'ㄱ, ㄷ, ㅂ'이 비음 'ㄴ, ㅁ' 앞에서 [ㅇ, ㄴ, ㅁ]으로 바뀜(국물[궁물], 닫는[단는]). 유음화는 'ㄴ'이 'ㄹ' 앞이나 뒤에서 [ㄹ]로 바뀜(신라[실라], 칼날[칼랄]).
+★3. 구개음화(교체): 끝소리 'ㄷ, ㅌ'이 모음 'ㅣ'나 반모음 'ㅣ̆'로 시작하는 형식 형태소(조사·접미사)를 만나 [ㅈ, ㅊ]으로 바뀜(굳이[구지], 같이[가치]). 주의: 실질 형태소 '밭이랑(밭+이랑)'은 구개음화가 일어나지 않고 ㄴ첨가 후 비음화되어 [반니랑]이 됨!
+★4. 거센소리되기(축약): 'ㄱ, ㄷ, ㅂ, ㅈ'과 'ㅎ'이 만나 [ㅋ, ㅌ, ㅍ, ㅊ]으로 줄어듦(음운 개수 1개 감소). 예) 놓고[노코], 잡히다[자피다].`,
+            data: {
+              subjectTitle: "고등 국어 · 음운의 변동 원리 족보",
+              teacherPicks: [
+                "★ 음절의 끝소리 규칙(교체, 음운 수 유지) vs 자음군 단순화(탈락, 음운 수 1개 감소) 반드시 구분!",
+                "★ 구개음화는 반드시 '형식 형태소(ㅣ)' 앞에서만 발생! 실질 형태소 '밭이랑'은 [반니랑](ㄴ첨가+비음화)으로 발음됨!"
+              ],
+              summaryCards: [
+                {
+                  title: "1. 음절의 끝소리 규칙(교체) vs 자음군 단순화(탈락)",
+                  coreSummary: "• 음절의 끝소리 규칙(교체): 받침 자음이 대표음 7개(ㄱ,ㄴ,ㄷ,ㄹ,ㅁ,ㅂ,ㅇ) 중 하나로 바뀜 (부엌→[부억])\n• 자음군 단순화(탈락): 겹받침의 두 자음 중 하나가 아예 사라짐 (값→[갑], 닭→[닥])",
+                  whyExplanation: "우리말은 음절 끝(받침)에서 한 번에 하나의 자음만, 그것도 딱 7가지 소리(ㄱ,ㄴ,ㄷ,ㄹ,ㅁ,ㅂ,ㅇ)로만 발음할 수 있습니다. 이때 '부엌'의 'ㅋ'은 원래 자음이 1개인데 발음 규칙상 소리값만 'ㄱ'으로 바뀐 것이므로 '교체'(음운 개수 유지)입니다. 반면 '값'의 'ㅄ'은 애초에 자음이 2개인데 둘 다 발음할 수 없어 'ㅅ'을 아예 탈락시키고 'ㅂ'만 남긴 것이므로 '탈락'(음운 개수 1개 감소)이 됩니다.",
+                  stepByStepExample: "① '읊다 → [읍따]' 2단계 적용 과정:\n• 1단계(탈락): 겹받침 '읊(ㄹ+ㅍ)'에서 받침에 두 자음이 모두 올 수 없으므로 'ㄹ'이 먼저 떨어져 나감 → [읖다] (자음군 단순화)\n• 2단계(교체): 남은 'ㅍ'이 대표음 7개에 속하지 않으므로 'ㅂ'으로 바뀜 → [읍다] (음절의 끝소리 규칙, 이후 된소리되기 적용)",
+                  isStarred: true
+                },
+                {
+                  title: "2. 구개음화: 왜 '굳이'는 [구지]인데 '밭이랑'은 [반니랑]일까?",
+                  coreSummary: "• 조건: 끝소리 'ㄷ, ㅌ' + 모음 'ㅣ'(또는 반모음 'ㅣ̆')로 시작하는 '형식 형태소' → [ㅈ, ㅊ] (굳이→[구지], 같이→[가치])\n• 예외: 'ㅣ'로 시작해도 실질 형태소이면 구개음화 불가 (밭이랑→[반니랑])",
+                  whyExplanation: "'ㄷ, ㅌ'은 혀끝이 윗잇몸에 닿는 소리이고, 모음 'ㅣ'는 혀의 중간 부분이 입천장(경구개) 쪽으로 바짝 올라가는 소리입니다. 두 소리를 연달아 발음할 때 혀를 급격히 이동하기 힘들기 때문에, 'ㄷ, ㅌ'이 뒤의 'ㅣ' 위치를 미리 닮아 입천장소리인 [ㅈ, ㅊ]으로 변하는 것이 구개음화입니다. 단, 이 현상은 앞말과 뒷말이 한 단어처럼 밀착될 때만 일어나므로, 뒤에 독립된 뜻을 가진 '실질 형태소'가 오면 형태소 경계가 끊어져 구개음화가 일어나지 않습니다.",
+                  stepByStepExample: "① '밭 + 이랑' 뜻에 따른 발음 판별 과정:\n• 조사 '이랑'(~와/과)일 때: '이랑'은 문법 기능만 하는 형식 형태소이므로 앞말과 밀착 → 구개음화 적용 → [바치랑]\n• 명사 '이랑'(논밭의 불룩한 흙더미)일 때: '이랑'은 독립된 뜻을 가진 실질 형태소이므로 구개음화 X → 대신 'ㄴ' 첨가([밭니랑]) 후 비음화 적용 → [반니랑]",
+                  isStarred: true
+                },
+                {
+                  title: "3. 비음화·유음화(교체) vs 거센소리되기(축약)",
+                  coreSummary: "• 비음화(교체): 파열음 'ㄱ, ㄷ, ㅂ' + 비음 'ㄴ, ㅁ' → [ㅇ, ㄴ, ㅁ] (국물→[궁물], 닫는→[단는])\n• 유음화(교체): 'ㄴ' + 'ㄹ' / 'ㄹ' + 'ㄴ' → [ㄹㄹ] (신라→[실라], 칼날→[칼랄])\n• 거센소리되기(축약): 'ㄱ, ㄷ, ㅂ, ㅈ' + 'ㅎ' → [ㅋ, ㅌ, ㅍ, ㅊ] 1개로 감소 (놓고→[노코])",
+                  whyExplanation: "입안의 공기를 막았다 터뜨리는 파열음(ㄱ,ㄷ,ㅂ) 직후에 콧소리(ㄴ,ㅁ)를 내려면 콧구멍으로 가는 통로(비강)를 갑자기 열어야 해서 조음이 불편합니다. 그래서 앞의 파열음을 미리 같은 조음 위치의 콧소리(ㅇ,ㄴ,ㅁ)로 바꾸어 발음을 편하게 만드는 것이 비음화입니다. 반면 '놓고[노코]'는 'ㄱ'이나 'ㅎ' 중 하나가 사라진 것이 아니라, 두 자음의 성질이 하나로 융합되어 새로운 거센소리 'ㅋ'이 된 것이므로 음운 개수가 1개 줄어드는 '축약'입니다.",
+                  stepByStepExample: "① 음운 개수 변화로 교체와 축약 구분하기:\n• '국물(ㄱ+ㅜ+ㄱ+ㅁ+ㅜ+ㄹ, 6개) → [궁물](ㄱ+ㅜ+ㅇ+ㅁ+ㅜ+ㄹ, 6개)': 'ㄱ'이 'ㅇ'으로 소리만 바뀌었으므로 개수 유지(교체)\n• '잡히다(ㅈ+ㅏ+ㅂ+ㅎ+ㅣ+ㄷ+ㅏ, 7개) → [자피다](ㅈ+ㅏ+ㅍ+ㅣ+ㄷ+ㅏ, 6개)': 'ㅂ+ㅎ' 두 음운이 'ㅍ' 하나로 합쳐져 1개 감소(축약)",
+                  isStarred: false
+                }
+              ],
+              blankItems: [
+                "겹받침 '값'이 [갑]으로 발음되는 현상은 음절의 끝소리 규칙이 아니라 {{자음군 단순화}}(탈락)에 해당한다.",
+                "구개음화는 끝소리 'ㄷ, ㅌ'이 모음 'ㅣ'로 시작하는 {{형식 형태소}}를 만날 때만 일어난다.",
+                "'밭이랑(논과 밭)'에서 '이랑'은 {{실질 형태소}}이므로 구개음화가 일어나지 않고 [반니랑]으로 발음된다.",
+                "거센소리되기는 두 음운이 합쳐져 하나로 줄어드는 {{축약}} 현상으로 전체 음운 개수가 1개 줄어든다."
+              ],
+              oxQuiz: [
+                {
+                  question: "'부엌[부억]'과 '값[갑]'은 모두 음절의 끝소리 규칙(교체)에 의해 발음된 것이다.",
+                  answer: "X",
+                  trapExplanation: "함정! '부엌[부억]'은 교체(음절의 끝소리 규칙)이지만, '값[갑]'은 겹받침 중 'ㅅ'이 아예 사라지는 탈락(자음군 단순화)입니다."
+                },
+                {
+                  question: "'굳이[구지]'와 '밭이랑(논밭)[반니랑]'은 모두 구개음화가 적용된 사례이다.",
+                  answer: "X",
+                  trapExplanation: "함정! '밭이랑'의 '이랑'은 실질 형태소이므로 구개음화가 일어나지 않고 ㄴ첨가와 비음화가 일어납니다."
+                },
+                {
+                  question: "'신라[실라]'와 '칼날[칼랄]'은 모두 유음 'ㄹ'의 영향으로 비음 'ㄴ'이 유음 [ㄹ]로 바뀐 교체 현상이다.",
+                  answer: "O",
+                  trapExplanation: "정답! 순행 유음화(칼날)와 역행 유음화(신라) 모두 'ㄴ'이 [ㄹ]로 바뀌는 교체 현상입니다."
+                },
+                {
+                  question: "'놓고[노코]'는 'ㅎ'이 탈락하여 발음되므로 음운 개수가 1개 줄어든다.",
+                  answer: "X",
+                  trapExplanation: "말장난 주의! 음운 개수가 1개 줄어드는 것은 맞지만 'ㅎ 탈락'이 아니라 'ㄱ+ㅎ→ㅋ'으로 합쳐지는 거센소리되기(축약)입니다."
+                },
+                {
+                  question: "'닫는[단는]'은 파열음 'ㄷ'이 뒤따르는 비음 'ㄴ'의 영향을 받아 비음 [ㄴ]으로 바뀐 것이다.",
+                  answer: "O",
+                  trapExplanation: "정답! 파열음(ㄱ,ㄷ,ㅂ)이 비음(ㄴ,ㅁ) 앞에서 비음(ㅇ,ㄴ,ㅁ)으로 바뀌는 전형적인 비음화입니다."
+                }
+              ],
+              audioScript: "자, 시험장 들어가기 직전 음운 변동 핵심 원리 세 가지만 정리하자! 첫째, '값'이나 '닭'처럼 원래 자음이 두 개인 겹받침에서 하나가 떨어져 나가는 건 음절의 끝소리 규칙이 아니야. 이건 '자음군 단순화', 즉 탈락이라서 음운 개수가 한 개 줄어! 둘째, 구개음화는 뒤에 문법 기능만 하는 형식 형태소가 올 때만 앞말과 밀착해서 일어나. 그래서 실질 형태소인 '밭이랑'은 구개음화가 안 되고 '반니랑'으로 발음돼! 셋째, '놓고'가 '노코'가 되는 건 두 음운이 융합해 하나로 줄어드는 거센소리되기 '축약'이라는 거, 절대 헷갈리지 마!"
+            }
+          },
+          {
+            key: "kor_syntax",
+            btnTitle: "2️⃣ 품사·문장",
+            btnSub: "명사절·관형절",
+            rawText: `[국어 문법 핵심 프린트 - 품사와 문장의 짜임 (총 2쪽 세트)]
+★1. 품사의 통용 구분법:
+- 관형사 vs 수사: 체언을 수식하고 조사가 붙지 않으면 수관형사('다섯 사람'). 조사가 결합하거나 주어·목적어 역할을 하면 수사('다섯이 왔다').
+- 형용사 vs 동사 구분: 현재 시제 선어말어미 '-는-/-ㄴ-'이나 관형사형 어미 '-는'과 결합 가능하면 동사('꽃이 핀다'). 결합 불가능하면 형용사('꽃이 예쁘다').
+★2. 안은문장의 종류:
+- 명사절을 가진 안은문장: 명사형 어미 '-(으)ㅁ, -기'가 붙어 문장에서 주어, 목적어, 부사어 등의 역할을 함. (주의: 파생 접미사 '-(으)ㅁ, -기'가 붙은 파생 명사는 서술성이 없고 관형어의 수식을 받음! 예: '그의 빠른 걸음' = 파생 명사 / '그가 빠르게 걸음' = 명사절)
+- 관형절을 가진 안은문장: 관계 관형절(수식받는 체언이 관형절 속 생략된 성분과 동일) vs 동격 관형절(생략된 성분 없음, 주로 추상명사 '소식, 사실' 수식).`,
+            data: {
+              subjectTitle: "고등 국어 · 품사 통용 & 문장의 짜임 원리 족보",
+              teacherPicks: [
+                "★ 명사절(-(으)ㅁ/-기) vs 파생 명사 구분: 부사어 수식+서술성 있으면 '명사절', 관형어 수식이면 '파생 명사'!",
+                "★ 관계 관형절(생략된 문장 성분 있음) vs 동격 관형절(생략된 성분 없음, '사실/소식' 수식) 출제 1순위!"
+              ],
+              summaryCards: [
+                {
+                  title: "1. 명사절 vs 파생 명사: 왜 '빠른 걸음'과 '빠르게 걸음'이 다를까?",
+                  coreSummary: "• 명사절: 용언(동사·형용사) 어간 + 명사형 어미 '-(으)ㅁ, -기' → 서술성 유지, 부사어 수식 (그가 빠르게 걸음)\n• 파생 명사: 어근 + 명사 파생 접미사 '-(으)ㅁ, -기' → 품사 자체가 명사로 바뀜, 관형어 수식 (그의 빠른 걸음)",
+                  whyExplanation: "형태는 똑같이 '-ㅁ, -기'가 붙지만 문법적 지위가 다릅니다. '명사형 어미'는 동사·형용사의 품사를 바꾸지 않고 문장에서 임시로 명사 자리(주어·목적어 등)에 들어갈 자격만 줍니다. 따라서 원래 동사·형용사의 성질(서술성)이 그대로 살아 있어 부사어의 수식을 받고 주어·목적어를 거느릴 수 있습니다. 반면 '파생 접미사'는 아예 품사를 명사로 고정해 버리므로 서술성이 사라지고 명사처럼 관형어의 수식을 받습니다.",
+                  stepByStepExample: "① 문장 성분 수식 관계로 3초 판별하기:\n• '나는 [그가 빠르게 걸음]을 알았다' → '빠르게'(부사어)가 수식하고 '그가'(주어)라는 서술 대상이 있으므로 '걸음'은 동사(명사절)\n• '나는 [그의 빠른 걸음]을 보았다' → '빠른'(관형어)이 체언을 수식하고 행동의 서술성이 없으므로 '걸음'은 명사(파생 명사)",
+                  isStarred: true
+                },
+                {
+                  title: "2. 품사의 통용: 수관형사 vs 수사 / 동사 vs 형용사",
+                  coreSummary: "• 수관형사 vs 수사: 체언 수식 + 조사 결합 불가 → 수관형사('다섯 사람') / 조사 결합 가능 + 주어·목적어 역할 → 수사('다섯이 왔다')\n• 동사 vs 형용사: 현재 시제 선어말어미 '-는-/-ㄴ-' 결합 가능 → 동사 / 결합 불가 → 형용사",
+                  whyExplanation: "같은 단어라도 문장 속에서 어떤 역할을 하느냐에 따라 품사가 달라집니다(품사의 통용). 관형사는 오직 뒤에 오는 체언(명사)을 꾸며주는 역할만 하므로 격조사(이/가, 을/를)가 붙을 수 없습니다. 또한 동사는 '움직임이나 작용의 진행'을 나타내므로 현재 시제 어미('-는-/-ㄴ-')와 자연스럽게 결합하지만, 형용사는 '성질이나 상태'를 나타내므로 현재 시제 어미를 붙이면 비문이 됩니다.",
+                  stepByStepExample: "① '크다'의 품사 통용 판별 적용:\n• '키가 무척 크다' → 현재 시제 '-ㄴ-'을 붙여 '키가 큰다'라고 하면 어색함 → 상태를 나타내는 '형용사'\n• '아이가 쑥쑥 큰다' → 현재 시제 '-ㄴ-'이 자연스럽게 결합함 → 성장이 진행되는 움직임이므로 '동사'",
+                  isStarred: true
+                },
+                {
+                  title: "3. 관형절: 관계 관형절 vs 동격 관형절 구분 원리",
+                  coreSummary: "• 관계 관형절: 꾸밈받는 체언이 원래 관형절 속의 한 문장 성분이었다가 중복되어 생략된 경우 (내가 어제 읽은 책)\n• 동격 관형절: 관형절 속에 생략된 성분이 전혀 없고, 절의 내용 자체가 뒷명사와 같은 경우 (그가 합격했다는 소식)",
+                  whyExplanation: "관형절을 만드는 방법은 두 가지입니다. 첫째, 두 문장에 공통된 명사가 있을 때 중복을 피하려고 안긴문장 속 명사를 생략하고 뒤로 빼내 수식하게 만드는 방식이 '관계 관형절'입니다. 둘째, '소식, 사실, 생각, 주장' 같은 추상 명사의 구체적 내용을 설명해 주기 위해 완전한 문장을 그대로 앞에 붙이는 방식이 '동격 관형절'입니다.",
+                  stepByStepExample: "① 꾸밈받는 명사를 관형절 안으로 되돌려 넣어보기:\n• '내가 [어제 읽은] 책' → '책'을 절 안에 넣으면 '내가 어제 (책을) 읽었다'로 목적어 자리에 정확히 들어감 → 관계 관형절\n• '그가 [시험에 합격했다는] 소식' → '소식'을 절 안에 넣을 빈자리가 전혀 없고, '그가 합격했다 = 소식'임 → 동격 관형절",
+                  isStarred: false
+                }
+              ],
+              blankItems: [
+                "'다섯 사람이 왔다'의 '다섯'은 체언을 수식하고 조사가 붙지 않으므로 {{수관형사}}이다.",
+                "'그의 빠른 걸음'에서 '걸음'은 관형어 '빠른'의 수식을 받는 {{파생 명사}}이고, '그가 빠르게 걸음'은 {{명사절}}이다.",
+                "꾸밈을 받는 체언이 관형절 속 생략된 문장 성분과 일치하는 관형절을 {{관계 관형절}}이라고 한다.",
+                "'그가 시험에 합격했다는 소식'처럼 관형절 속에 생략된 성분이 없는 경우를 {{동격 관형절}}이라고 한다."
+              ],
+              oxQuiz: [
+                {
+                  question: "'그의 빠른 걸음'과 '그가 빠르게 걸음'의 '걸음'은 모두 명사절을 이끄는 명사형 어미가 결합한 것이다.",
+                  answer: "X",
+                  trapExplanation: "함정! 앞의 '빠른 걸음'은 관형어 수식을 받는 파생 명사이고, 뒤의 '빠르게 걸음'만 부사어 수식을 받는 명사절입니다."
+                },
+                {
+                  question: "'다섯이 모였다'의 '다섯'은 조사가 결합해 주어 역할을 하므로 수사에 해당한다.",
+                  answer: "O",
+                  trapExplanation: "정답! 조사와 결합하여 주어·목적어 자리에 쓰이면 수사, 체언 앞에서 수식하면 수관형사입니다."
+                },
+                {
+                  question: "'내가 어제 산 빵이 맛있다'에서 관형절 '내가 어제 산'은 생략된 문장 성분이 없는 동격 관형절이다.",
+                  answer: "X",
+                  trapExplanation: "함정! '내가 어제 (빵을) 샀다'에서 목적어 '빵을'이 생략된 관계 관형절입니다."
+                },
+                {
+                  question: "형용사는 원칙적으로 현재 시제 선어말어미 '-는-/-ㄴ-'과 결합할 수 없다.",
+                  answer: "O",
+                  trapExplanation: "정답! '예쁜다(X)'처럼 형용사는 현재 시제 선어말어미 '-는-/-ㄴ-'과 결합하지 못합니다."
+                },
+                {
+                  question: "명사절은 문장 안에서 주어, 목적어뿐만 아니라 부사격 조사와 결합해 부사어로도 쓰일 수 있다.",
+                  answer: "O",
+                  trapExplanation: "정답! 예: '지금은 집에 가기에 이르다'처럼 부사격 조사 '에'와 결합해 부사어로 쓰입니다."
+                }
+              ],
+              audioScript: "품사와 문장의 짜임에서 원리만 알면 절대 안 틀리는 두 가지 짚어줄게! 첫째, 명사형 어미는 품사를 바꾸지 않기 때문에 서술성이 살아 있어. 그래서 부사어 '빠르게'의 수식을 받는 '빠르게 걸음'은 명사절이야. 반면 '빠른 걸음'은 관형어 '빠른'이 꾸며주니까 이미 품사가 명사로 바뀐 파생 명사지! 둘째, 관형절은 꾸밈받는 뒤의 명사를 관형절 빈자리에 집어넣어 봐! 쏙 들어가면 관계 관형절, 들어갈 자리가 없고 '소식이나 사실'의 내용을 설명하면 동격 관형절이야!"
+            }
+          },
+          {
+            key: "kor_medieval",
+            btnTitle: "3️⃣ 중세 국어",
+            btnSub: "주격·객체높임",
+            rawText: `[국어 문법 핵심 프린트 - 중세 국어의 문법적 특징 (총 2쪽 세트)]
+★1. 주격 조사 '이 / ㅣ / Ø(영형태)'의 실현 조건:
+- 앞 체언 끝소리가 자음일 때: '이' 결합 (예: 말ᄊᆞᆷ + 이 → 말ᄊᆞ미, 이어적기 적용)
+- 앞 체언 끝소리가 '이'나 반모음 'ㅣ̆' 이외의 모음일 때: 'ㅣ' 결합 (예: 부텨 + ㅣ → 부톄)
+- 앞 체언 끝소리가 모음 '이'나 반모음 'ㅣ̆'일 때: 형태가 나타나지 않는 영형태(Ø) 실현 (예: ᄃᆞ리 + Ø → ᄃᆞ리)
+★2. 관형격 조사 'ᄋᆡ/의' vs 'ㅅ':
+- 유정 명사(사람·동물) + 평칭: 'ᄋᆡ'(양성), '의'(음성) (예: ᄂᆞᆷ + ᄋᆡ → ᄂᆞᄆᆡ)
+- 유정 명사 + 높임 대상 또는 무정 명사(사물·추상): 'ㅅ' 결합 (예: 부텨 + ㅅ → 부텻, 나랏 말ᄊᆞ미)
+★3. 객체 높임 선어말어미 '-ᄉᆞᆸ-/-ᄌᆞᆸ-/-ᅀᆞᆸ-':
+- 현대 국어와 달리 중세 국어에는 객체(목적어·부사어)를 높이는 선어말어미가 존재함.`,
+            data: {
+              subjectTitle: "고등 국어 · 중세 국어 문법 원리 족보",
+              teacherPicks: [
+                "★ 주격 조사 3종(자음 뒤 '이' / 'ㅣ' 외 모음 뒤 'ㅣ' / 'ㅣ' 모음 뒤 영형태 Ø) — 중세 국어에 '가'는 없음!",
+                "★ 관형격 조사 'ᄋᆡ/의'(유정+평칭) vs 'ㅅ'(유정+높임 또는 무정 명사) 구분 필수!"
+              ],
+              summaryCards: [
+                {
+                  title: "1. 주격 조사 '이 / ㅣ / Ø(영형태)' 선택 원리",
+                  coreSummary: "• 자음 뒤 → '이' (말ᄊᆞᆷ + 이 → 말ᄊᆞ미)\n• '이/반모음 ㅣ̆' 이외의 모음 뒤 → 'ㅣ' (부텨 + ㅣ → 부톄)\n• '이/반모음 ㅣ̆' 뒤 → 영형태 Ø (ᄃᆞ리 + Ø → ᄃᆞ리)",
+                  whyExplanation: "15세기 중세 국어에는 현대 국어의 주격 조사 '가'가 존재하지 않았습니다. 대신 오직 '이' 계열 하나만으로 앞말의 끝소리 환경에 따라 형태를 조절했습니다. 앞말이 자음으로 끝나면 초성 'ㅇ' 자리에 앞 받침을 내려 적을 수 있으므로 '이'를 그대로 쓰고, 앞말이 일반 모음으로 끝나면 이중 모음으로 합치기 위해 'ㅣ'만 결합하며, 이미 '이' 소리로 끝나는 말 뒤에서는 같은 소리가 겹치는 것을 피하기 위해 형태를 드러내지 않는 영형태(Ø)로 실현되었습니다.",
+                  stepByStepExample: "① 중세 주격 조사 형태 분석 3단계:\n• '말ᄊᆞᆷ + 이 → 말ᄊᆞ미': 앞말 끝소리가 자음 'ㅁ'이므로 주격 조사 '이' 결합 + 이어적기(연철) 적용\n• '부텨 + ㅣ → 부톄': '텨'의 모음 'ㅕ'는 'ㅣ'가 아닌 모음이므로 주격 조사 'ㅣ'가 결합해 'ㅖ'로 축약됨\n• 'ᄃᆞ리(다리) + Ø → ᄃᆞ리': 이미 모음 'ㅣ'로 끝나므로 형태가 나타나지 않음",
+                  isStarred: true
+                },
+                {
+                  title: "2. 관형격 조사 'ᄋᆡ/의' vs 'ㅅ' 구분 원리",
+                  coreSummary: "• 유정 명사(평칭) + 모음조화 → 'ᄋᆡ'(양성 모음 뒤), '의'(음성 모음 뒤)\n• 유정 명사(높임 대상) 또는 무정 명사(사물·추상 개념) → 'ㅅ' (부텻 말씀, 나랏 말ᄊᆞ미)",
+                  whyExplanation: "현대 국어에서는 앞말의 의미와 관계없이 관형격 조사 '의' 하나만 쓰지만, 중세 국어는 앞 체언의 '의미 자질(유정성·높임 여부)'과 '모음조화'에 따라 조사를 엄격히 구분했습니다. 감정과 의지가 있는 사람·동물(유정 명사) 중 높임 대상이 아닌 경우에는 모음조화에 따라 'ᄋᆡ/의'를 쓰고, 반대로 감정이 없는 사물·추상 명사(무정 명사)이거나 유정 명사라도 아주 높여야 할 대상(부처, 임금 등) 뒤에는 'ㅅ'을 결합했습니다.",
+                  stepByStepExample: "① '나랏 말ᄊᆞ미'와 '부텻 말ᄊᆞᆷ'의 'ㅅ' 분석:\n• '나랏 말ᄊᆞ미' = 나라(무정 명사) + ㅅ(관형격 조사) + 말ᄊᆞᆷ + 이(주격 조사) → '나라의 말씀이'\n• '부텻 말ᄊᆞᆷ' = 부텨(유정 명사 + 높임 대상) + ㅅ(관형격 조사) + 말ᄊᆞᆷ → '부처님의 말씀'",
+                  isStarred: true
+                },
+                {
+                  title: "3. 객체 높임 선어말어미 '-ᄉᆞᆸ-/-ᄌᆞᆸ-/-ᅀᆞᆸ-'과 이어적기",
+                  coreSummary: "• 객체 높임 선어말어미: 문장의 목적어나 부사어가 지시하는 대상을 높일 때 동사 어간 뒤에 결합\n• 형태 교체 조건: 어간 끝소리 'ㄱ,ㅂ,ㅅ,ㅎ' 뒤 '-ᄉᆞᆸ-' / 'ㄷ,ㅌ,ㅈ,ㅊ' 뒤 '-ᄌᆞᆸ-' / 울림소리 뒤 '-ᅀᆞᆸ-'",
+                  whyExplanation: "현대 국어는 객체(목적어·부사어)를 높일 때 '보다→뵙다, 주다→드리다'처럼 특수 어휘를 사용하지만, 중세 국어는 일반 동사 어간 뒤에 객체 높임 선어말어미('-ᄉᆞᆸ-/-ᄌᆞᆸ-/-ᅀᆞᆸ-')를 직접 끼워 넣어 문법적으로 높임을 표현했습니다. 또한 뒤에 모음으로 시작하는 어미가 오면 받침 'ㅂ'이 'ㅸ(순경음 비읍)'으로 바뀌어 '-ᄉᆞᇦ-/-ᄌᆞᇦ-/-ᅀᆞᇦ-' 형태로 나타납니다.",
+                  stepByStepExample: "① '듣 + ᄌᆞᆸ + 고 → 듣ᄌᆞᆸ고' 분석:\n• 동사 어간 '듣-'의 끝소리가 'ㄷ'이므로 '-ᄌᆞᆸ-'이 선택되어 목적어(말씀 등)를 높임\n• 뒤에 모음 어미 '-아'가 오면 'ㅸ'이 반모음 'ㅗ/ㅜ'로 바뀌어 '듣ᄌᆞ와' 형태로 표기됨",
+                  isStarred: false
+                }
+              ],
+              blankItems: [
+                "중세 국어에는 현대 국어의 주격 조사 '가'가 없었으며, 앞말이 자음으로 끝나면 주격 조사 {{이}}가 결합했다.",
+                "'부텨 + ㅣ → 부톄'처럼 앞 체언이 '이' 이외의 모음으로 끝나면 주격 조사 {{ㅣ}}가 결합한다.",
+                "관형격 조사 'ㅅ'은 무정 명사 뒤나 유정 명사 중 {{높임}}의 대상 뒤에 결합했다.",
+                "현대 국어와 달리 중세 국어에는 문장의 목적어나 부사어를 높이는 {{객체 높임}} 선어말어미 '-ᄉᆞᆸ-/-ᄌᆞᆸ-/-ᅀᆞᆸ-'이 있었다."
+              ],
+              oxQuiz: [
+                {
+                  question: "중세 국어 '나랏 말ᄊᆞ미'에서 '나랏'의 'ㅅ'은 주격 조사로 쓰인 것이다.",
+                  answer: "X",
+                  trapExplanation: "함정! '나라'는 무정 명사이므로 'ㅅ'은 주격 조사가 아니라 관형격 조사('나라의')입니다."
+                },
+                {
+                  question: "중세 국어에는 주격 조사 '가'가 존재하지 않았으며, 앞말이 '이' 모음으로 끝나면 주격 조사가 생략(영형태)되었다.",
+                  answer: "O",
+                  trapExplanation: "정답! 주격 조사 '가'는 근대 국어 시기에 등장하며, 중세 국어에서는 '이 / ㅣ / Ø'로 실현되었습니다."
+                },
+                {
+                  question: "'부텻 말ᄊᆞᆷ'에서 '부텨'는 유정 명사이지만 높임의 대상이므로 관형격 조사 'ㅅ'이 결합했다.",
+                  answer: "O",
+                  trapExplanation: "정답! 유정 명사라도 높임의 대상(부처, 임금 등)이면 'ᄋᆡ/의'가 아니라 'ㅅ'이 결합합니다."
+                },
+                {
+                  question: "중세 국어의 '-ᄉᆞᆸ-/-ᄌᆞᆸ-/-ᅀᆞᆸ-'은 문장의 주체를 높이기 위해 쓰인 주체 높임 선어말어미이다.",
+                  answer: "X",
+                  trapExplanation: "함정! 주체 높임 선어말어미는 '-시-/-샤-'이고, '-ᄉᆞᆸ-/-ᄌᆞᆸ-/-ᅀᆞᆸ-'은 목적어·부사어를 높이는 객체 높임 선어말어미입니다."
+                },
+                {
+                  question: "'말ᄊᆞᆷ + 이'가 '말ᄊᆞ미'로 표기된 것은 소리 나는 대로 적는 이어적기(연철)가 적용된 결과이다.",
+                  answer: "O",
+                  trapExplanation: "정답! 15세기 중세 국어는 받침을 뒤 음절 초성으로 내려 적는 이어적기(연철)가 일반적이었습니다."
+                }
+              ],
+              audioScript: "중세 국어는 왜 그런 형태가 쓰였는지 원리만 이해하면 바로 풀려! 첫째, 15세기엔 주격 조사 '가'가 없었기 때문에 '이' 계열 하나로 해결했어. 자음 뒤엔 이어적기 하려고 '이', 일반 모음 뒤엔 합치려고 모음 'ㅣ', 이미 '이'로 끝나면 중복을 피해 영형태를 썼지! 둘째, 관형격 조사 시옷은 감정이 없는 사물이나 아주 높여야 할 대상 뒤에 붙어. 셋째, 선어말어미 삽·잡·압은 목적어나 부사어를 높이는 객체 높임이라는 점 꼭 기억하자!"
+            }
+          }
+        ]
+      },
+      english: {
+        name: "영어",
+        icon: "📘",
+        placeholder: "학교 영어 부교재·모의고사 변형 지문이나 필기 프린트를 붙여넣거나, 위 샘플 버튼을 눌러보세요!",
+        samples: [
+          {
+            key: "eng_grammar",
+            btnTitle: "1️⃣ 관계사·분사",
+            btnSub: "what vs that · 수일치",
+            rawText: `[고등 영어 내신 프린트 - 핵심 어법 & 지문 분석]
+★1. 관계대명사 what vs 접속사/관계대명사 that 구분:
+- what = 선행사 포함 관계대명사(the thing which). 앞에 선행사 명사가 없고, 뒷절에 주어나 목적어가 빠진 불완전한 절이 옴! 예) What matters most is how we respond.
+- 접속사 that = 앞에 선행사가 없더라도 뒷절이 주어+동사(+목적어)를 모두 갖춘 완전한 절이 옴!
+★2. 분사구문 능동(V-ing) vs 수동(p.p.) 판별:
+- 주절의 주어와 분사의 관계를 따짐. 주어가 동작을 직접 하면 V-ing, 동작을 당하거나 뒤에 목적어가 없으면 p.p. 사용! 예) Written in simple English, the book is easy to read.
+★3. 수일치 함정 (부분표현 + of + 명사):
+- Most of / Some of / Half of / The rest of + 명사 뒤에 오는 동사는 'of 뒤의 명사'에 수일치! (단, One of the 복수명사 + 단수동사 주의!)`,
+            data: {
+              subjectTitle: "고등 영어 · 내신 핵심 어법 원리 족보",
+              teacherPicks: [
+                "★ what vs 접속사 that: 선행사 유무만 보지 말고 반드시 '뒷절이 불완전(what) vs 완전(that)'인지 확인!",
+                "★ 분사구문에서 접속사를 지우지 않고 남겨둔 경우(When written, While walking)도 주절 주어와의 능동/수동 관계로 판별!"
+              ],
+              summaryCards: [
+                {
+                  title: "1. 관계대명사 what vs 접속사 that 구분 원리",
+                  coreSummary: "• what: 앞에 선행사 X + 뒷절 불완전 (주어·목적어·보어 중 명사 성분 1개 누락)\n• 접속사 that: 앞에 선행사 X + 뒷절 완전 (필수 문장 성분 모두 갖춤)\n• 관계대명사 that: 앞에 선행사 O + 뒷절 불완전",
+                  whyExplanation: "관계대명사 what은 '선행사(the thing) + 관계대명사(which)'가 하나로 합쳐진 단어입니다. 즉, what 자체가 이미 선행사 명사를 포함하고 있으므로 앞에 또 선행사가 올 수 없으며, 동시에 관계대명사 역할을 겸하기 때문에 뒷절에서는 주어나 목적어 자리 하나가 반드시 비어 있어야 합니다. 반면 접속사 that은 절 전체를 명사절로 묶어주는 기능만 하므로 뒷절의 문장 성분이 하나도 빠짐없이 완전해야 합니다.",
+                  stepByStepExample: "① '[What / That] she said surprised everyone.' 판별 과정:\n• 1단계: 빈칸 앞에 꾸밈을 받을 선행사 명사가 없음 (what 또는 접속사 that 후보)\n• 2단계: 뒷절 'she(주어) + said(타동사)'에서 '무엇을 말했는지(목적어)'가 빠져 있어 불완전한 절임\n• 결론: 선행사 없이 불완전한 절을 이끄는 'What'이 정답!",
+                  isStarred: true
+                },
+                {
+                  title: "2. 분사구문 능동(V-ing) vs 수동(p.p.) 판별 원리",
+                  coreSummary: "• 판별 기준: 콤마(,) 뒤 '주절의 주어'를 분사 앞에 놓고 의미 관계를 확인\n• 주절 주어가 동작을 직접 수행하면 현재분사(V-ing), 동작을 당하는 대상이면 과거분사(p.p.)",
+                  whyExplanation: "분사구문은 원래 '접속사 + 주어 + 동사'였던 부사절에서 주절의 주어와 같아서 주어를 생략한 형태입니다. 따라서 생략된 분사의 의미상 주어는 항상 콤마(,) 건너편에 있는 주절의 주어와 일치합니다. 주절의 주어를 분사 바로 앞에 데려다 놓고 능동 관계인지 수동 관계인지 따져보면 정확히 판별할 수 있습니다.",
+                  stepByStepExample: "① '[Written / Writing] in simple English, the book is easy to read.' 분석:\n• 1단계: 주절의 주어인 'the book(그 책)'을 분사 앞의 의미상 주어로 설정\n• 2단계: 책은 스스로 글을 쓰는(Writing) 주체가 아니라 사람에 의해 쓰여지는(Written) 대상이며, 뒤에 목적어 명사도 없음\n• 결론: 수동 관계를 나타내는 과거분사 'Written'이 정답!",
+                  isStarred: true
+                },
+                {
+                  title: "3. 부분표현 수일치 vs One of the 복수명사",
+                  coreSummary: "• Most / Some / Half / Percent of + 명사 → 'of 뒤의 명사'에 수일치\n• One of the + 복수명사 → 무조건 핵심 주어인 'One'에 맞춰 단수동사 사용",
+                  whyExplanation: "'대부분(Most)'이나 '절반(Half)' 같은 부분 표현은 단독으로는 단수인지 복수인지 결정할 수 없기 때문에 'of 뒤에 나오는 명사'가 단수명사면 단수동사, 복수명사면 복수동사를 씁니다. 반면 'One of the + 복수명사'는 '여러 개 중 딱 하나(One)'를 가리키는 구조이므로 문장의 진짜 주어는 뒤의 복수명사가 아니라 맨 앞의 'One'이 됩니다.",
+                  stepByStepExample: "① 두 문장의 동사 수일치 비교:\n• 'Most of the information [is / are] true.' → of 뒤의 명사 'information'이 셀 수 없는 단수명사이므로 'is'\n• 'One of the students [is / are] absent.' → 진짜 주어가 'students'가 아니라 'One'이므로 단수동사 'is'",
+                  isStarred: false
+                }
+              ],
+              blankItems: [
+                "선행사를 포함하고 뒷절에 주어나 목적어가 빠진 불완전한 절을 이끄는 관계대명사는 {{what}}이다.",
+                "앞에 선행사가 없더라도 뒷절의 문장 성분이 모두 갖춰진 완전한 절을 이끄는 것은 접속사 {{that}}이다.",
+                "분사구문의 능동(V-ing)과 수동(p.p.) 여부는 콤마 뒤 {{주절의 주어}}와의 의미 관계를 기준으로 판별한다.",
+                "'One of the + 복수명사'가 주어일 때 동사는 'One'에 수일치시켜 반드시 {{단수동사}}를 써야 한다."
+              ],
+              oxQuiz: [
+                {
+                  question: "앞에 선행사 명사가 없으면 뒤 문장이 완전하더라도 관계대명사 what을 써야 한다.",
+                  answer: "X",
+                  trapExplanation: "함정! 앞에 선행사가 없고 뒤 문장이 완전할 때는 what이 아니라 접속사 that을 써야 합니다."
+                },
+                {
+                  question: "분사구문 'Written in Korean, the novel became popular.'에서 주절 주어 'the novel'이 쓰여지는 대상이므로 과거분사 Written이 적절하다.",
+                  answer: "O",
+                  trapExplanation: "정답! 소설(the novel)은 스스로 쓰는 것이 아니라 쓰여지는 수동 관계이므로 p.p.(Written)가 맞습니다."
+                },
+                {
+                  question: "'One of the students in my class are absent today.'는 students가 복수이므로 어법상 옳은 문장이다.",
+                  answer: "X",
+                  trapExplanation: "내신 최빈출 함정! 'One of the + 복수명사'의 핵심 주어는 One이므로 are가 아니라 단수동사 is가 와야 합니다."
+                },
+                {
+                  question: "'Most of the information on the website is reliable.'에서 information이 불가산 단수명사이므로 단수동사 is가 옳다.",
+                  answer: "O",
+                  trapExplanation: "정답! 'Most of + 명사'는 of 뒤의 명사(information)에 수일치하므로 단수동사 is가 맞습니다."
+                },
+                {
+                  question: "관계대명사 what절이 문장의 주어 자리에 올 때는 원칙적으로 복수동사로 받는다.",
+                  answer: "X",
+                  trapExplanation: "함정! what절이 주어일 때는 하나의 덩어리(단수)로 취급하여 원칙적으로 단수동사를 씁니다."
+                }
+              ],
+              audioScript: "영어 내신 어법은 문장 구조 원리만 따지면 절대 속지 않아! 첫째, what은 이미 선행사를 안에 품고 있어서 앞엔 선행사가 없고, 뒷절엔 주어·목적어 자리 하나가 비어 있어야 해. 뒷절이 완전하면 접속사 that이야! 둘째, 분사구문에서 생략된 주어는 항상 콤마 뒤 주절 주어와 같아. 그러니까 주절 주어를 앞으로 가져와 능동인지 수동인지 확인해! 셋째, One of the 복수명사는 진짜 주어가 One이니까 반드시 단수동사를 써야 해!"
+            }
+          },
+          {
+            key: "eng_reading",
+            btnTitle: "2️⃣ 본문·주제 추론",
+            btnSub: "역접 연결어·지칭",
+            rawText: `[고등 영어 내신 본문 핵심 - 확증 편향(Confirmation Bias)]
+★본문 요약: People tend to seek out information that confirms their existing beliefs while ignoring evidence that contradicts them. This psychological tendency, known as confirmation bias, prevents us from making objective decisions. However, actively welcoming opposing viewpoints allows us to overcome blind spots and reach better conclusions.
+★출제 포인트:
+1. 글의 요지: 기존 신념만 확인하려는 확증 편향을 극복하려면 반대 관점을 적극적으로 수용해야 한다.
+2. 어휘 반의어 함정: confirms(입증하다) ↔ contradicts(반박하다/모순되다), objective(객관적인) ↔ subjective(주관적인), blind spots(사각지대/맹점).`,
+            data: {
+              subjectTitle: "고등 영어 · 지문 논리 & 어휘 반의어 족보",
+              teacherPicks: [
+                "★ 역접 연결어 'However' 뒤 문장(반대 관점을 적극적으로 환영하는 것이 맹점을 극복하게 해준다)이 빈칸·주제 출제 1순위!",
+                "★ 어휘 변형 주의: confirms(뒷받침하다)와 contradicts(반박하다)의 위치를 서로 바꾸는 어휘 함정 출제!"
+              ],
+              summaryCards: [
+                {
+                  title: "1. 지문 논리 구조 (문제 제기 → 역접 전환 → 해결책)",
+                  coreSummary: "• 문제점: 기존 신념을 입증(confirm)하는 정보만 찾고 모순(contradict)되는 증거는 무시함 = 확증 편향(confirmation bias)\n• 해결책(However): 반대 관점(opposing viewpoints)을 적극 수용 → 맹점(blind spots) 극복 및 더 나은 결론 도달",
+                  whyExplanation: "영어 독해 지문에서 필자가 말하고자 하는 핵심 요지는 대개 문제점을 먼저 제시한 뒤 역접 연결어(However, Yet, Instead) 바로 뒤에 등장합니다. 이 글에서도 앞 두 문장은 인간이 왜 편향된 결정을 내리는지 원인을 진단하고, 'However' 이후 문장에서 그 한계를 극복하는 구체적 행동(반대 관점 수용)을 핵심 주장이자 빈칸 추론 포인트로 제시하고 있습니다.",
+                  stepByStepExample: "① 내신 어휘 변형 함정 짝꿍 확인:\n• existing beliefs(기존 신념) + confirms(뒷받침·입증하다) ↔ evidence(반대 증거) + contradicts(반박하다·모순되다)\n• 확증 편향의 결과: prevents objective decisions(객관적 결정을 방해함) → 시험 선지에서 'promotes(촉진한다)'나 'subjective(주관적인)'로 바꿔 오답 유도",
+                  isStarred: true
+                },
+                {
+                  title: "2. 구문 분석 & 서술형 핵심 표현",
+                  coreSummary: "• prevent + 목적어 + from V-ing: 목적어가 ~하는 것을 막다(방해하다)\n• allow + 목적어 + to V: 목적어가 ~할 수 있게 하다",
+                  whyExplanation: "내신 서술형에서는 지문의 핵심 주제가 담긴 문장의 동사 구조를 활용해 영작을 요구합니다. 'prevent A from -ing(방해하다)'와 'allow A to V(가능하게 하다)'는 서로 대조적인 인과관계를 나타내는 필수 구문이므로 목적격 보어 형태(from -ing vs to부정사)를 정확히 구분해야 합니다.",
+                  stepByStepExample: "① 핵심 문장 구조 해부:\n• 'welcoming opposing viewpoints(주어: 동명사구) + allows(단수동사) + us(목적어) + to overcome(목적격 보어)' → 동명사 주어는 단수 취급하므로 allows에 -s가 붙는 점에 주의!",
+                  isStarred: true
+                }
+              ],
+              blankItems: [
+                "기존 신념을 뒷받침하는 정보만 찾고 반대 증거는 무시하는 심리적 경향을 {{confirmation bias}}(확증 편향)이라고 한다.",
+                "확증 편향은 우리가 {{objective}}(객관적인) 결정을 내리는 것을 방해한다.",
+                "확증 편향의 맹점을 극복하기 위해서는 {{opposing viewpoints}}(반대 관점)를 적극적으로 수용해야 한다."
+              ],
+              oxQuiz: [
+                {
+                  question: "글쓴이에 따르면 확증 편향은 사람들이 더 객관적인 결정을 내리도록 도와주는 심리적 장치이다.",
+                  answer: "X",
+                  trapExplanation: "함정! 본문에서는 확증 편향이 객관적인 결정을 내리는 것을 방해(prevents)한다고 설명합니다."
+                },
+                {
+                  question: "사람들은 자신의 기존 신념과 모순되는(contradicts) 증거는 무시하는 경향이 있다.",
+                  answer: "O",
+                  trapExplanation: "정답! 기존 믿음을 입증하는 정보는 찾고 모순되는 증거는 무시한다고 명시되어 있습니다."
+                },
+                {
+                  question: "자신의 맹점(blind spots)을 극복하기 위해서는 반대 관점을 적극적으로 받아들여야 한다.",
+                  answer: "O",
+                  trapExplanation: "정답! However 뒤 핵심 주제 문장의 내용과 일치합니다."
+                }
+              ],
+              audioScript: "이 영어 지문은 인과관계 흐름만 잡으면 주제랑 어휘 문제를 한 번에 풀 수 있어! 사람들이 기존 믿음을 뒷받침하는 정보는 찾고, 어긋나는 증거는 무시하기 때문에 객관적인 판단을 못 하게 돼. 이 문제점을 해결하는 핵심은 However 뒤에 나오는 '반대 관점의 적극적 수용'이야. 입증하다 confirm과 반박하다 contradict의 위치 바꾸는 어휘 함정만 조심하자!"
+            }
+          }
+        ]
+      },
+      science: {
+        name: "통합과학",
+        icon: "🧪",
+        placeholder: "통합과학 수업 프린트나 실험 탐구 내용을 붙여넣거나, 위 샘플 버튼을 눌러보세요!",
+        samples: [
+          {
+            key: "sci_chem",
+            btnTitle: "1️⃣ 화학 결합",
+            btnSub: "이온결합·공유결합",
+            rawText: `[통합과학 핵심 프린트 - 화학 결합과 물질의 성질]
+★1. 이온 결합 vs 공유 결합 형성 원리:
+- 이온 결합: 금속 원소(전자 잃음 → 양이온)와 비금속 원소(전자 얻음 → 음이온) 사이의 정전기적 인력으로 형성. 예) 염화 나트륨(NaCl), 산화 마그네슘(MgO).
+- 공유 결합: 비금속 원소와 비금속 원소가 전자쌍을 공유하여 형성. 예) 물(H2O), 이산화 탄소(CO2), 메테인(CH4).
+★2. 전기 전도성 비교 (시험 출제 1순위 함정!):
+- 이온 결합 물질: '고체' 상태에서는 이온이 강하게 결합해 이동할 수 없으므로 전기 전도성이 없음! 단, '액체(용융액)'나 '수용액' 상태에서는 이온이 자유롭게 이동하므로 전기 전도성이 있음!
+- 공유 결합 물질: 대부분 고체, 액체, 수용액 상태 모두에서 전하를 띤 입자가 없어 전기 전도성이 없음! (예외: 염화 수소 HCl 수용액, 흑연)`,
+            data: {
+              subjectTitle: "고1 통합과학 · 화학 결합과 전기 전도성 원리 족보",
+              teacherPicks: [
+                "★ 이온 결합 물질은 '고체 상태에서 전기 전도성 X, 액체·수용액 상태에서 O' — 상태 조건 함정 100% 출제!",
+                "★ 금속 + 비금속 = 이온 결합 / 비금속 + 비금속 = 공유 결합 (수소 H는 비금속 원소임에 주의!)"
+              ],
+              summaryCards: [
+                {
+                  title: "1. 이온 결합 vs 공유 결합이 형성되는 근본 원리",
+                  coreSummary: "• 이온 결합: 금속 양이온 + 비금속 음이온의 정전기적 인력 (NaCl, CaCl2, MgO)\n• 공유 결합: 비금속 원소끼리 전자쌍을 내놓아 공유 (H2O, CO2, CH4, NH3)\n• 주의: 수소(H)는 1족이지만 '비금속'이므로 HCl, H2O는 공유 결합!",
+                  whyExplanation: "모든 원자는 가장 바깥 전자껍질에 전자 8개(수소는 2개)를 채워 비활성 기체와 같은 안정한 전자 배치를 이루려는 성질(옥텟 규칙)이 있습니다. 전자를 잃기 쉬운 금속 원소는 전자를 버려 양이온이 되고, 전자를 얻기 쉬운 비금속 원소는 그 전자를 받아 음이온이 된 뒤 (+)와 (-) 전하가 서로 끌어당겨 이온 결합을 만듭니다. 반면 둘 다 전자를 얻으려는 비금속 원소끼리는 어느 한쪽이 전자를 내어줄 수 없으므로, 서로의 원자가 전자를 가운데 내놓고 함께 공유함으로써 옥텟 규칙을 만족합니다.",
+                  stepByStepExample: "① 화학식만 보고 3초 만에 결합 종류 판별하기:\n• 'MgO' → 마그네슘(Mg, 금속) + 산소(O, 비금속) → 이온 결합\n• 'H2O' → 수소(H, 1족이지만 비금속!) + 산소(O, 비금속) → 공유 결합",
+                  isStarred: true
+                },
+                {
+                  title: "2. 왜 고체 소금(NaCl)은 전기가 안 통하고 물에 녹이면 통할까?",
+                  coreSummary: "• 이온 결합 물질: 고체(X) / 액체(O) / 수용액(O)\n• 공유 결합 물질(설탕, 포도당 등): 고체(X) / 액체(X) / 수용액(X)",
+                  whyExplanation: "물질에 전류가 흐르려면 두 가지 조건이 모두 충족되어야 합니다. 첫째 '전하를 띤 입자(이온이나 전자)'가 있어야 하고, 둘째 그 입자가 '자유롭게 이동할 수 있어야' 합니다. 고체 상태의 염화 나트륨(NaCl)은 양이온과 음이온이 존재하지만, 강한 정전기적 인력으로 단단히 고정되어 있어 전압을 걸어도 이동하지 못합니다. 하지만 열을 가해 액체로 녹이거나 물에 녹여 수용액으로 만들면 이온 사이의 결합이 끊어져 이온들이 자유롭게 이동할 수 있으므로 전류가 흐르게 됩니다.",
+                  stepByStepExample: "① 설탕(C12H22O11) 수용액에 전류가 흐르지 않는 이유:\n• 설탕은 물에 녹아 분자 단위로 흩어져 이동은 가능하지만, 공유 결합 물질이라 전하를 띤 '이온'을 만들지 않기 때문에 전류가 흐르지 않음!",
+                  isStarred: true
+                }
+              ],
+              blankItems: [
+                "금속 양이온과 비금속 음이온 사이의 정전기적 인력으로 형성되는 결합은 {{이온 결합}}이다.",
+                "비금속 원소들이 전자쌍을 공유하여 형성하는 결합은 {{공유 결합}}이며, 물과 이산화 탄소가 대표적이다.",
+                "염화 나트륨(NaCl)은 {{고체}} 상태에서는 이온이 이동할 수 없어 전기 전도성이 없지만, 수용액 상태에서는 전기 전도성이 있다.",
+                "설탕과 같은 대부분의 공유 결합 물질은 고체와 수용액 상태에서 모두 {{전기 전도성}}이 없다."
+              ],
+              oxQuiz: [
+                {
+                  question: "이온 결합 물질인 염화 나트륨(NaCl)은 고체 상태와 수용액 상태에서 모두 전기 전도성이 있다.",
+                  answer: "X",
+                  trapExplanation: "최빈출 함정! 염화 나트륨은 고체 상태에서는 이온이 이동할 수 없어 전기 전도성이 없습니다."
+                },
+                {
+                  question: "수소(H)는 주기율표의 1족에 속하는 금속 원소이므로 물(H2O)은 이온 결합 물질이다.",
+                  answer: "X",
+                  trapExplanation: "함정! 수소는 1족에 위치하지만 비금속 원소이므로 물(H2O)은 비금속 간 공유 결합 물질입니다."
+                },
+                {
+                  question: "공유 결합 물질인 설탕은 물에 녹아 수용액 상태가 되어도 전류가 흐르지 않는다.",
+                  answer: "O",
+                  trapExplanation: "정답! 설탕은 물에 녹아도 이온을 형성하지 않고 분자 상태로 존재하므로 전기 전도성이 없습니다."
+                },
+                {
+                  question: "이온 결합 물질이 액체 상태에서 전기 전도성을 가지는 이유는 전하를 띤 이온이 자유롭게 이동할 수 있기 때문이다.",
+                  answer: "O",
+                  trapExplanation: "정답! 액체나 수용액 상태에서는 이온들이 자유롭게 이동하여 전류를 흐르게 합니다."
+                }
+              ],
+              audioScript: "통합과학 화학 결합은 두 가지 원리만 기억하면 서술형까지 완벽해! 첫째, 전기가 흐르려면 전하를 띤 입자가 자유롭게 이동해야 해. 그래서 고체 염화 나트륨은 이온이 있지만 움직이지 못해 전기가 안 통하고, 액체나 수용액이 되어야 이온이 자유롭게 이동해서 전기가 통해! 둘째, 수소는 1족이지만 비금속 원소라서 물이나 염화 수소는 모두 공유 결합 물질이라는 거 절대 잊지 마!"
+            }
+          },
+          {
+            key: "sci_physics",
+            btnTitle: "2️⃣ 중력·운동량",
+            btnSub: "자유낙하·충격량",
+            rawText: `[통합과학 핵심 프린트 - 중력과 역학적 시스템]
+★1. 자유 낙하 운동 vs 수평으로 던진 물체의 운동 (공기 저항 무시):
+- 자유 낙하 운동: 연직 아래 방향으로 일정한 크기(mg)의 중력이 작용 → 속력이 매초 9.8m/s씩 일정하게 증가하는 등가속도 운동.
+- 수평으로 던진 물체: 수평 방향으로는 힘이 작용하지 않으므로 '등속 직선 운동', 연직 방향으로는 중력만 작용하므로 '자유 낙하 운동'을 동시에 함!
+- 핵심 결론: 같은 높이에서 동시에 자유 낙하시킨 물체 A와 수평으로 던진 물체 B는 질량과 수평 속력에 관계없이 '동시에 바닥에 도달'함!
+★2. 운동량과 충격량:
+- 운동량(p) = 질량(m) * 속도(v) / 충격량(I) = 힘(F) * 시간(t) = 운동량의 변화량.
+- 에어백·안전모의 원리: 충돌 시 운동량의 변화량(충격량)이 일정할 때, 충돌 시간을 길게 하여 물체가 받는 '평균 힘(충격력)'을 작게 줄여줌!`,
+            data: {
+              subjectTitle: "고1 통합과학 · 중력 & 운동량·충격량 원리 족보",
+              teacherPicks: [
+                "★ 같은 높이에서 자유 낙하 물체 vs 수평으로 던진 물체는 질량·수평 속력과 무관하게 '바닥 도달 시간 동일'!",
+                "★ 에어백 원리 서술형 필수 키워드: '운동량의 변화량(충격량)이 일정할 때, 충돌 시간을 길게 하여 평균 힘(충격력)을 줄인다'!"
+              ],
+              summaryCards: [
+                {
+                  title: "1. 수평으로 던진 물체가 자유 낙하 물체와 동시에 떨어지는 원리",
+                  coreSummary: "• 수평 방향: 작용하는 힘 = 0 → 속력이 일정한 등속 직선 운동\n• 연직(아래) 방향: 일정한 중력 작용 → 자유 낙하와 완전히 동일한 가속도 운동\n• 결론: 높이가 같으면 수평 속력이나 질량과 무관하게 바닥에 동시에 도달!",
+                  whyExplanation: "물체의 수평 방향 운동과 연직 방향 운동은 서로 영향을 주지 않고 독립적으로 일어납니다. 공을 수평으로 세게 던지더라도 수평 방향으로는 마찰이나 공기 저항이 없는 한 힘이 작용하지 않으므로 연직 방향의 중력 가속도에 아무런 변화를 주지 못합니다. 따라서 아래로 떨어지는 속력 변화는 가만히 놓아 자유 낙하시킨 물체와 100% 동일하므로 같은 높이에서 출발하면 반드시 같은 시각에 바닥에 닿습니다.",
+                  stepByStepExample: "① 실험 비교 문제 풀이:\n• 높이 h에서 물체 A는 자유 낙하, 물체 B는 수평 속력 10m/s, 물체 C는 수평 속력 20m/s로 동시 발사 시 → 바닥 도달 시간은 A = B = C로 모두 같고, 수평 이동 거리만 C > B > A(0) 순으로 큼!",
+                  isStarred: true
+                },
+                {
+                  title: "2. 에어백과 푹신한 매트가 충격을 줄여주는 물리적 원리",
+                  coreSummary: "• 충격량 = 힘 × 충돌 시간 = 운동량의 변화량\n• 핵심 원리: 멈출 때까지 운동량의 변화량(충격량)이 일정할 때, 충돌 시간을 길게 하여 물체가 받는 평균 힘(충격력)을 줄임",
+                  whyExplanation: "달리는 자동차가 벽에 부딪혀 정지할 때, 에어백이 있든 없든 처음 운동량에서 나중 운동량(0)까지 변하는 '운동량의 변화량', 즉 전체 충격량의 크기는 똑같습니다. 이때 충격량(힘 × 시간) 값이 고정되어 있으므로, 에어백이 부풀어 올라 사람이 멈출 때까지 걸리는 '충돌 시간'을 길게 늘려주면 반비례 관계에 의해 사람이 받는 '평균 힘(충격력)'의 크기가 작아져 부상을 막을 수 있습니다.",
+                  stepByStepExample: "① 힘-시간 그래프 해석 적용:\n• 그래프 아랫부분의 넓이 = 충격량(운동량의 변화량)\n• 같은 높이에서 달걀을 시멘트 바닥과 방석에 떨어뜨리면 두 그래프의 '넓이(충격량)'는 같지만, 방석 쪽이 가로축(충돌 시간)이 길어 세로축의 최대 힘(충격력)이 작아짐!",
+                  isStarred: true
+                }
+              ],
+              blankItems: [
+                "수평으로 던진 물체는 수평 방향으로는 힘이 작용하지 않아 {{등속 직선 운동}}을 하고, 연직 방향으로는 자유 낙하 운동을 한다.",
+                "공기 저항을 무시할 때 같은 높이에서 동시에 자유 낙하시킨 물체와 수평으로 던진 물체는 {{동시에}} 바닥에 도달한다.",
+                "물체가 받은 충격량은 물체의 {{운동량의 변화량}}과 같다.",
+                "자동차의 에어백은 충돌 시 충격량이 일정할 때 {{충돌 시간}}을 길게 하여 탑승자가 받는 평균 힘을 줄여준다."
+              ],
+              oxQuiz: [
+                {
+                  question: "같은 높이에서 수평 방향으로 더 빠르게 던진 물체일수록 바닥에 도달하는 데 걸리는 시간이 길어진다.",
+                  answer: "X",
+                  trapExplanation: "최빈출 함정! 바닥 도달 시간은 오직 '높이'에만 의존하며, 수평 속력이나 질량과 무관하게 동시에 도달합니다."
+                },
+                {
+                  question: "푹신한 매트 위에 떨어질 때 덜 다치는 이유는 시멘트 바닥에 떨어질 때보다 충격량 자체가 작아지기 때문이다.",
+                  answer: "X",
+                  trapExplanation: "서술형 핵심 함정! 멈출 때까지 '충격량(운동량의 변화량)'은 동일하며, 충돌 시간을 늘려 '평균 힘(충격력)'을 줄여주는 것입니다."
+                },
+                {
+                  question: "물체가 받는 충격량의 크기는 힘-시간 그래프 아랫부분의 넓이와 같다.",
+                  answer: "O",
+                  trapExplanation: "정답! 힘-시간 그래프의 넓이는 곧 충격량(힘×시간)이자 운동량의 변화량입니다."
+                }
+              ],
+              audioScript: "통합과학 물리 파트 서술형 핵심 원리 두 가지만 기억하자! 첫째, 수평 운동과 연직 운동은 서로 독립적이야. 그래서 같은 높이에서 옆으로 아무리 세게 던져도 자유 낙하 물체와 무조건 동시에 바닥에 떨어져. 둘째, 에어백이나 매트 원리 쓸 때 절대 충격량이 작아진다고 쓰면 안 돼! 멈출 때까지 운동량의 변화량, 즉 충격량은 일정하고 '충돌 시간을 길게 해서 평균 힘을 줄인다'가 정확한 정답이야!"
+            }
+          }
+        ]
+      },
+      social: {
+        name: "통합사회",
+        icon: "🌍",
+        placeholder: "통합사회 수업 프린트 본문을 붙여넣거나, 위 샘플 버튼을 눌러보세요!",
+        samples: [
+          {
+            key: "soc_rights",
+            btnTitle: "1️⃣ 헌법과 기본권",
+            btnSub: "자유권·사회권·청구권",
+            rawText: `[통합사회 핵심 프린트 - 인권 보장과 헌법상 기본권]
+★1. 헌법상 5대 기본권의 성격 구분 (사례 매칭 1순위!):
+- 자유권: 국가 권력의 간섭을 받지 않고 자유롭게 생활할 권리 (가장 오래된 소극적·방어적 권리). 예) 신체의 자유, 종교·양심·표현의 자유, 직업 선택의 자유.
+- 평등권: 합리적 이유 없이 차별받지 않을 권리 (모든 기본권 보장의 전제 조건).
+- 참정권: 국민이 국가의 정치 과정에 참여할 수 있는 능동적 권리. 예) 선거권, 공무담임권, 국민투표권.
+- 사회권: 국가에 인간다운 생활의 보장을 요구할 수 있는 적극적 권리 (현대 복지 국가에서 강조). 예) 교육을 받을 권리, 근로의 권리, 환경권, 사회 보장을 받을 권리.
+- 청구권: 다른 기본권이 침해되었을 때 구제를 요구할 수 있는 수단적·절차적 권리. 예) 재판청구권, 청원권, 국가배상청구권.`,
+            data: {
+              subjectTitle: "고1 통합사회 · 헌법상 5대 기본권 원리 족보",
+              teacherPicks: [
+                "★ 자유권(국가 간섭 배제 · 소극적 권리) vs 사회권(국가 지원 요구 · 적극적 권리) 성격 정반대 구분!",
+                "★ 청구권은 그 자체가 목적이 아니라 다른 기본권 구제를 위한 '수단적 권리'임을 반드시 기억!"
+              ],
+              summaryCards: [
+                {
+                  title: "1. 자유권(소극적) vs 사회권(적극적)이 정반대인 이유",
+                  coreSummary: "• 자유권: 국가 권력의 간섭·침해를 받지 않을 방어적·소극적 권리 (신체의 자유, 표현의 자유, 직업 선택의 자유)\n• 사회권: 국가에 인간다운 생활의 보장을 적극적으로 요구할 권리 (교육권, 근로권, 환경권, 사회보장수급권)",
+                  whyExplanation: "자유권은 근대 시민 혁명 당시 절대 왕정의 부당한 억압에서 벗어나기 위해 등장했으므로, 국가가 개인의 영역에 개입하지 말 것을 요구하는 '소극적·방어적' 성격을 띱니다. 반면 사회권은 자본주의 발달로 빈부 격차가 심화되면서 국가가 가만히 있으면 약자의 인간다운 삶이 무너진다는 반성에서 등장했으므로, 국가가 복지와 제도를 적극적으로 제공해 줄 것을 요구하는 '적극적' 권리입니다.",
+                  stepByStepExample: "① 사례 제시문 구분 적용:\n• '국가가 허가제 없이 자유롭게 언론·출판을 할 수 있도록 보장해야 한다' → 국가 간섭 배제 = 자유권\n• '국가가 실업 급여와 의무 교육을 통해 국민의 최소한의 인간다운 삶을 보장해야 한다' → 국가 지원 요구 = 사회권",
+                  isStarred: true
+                },
+                {
+                  title: "2. 참정권(능동적) vs 청구권(수단적) 구분 원리",
+                  coreSummary: "• 참정권: 국가의 정치적 의사 형성 과정에 직접 참여하는 능동적 권리 (선거권, 공무담임권, 국민투표권)\n• 청구권: 다른 기본권이 침해되었을 때 구제를 요청하는 수단적·절차적 권리 (재판청구권, 국가배상청구권, 청원권)",
+                  whyExplanation: "참정권은 국민이 나라의 주인(주권자)으로서 정치에 직접 참여하는 권리 자체를 목적으로 합니다. 반면 청구권은 자유권·평등권·사회권 같은 다른 기본권이 침해되었을 때 이를 구제받기 위해 국가 기관에 일정한 행위를 요구하는 '절차적 수단'이라는 점에서 성격이 구별됩니다.",
+                  stepByStepExample: "① 헷갈리는 기본권 사례 판별:\n• '공무원이 될 수 있는 권리(공무담임권)' → 국가 기관의 구성원이 되어 정치·행정에 참여하므로 '참정권'\n• '국가 기관에 문서로 의견을 제출해 피해를 구제받는 권리(청원권)' → 기본권 구제 절차이므로 '청구권'",
+                  isStarred: true
+                }
+              ],
+              blankItems: [
+                "국가 권력의 간섭을 받지 않고 자유롭게 행동할 수 있는 가장 오래된 소극적·방어적 권리는 {{자유권}}이다.",
+                "모든 기본권 보장의 전제 조건이 되며 합리적 이유 없이 차별받지 않을 권리는 {{평등권}}이다.",
+                "국민이 국가에 인간다운 생활의 보장을 적극적으로 요구할 수 있는 현대적 권리는 {{사회권}}이다.",
+                "다른 기본권이 침해되었을 때 구제를 요구할 수 있는 수단적·절차적 기본권은 {{청구권}}이다."
+              ],
+              oxQuiz: [
+                {
+                  question: "자유권은 국가에 인간다운 생활의 보장을 적극적으로 요구하는 현대 복지 국가의 핵심 권리이다.",
+                  answer: "X",
+                  trapExplanation: "함정! 국가에 인간다운 생활을 적극적으로 요구하는 권리는 자유권이 아니라 '사회권'입니다."
+                },
+                {
+                  question: "청구권은 다른 기본권이 침해되었을 때 이를 구제받기 위한 수단적·절차적 성격을 지닌다.",
+                  answer: "O",
+                  trapExplanation: "정답! 재판청구권, 청원권 등은 다른 기본권 보장을 위한 수단적 기본권입니다."
+                },
+                {
+                  question: "선거권, 공무담임권, 국민투표권은 모두 국가의 정치 과정에 참여하는 참정권에 해당한다.",
+                  answer: "O",
+                  trapExplanation: "정답! 정치적 의사 형성에 참여하는 능동적 기본권인 참정권의 대표 사례입니다."
+                }
+              ],
+              audioScript: "통합사회 기본권은 각 권리가 등장한 배경 원리만 이해하면 헷갈릴 일이 없어! 국가의 부당한 간섭을 막으려고 생긴 권리가 소극적 권리인 자유권이야. 반대로 국가가 복지나 교육을 적극적으로 챙겨달라고 요구하는 권리가 사회권이지! 그리고 다른 기본권이 침해됐을 때 구제를 요청하는 수단적 권리가 청구권이라는 점 꼭 기억하자!"
+            }
+          },
+          {
+            key: "soc_economy",
+            btnTitle: "2️⃣ 합리적 선택",
+            btnSub: "기회비용·매몰비용",
+            rawText: `[통합사회 핵심 프린트 - 시장 경제와 합리적 선택]
+★1. 합리적 선택의 기준:
+- 편익(만족감·수익)이 기회비용보다 커야 함! (순편익 = 편익 - 기회비용 > 0)
+★2. 기회비용의 정확한 계산 공식 (함정 1순위!):
+- 기회비용 = 명시적 비용(직접 지출한 화폐 비용) + 암묵적 비용(선택으로 인해 포기한 대안 중 가장 가치가 큰 것의 편익)
+- 예) 1만 원짜리 영화 티켓을 사서 2시간 영화를 봤고, 그 시간에 알바를 했다면 2만 원을 벌 수 있었을 때 → 기회비용 = 1만 원(명시적) + 2만 원(암묵적) = 총 3만 원!
+★3. 매몰 비용(Sunk Cost):
+- 이미 지출하여 회수할 수 없는 비용. 합리적 선택을 할 때는 매몰 비용을 '고려하지 말아야' 함!`,
+            data: {
+              subjectTitle: "고1 통합사회 · 기회비용 & 매몰비용 계산 원리 족보",
+              teacherPicks: [
+                "★ 기회비용 = 명시적 비용(직접 쓴 돈) + 암묵적 비용(포기한 대안 중 '최대' 가치 1개만 합산!)",
+                "★ 매몰 비용은 이미 날아간 돈이므로 합리적 의사 결정 시 '절대 고려하지 않는다'가 정답!"
+              ],
+              summaryCards: [
+                {
+                  title: "1. 기회비용 계산 시 포기한 대안 중 '최대 1개'만 더하는 원리",
+                  coreSummary: "• 기회비용 = 명시적 비용(직접 지불한 화폐 비용) + 암묵적 비용(포기한 대안 중 가장 가치가 큰 것 1개의 편익)\n• 합리적 선택 조건: 선택으로 얻는 편익 > 기회비용 (순편익 > 0)",
+                  whyExplanation: "기회비용은 어떤 선택을 함으로써 포기해야만 하는 '최선의 대안 가치'를 뜻합니다. 만약 2시간 동안 영화를 보기로 결정해서 시급 1만 원 아르바이트(2만 원)와 시급 1만 5천 원 과외(3만 원)를 동시에 포기했다 하더라도, 현실적으로 2시간 동안 두 가지 일을 동시에 할 수는 없었습니다. 즉 영화를 보지 않았더라면 선택했을 가장 가치 있는 대안은 '과외 3만 원' 하나뿐이므로, 포기한 대안들을 모두 더하지 않고 가장 큰 가치 1개만 암묵적 비용으로 계산합니다.",
+                  stepByStepExample: "① 실전 계산 문제 단계별 풀이:\n• 상황: 1만 원짜리 영화를 보는 대신 포기할 수 있는 대안이 A(아르바이트 2만 원)와 B(과외 3만 원)인 경우\n• 명시적 비용 = 1만 원(티켓값) / 암묵적 비용 = 3만 원(A와 B 중 더 큰 가치 1개)\n• 영화 관람의 총 기회비용 = 1만 원 + 3만 원 = 4만 원!",
+                  isStarred: true
+                },
+                {
+                  title: "2. 매몰 비용을 의사 결정에서 제외해야 하는 원리",
+                  coreSummary: "• 매몰 비용: 이미 지출되어 어떤 선택을 하더라도 되돌리거나 회수할 수 없는 비용\n• 합리적 선택 원칙: 매몰 비용은 무시하고 앞으로 발생할 '추가 편익'과 '추가 비용'만 비교",
+                  whyExplanation: "이미 환불 기간이 지난 영화 표 값이나 이미 지불한 뷔페 식사비처럼 회수 불가능한 비용(매몰 비용)은 내가 지금 어떤 선택을 하든 이미 고정적으로 빠져나간 비용입니다. 합리적 선택은 '앞으로의 행동 변화에 따라 달라지는 편익과 비용'을 비교하는 과정이므로, 어떤 대안을 고르든 똑같이 회수할 수 없는 매몰 비용을 의사 결정 기준에 포함하면 오히려 더 큰 손해(시간 낭비, 추가 불만족)를 보게 됩니다.",
+                  stepByStepExample: "① 매몰 비용 함정 선지 판별:\n• '1만 5천 원짜리 영화를 보다가 너무 지루했지만 돈이 아까워 끝까지 다 보았다' → 이미 지불한 티켓값(매몰 비용)을 고려하여 남은 시간의 편익을 해친 '비합리적 선택'!",
+                  isStarred: true
+                }
+              ],
+              blankItems: [
+                "어떤 선택을 함으로써 포기한 대안들 중 가장 가치가 큰 것의 이익을 {{암묵적 비용}}이라고 한다.",
+                "기회비용은 직접 화폐로 지출한 {{명시적 비용}}과 암묵적 비용을 합한 값이다.",
+                "이미 지출하여 회수할 수 없는 {{매몰 비용}}은 합리적 선택을 할 때 고려하지 말아야 한다."
+              ],
+              oxQuiz: [
+                {
+                  question: "포기한 대안이 두 가지일 경우, 암묵적 비용은 포기한 두 대안의 가치를 모두 더한 값으로 계산한다.",
+                  answer: "X",
+                  trapExplanation: "계산 문제 최빈출 함정! 포기한 대안이 여러 개라도 그중 '가장 가치가 큰 것 하나'만 암묵적 비용에 포함합니다."
+                },
+                {
+                  question: "합리적 선택을 하기 위해서는 이미 지출하여 회수할 수 없는 매몰 비용을 철저히 고려해야 한다.",
+                  answer: "X",
+                  trapExplanation: "함정! 매몰 비용은 회수 불가능하므로 합리적 선택 시 '고려하지 말아야' 합니다."
+                },
+                {
+                  question: "선택으로 얻는 편익이 기회비용(명시적 비용 + 암묵적 비용)보다 클 때 합리적 선택이라고 한다.",
+                  answer: "O",
+                  trapExplanation: "정답! 순편익(편익 - 기회비용)이 0보다 커야 합리적 선택입니다."
+                }
+              ],
+              audioScript: "통합사회 경제 계산 문제는 왜 그렇게 계산하는지 원리만 알면 절대 안 틀려! 같은 시간에 두 가지 알바를 동시에 뛸 수는 없잖아? 그러니까 포기한 대안이 여러 개라도 그중 가장 가치가 큰 딱 한 개만 암묵적 비용으로 더해줘야 해! 거기에 직접 지출한 명시적 비용을 합하면 기회비용이 돼. 그리고 이미 환불 안 되는 매몰 비용은 어떤 선택을 하든 돌려받을 수 없으니까, 절대 고려하지 말아야 합리적 선택이야!"
+            }
+          }
+        ]
+      }
+    };
+
+    // 앱 전역 상태
+    let selectedSubjectKey = "korean";
+    let uploadedImages = [];
+    let currentSampleKey = null;
+    let currentJokboData = null;
+    let oxAnswersState = {};
+    let selectedRating = "🔥 이해 쏙쏙됨";
+
+    // 오디오 상태 (기기 최고급 보이스 탐색 + 문장 단위 호흡 튜닝)
+    let isSpeaking = false;
+    let audioSentences = [];
+    let audioPlayToken = 0;
+    let audioPauseTimer = null;
+    let availableKoVoices = [];
+    let selectedVoiceURI = "";
+
+    // 2. 토스트 알림
+    let toastTimer = null;
+    function showToast(msg, icon = "⚡") {
+      const box = document.getElementById("toastBox");
+      const textEl = document.getElementById("toastMessage");
+      if (!box || !textEl) return;
+
+      textEl.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+      box.classList.remove("opacity-0", "-translate-y-2");
+      box.classList.add("opacity-100", "translate-y-0");
+
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        box.classList.remove("opacity-100", "translate-y-0");
+        box.classList.add("opacity-0", "-translate-y-2");
+      }, 2800);
+    }
+
+    // 3. 과목 선택 & 샘플 버튼 동적 렌더링
+    function selectSubject(subjKey) {
+      if (!SUBJECT_CONFIG[subjKey]) return;
+      selectedSubjectKey = subjKey;
+      currentSampleKey = null;
+
+      ["korean", "english", "science", "social"].forEach(k => {
+        const btn = document.getElementById(`subj-${k}`);
+        if (!btn) return;
+        if (k === subjKey) {
+          btn.className = "subj-btn py-2.5 px-1 rounded-2xl border-2 border-electric-500 bg-electric-50 text-electric-700 font-black text-xs text-center transition active:scale-95 cursor-pointer";
+        } else {
+          btn.className = "subj-btn py-2.5 px-1 rounded-2xl border border-slate-200 bg-slate-50 text-slate-700 font-extrabold text-xs text-center hover:border-electric-400 transition active:scale-95 cursor-pointer";
+        }
+      });
+
+      const cfg = SUBJECT_CONFIG[subjKey];
+      document.getElementById("selectedSubjectBadge").textContent = `${cfg.icon} ${cfg.name} 선택됨`;
+      document.getElementById("sampleSectionTitle").textContent = `⚡ [${cfg.name}] 핵심 프린트 1초 불러오기`;
+      document.getElementById("printTextInput").placeholder = cfg.placeholder;
+
+      renderSubjectSampleButtons();
+      showToast(`[${cfg.name}] 과목 맞춤형 AI 분석 모드로 전환했어요!`, cfg.icon);
+    }
+
+    function renderSubjectSampleButtons() {
+      const cfg = SUBJECT_CONFIG[selectedSubjectKey];
+      const grid = document.getElementById("sampleButtonsGrid");
+      if (!grid || !cfg) return;
+
+      grid.className = cfg.samples.length === 3 ? "grid grid-cols-3 gap-1.5" : "grid grid-cols-2 gap-2";
+      grid.innerHTML = "";
+
+      cfg.samples.forEach(s => {
+        const isActive = currentSampleKey === s.key;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.onclick = () => loadSubjectSample(s.key);
+        btn.className = isActive
+          ? "py-2 px-2 rounded-xl border-2 border-electric-500 bg-electric-50 text-[11px] font-black text-electric-700 text-center transition active:scale-95 cursor-pointer"
+          : "py-2 px-2 rounded-xl border border-slate-200 bg-slate-50 hover:border-electric-500 text-[11px] font-extrabold text-slate-700 text-center transition active:scale-95 cursor-pointer";
+        btn.innerHTML = `${s.btnTitle}<br><span class="text-[10px] font-normal text-slate-500">${s.btnSub}</span>`;
+        grid.appendChild(btn);
+      });
+    }
+
+    function loadSubjectSample(sampleKey) {
+      const cfg = SUBJECT_CONFIG[selectedSubjectKey];
+      const found = cfg.samples.find(s => s.key === sampleKey);
+      if (!found) return;
+
+      clearAllUploadedImages();
+      currentSampleKey = sampleKey;
+      renderSubjectSampleButtons();
+      document.getElementById("printTextInput").value = found.rawText;
+      showToast(`[${cfg.name}] ${found.btnTitle.replace(/^[0-9️⃣\s]+/, "")} 프린트를 불러왔어요!`, cfg.icon);
+    }
+
+    function clearTextInput() {
+      document.getElementById("printTextInput").value = "";
+      currentSampleKey = null;
+      renderSubjectSampleButtons();
+    }
+
+    // 4. 다중 이미지 업로드 (2~3장 세트 지원 및 개별 용량 최적화)
+    function compressSingleImageFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const MAX_SIZE = 1200;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > MAX_SIZE || height > MAX_SIZE) {
+              if (width > height) {
+                height = Math.round((height * MAX_SIZE) / width);
+                width = MAX_SIZE;
+              } else {
+                width = Math.round((width * MAX_SIZE) / height);
+                height = MAX_SIZE;
+              }
+            }
+
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.78);
+            resolve({
+              mimeType: "image/jpeg",
+              base64: compressedDataUrl.split(",")[1],
+              previewUrl: compressedDataUrl
+            });
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handleImageUpload(event) {
+      const files = Array.from(event.target.files || []);
+      if (files.length === 0) return;
+
+      const remainingSlots = 3 - uploadedImages.length;
+      if (remainingSlots <= 0) {
+        showToast("프린트는 최대 3장까지 한 세트로 올릴 수 있어요!", "⚠️");
+        event.target.value = "";
+        return;
+      }
+
+      const filesToProcess = files.slice(0, remainingSlots);
+      if (files.length > remainingSlots) {
+        showToast(`최대 3장까지만 가능해 앞의 ${remainingSlots}장만 추가할게요!`, "ℹ️");
+      } else {
+        showToast(`프린트 ${filesToProcess.length}장을 선명하게 최적화하는 중...`, "📸");
+      }
+
+      try {
+        for (const file of filesToProcess) {
+          const compressed = await compressSingleImageFile(file);
+          uploadedImages.push(compressed);
+        }
+
+        currentSampleKey = null;
+        renderSubjectSampleButtons();
+        renderUploadedImagesGrid();
+        showToast(`총 ${uploadedImages.length}장 세트가 준비되었습니다!`, "✅");
+      } catch (err) {
+        showToast("사진을 불러오는 중 문제가 생겼어요. 다시 시도해 주세요.", "⚠️");
+      } finally {
+        event.target.value = "";
+      }
+    }
+
+    function renderUploadedImagesGrid() {
+      const countBadge = document.getElementById("imageCountBadge");
+      const placeholder = document.getElementById("uploadPlaceholder");
+      const setContainer = document.getElementById("imageSetContainer");
+      const grid = document.getElementById("imageThumbGrid");
+
+      countBadge.textContent = `${uploadedImages.length} / 3장 선택됨`;
+
+      if (uploadedImages.length === 0) {
+        placeholder.classList.remove("hidden");
+        setContainer.classList.add("hidden");
+        grid.innerHTML = "";
+        return;
+      }
+
+      placeholder.classList.add("hidden");
+      setContainer.classList.remove("hidden");
+      grid.innerHTML = "";
+
+      uploadedImages.forEach((imgObj, idx) => {
+        const card = document.createElement("div");
+        card.className = "relative aspect-[3/4] rounded-2xl overflow-hidden border-2 border-slate-200 bg-slate-900 shadow-xs";
+        card.innerHTML = `
+          <img src="${imgObj.previewUrl}" alt="${idx + 1}쪽 프린트" class="w-full h-full object-cover" />
+          <span class="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-lg bg-slate-950/85 text-volt-400 text-[10px] font-black">${idx + 1}쪽</span>
+          <button type="button" onclick="removeUploadedImage(${idx})" class="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-red-600/90 hover:bg-red-600 text-white text-[11px] font-black flex items-center justify-center shadow cursor-pointer">✕</button>
+        `;
+        grid.appendChild(card);
+      });
+
+      if (uploadedImages.length < 3) {
+        const addSlot = document.createElement("label");
+        addSlot.setAttribute("for", "printImageInput");
+        addSlot.className = "aspect-[3/4] rounded-2xl border-2 border-dashed border-electric-300 bg-electric-50/60 hover:bg-electric-100/70 flex flex-col items-center justify-center text-center p-2 cursor-pointer transition";
+        addSlot.innerHTML = `
+          <span class="text-xl mb-1">➕</span>
+          <span class="text-[11px] font-extrabold text-electric-700">${uploadedImages.length + 1}쪽 추가</span>
+          <span class="text-[9px] text-slate-500 mt-0.5">최대 3장</span>
+        `;
+        grid.appendChild(addSlot);
+      }
+    }
+
+    function removeUploadedImage(index) {
+      uploadedImages.splice(index, 1);
+      renderUploadedImagesGrid();
+    }
+
+    function clearAllUploadedImages() {
+      uploadedImages = [];
+      const input = document.getElementById("printImageInput");
+      if (input) input.value = "";
+      renderUploadedImagesGrid();
+    }
+
+    // 5. AI 벼락치기 족보 생성 실행
+    async function generateJokbo() {
+      const text = document.getElementById("printTextInput").value.trim();
+      const subjectName = SUBJECT_CONFIG[selectedSubjectKey].name;
+
+      if (uploadedImages.length === 0 && !text) {
+        showToast("프린트 사진(1~3장)을 올리거나 내용을 입력해 주세요!", "⚠️");
+        document.getElementById("printTextInput").focus();
+        return;
+      }
+
+      const btn = document.getElementById("generateBtn");
+      const icon = document.getElementById("generateBtnIcon");
+      const label = document.getElementById("generateBtnText");
+
+      btn.disabled = true;
+      icon.textContent = "⏳";
+      label.textContent = uploadedImages.length > 1
+        ? `[${subjectName}] 프린트 ${uploadedImages.length}장 원리·예시 통합 분석 중...`
+        : `[${subjectName}] 핵심 원리 풀이 & 예시 해부 족보 생성 중...`;
+
+      try {
+        const cfg = SUBJECT_CONFIG[selectedSubjectKey];
+        const matchedSample = cfg.samples.find(s => s.key === currentSampleKey);
+
+        if (uploadedImages.length === 0 && matchedSample && text === matchedSample.rawText.trim()) {
+          await new Promise(r => setTimeout(r, 400));
+          currentJokboData = JSON.parse(JSON.stringify(matchedSample.data));
+        } else {
+          currentJokboData = await callMultimodalJokboAI(uploadedImages, text, subjectName);
+        }
+
+        renderJokboResult(currentJokboData);
+        document.getElementById("view-input").classList.add("hidden");
+        document.getElementById("view-result").classList.remove("hidden");
+        switchResultTab("summary");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        showToast(`[${subjectName}] 원리 이해 중심 족보가 완성되었습니다!`, "🎉");
+      } catch (err) {
+        currentJokboData = buildDynamicFallbackJokbo(text, uploadedImages.length, subjectName);
+        renderJokboResult(currentJokboData);
+        document.getElementById("view-input").classList.add("hidden");
+        document.getElementById("view-result").classList.remove("hidden");
+        switchResultTab("summary");
+        showToast(`[${subjectName}] 핵심 요약 및 원리 풀이 족보로 변환되었어요!`, "⚡");
+      } finally {
+        btn.disabled = false;
+        icon.textContent = "⚡";
+        label.textContent = "원리 이해 벼락치기 족보 생성하기";
+      }
+    }
+
+    async function callMultimodalJokboAI(images, text, subjectName) {
+      const cleanImages = (images || []).map(img => ({
+        base64: img.base64,
+        mimeType: img.mimeType
+      }));
+
+      try {
+        if (window.location.protocol.startsWith("http") && !window.location.hostname.includes("usercontent")) {
+          for (let attempt = 0; attempt < 2; attempt++) {
+            const serverRes = await fetch("/api/generate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ images: cleanImages, text, subject: subjectName })
+            });
+            if (serverRes.ok) {
+              const serverData = await serverRes.json();
+              if (serverData && serverData.subjectTitle) {
+                return serverData;
+              }
+            }
+            if ((serverRes.status === 429 || serverRes.status === 503) && attempt === 0) {
+              await new Promise(r => setTimeout(r, 1500));
+              continue;
+            }
+            break;
+          }
+        }
+      } catch (e) {}
+
+      const apiKey = "";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+      const subjectGuides = {
+        "국어": "국어 영역(문법·문학·독서) 특성에 맞춰 음운 변동/품사 통용/문장의 짜임/중세 국어 규칙이 '왜 그렇게 적용되는지' 문법적 원리를 설명하고, 구체적 단어나 문장 예시를 단계별로 분석하세요. 중세 국어 옛한글을 표기할 때는 절대 HWP 비표준 코드(PUA)를 쓰지 말고 반드시 표준 유니코드 옛한글 첫가끝 조합형으로 표기하세요.",
+        "영어": "영어 영역 특성에 맞춰 지문의 논리적 인과 흐름이나 내신 어법(수일치·분사구문·관계사 what vs that)의 문장 구조 원리를 1:1 과외처럼 명쾌하게 설명하고 실제 문장 예시로 판별 과정을 보여주세요.",
+        "통합과학": "통합과학 특성에 맞춰 물리·화학·생명·지구과학 현상이 '왜 일어나는지' 과학적 인과관계를 논리적으로 풀어 설명하고, 상태 조건·그래프 해석·예외 사례를 구체적 예시로 적용해 보여주세요.",
+        "통합사회": "통합사회 특성에 맞춰 유사 개념(자유권 vs 사회권, 기회비용 vs 매몰비용 등)의 등장 배경과 판단 기준을 논리적으로 설명하고, 실제 사례나 계산 과정을 단계별로 풀이해 보여주세요."
+      };
+
+      const systemPrompt = `당신은 대한민국 고등학교 내신 출제 원리를 꿰뚫고 있으며, 단순 요약이 아니라 학생이 개념의 근본 원리를 100% 납득할 수 있도록 논리적으로 설명해 주는 [${subjectName}] 베테랑 1타 강사입니다.
+학생이 업로드한 1~3장 세트의 학교 수업 프린트 이미지(또는 필기 텍스트) 전체 흐름을 하나로 통합 분석하여 벼락치기 자료 4종 세트를 JSON으로 출력하세요.
+
+[과목 특화 지침 - ${subjectName}]
+${subjectGuides[subjectName] || ""}
+
+[이해 중심 설명 및 분석 규칙 - 매우 중요]
+1. 억지스러운 일상 비유나 유치한 은유는 절대 사용하지 마세요. 대신 고등학생이 스스로 고개를 끄덕이며 이해할 수 있도록 '왜 그런지(인과관계·작동 원리)'와 '어떻게 적용하는지(판별 과정)'를 명확하고 친절한 구어체(~입니다 / ~하기 때문입니다)로 설명하세요.
+2. 여러 장(2~3장)이 업로드된 경우 각 페이지의 내용을 따로 끊지 말고 하나의 단원 체계로 유기적으로 연결해 정리하세요.
+3. 손글씨 별표(★), 밑줄, 형광펜, '중요/주의/함정' 표시가 있다면 최우선 출제 포인트(teacherPicks)로 뽑아내세요.
+4. summaryCards는 3~5개의 핵심 개념 카드로 구성하되, 각 카드마다 반드시 아래 세 항목을 명확히 구분해 작성하세요:
+   - coreSummary: 시험 답안용 핵심 개념 요약 (조건·규칙·공식 정리)
+   - whyExplanation: 단순 요약을 반복하지 말고, "왜 이런 규칙/현상이 성립하는지" 근본 원리와 배경 이유를 1:1 과외 선생님처럼 3~4문장으로 깊이 있고 알기 쉽게 풀어쓴 설명
+   - stepByStepExample: 구체적인 실제 사례나 문제 예시 1~2개를 가져와 '① 조건 확인 → ② 원리 적용 → ③ 결론' 순서로 사고 과정을 단계별 해부한 풀이
+5. blankItems는 핵심 암기 문장 4개를 작성하되, 빈칸으로 뚫을 핵심 키워드만 {{정답}} 형식으로 감싸세요.
+6. oxQuiz는 내신 시험에서 학생들이 가장 많이 낚이는 말장난 함정 선지를 섞어 5문제를 출제하고, 명확한 해설을 제공하세요.
+7. audioScript는 시험 당일 등굣길에 음성으로 듣는 대본(250~330자)입니다. 기계음처럼 들리지 않도록 괄호나 특수기호를 빼고, 짧은 구어체 문장과 자연스러운 마침표·쉼표로 작성하세요.`;
+
+      const parts = [];
+      cleanImages.forEach((img, idx) => {
+        parts.push({ text: `[${subjectName} 프린트 세트 ${idx + 1}쪽 이미지]` });
+        parts.push({
+          inlineData: {
+            mimeType: img.mimeType,
+            data: img.base64
+          }
+        });
+      });
+
+      parts.push({
+        text: text
+          ? `위 [${subjectName}] 프린트 이미지(${cleanImages.length}장)와 아래 필기 내용을 종합해서 억지 비유 없이 원리 이해 풀이와 예시 단계별 해부가 담긴 벼락치기 4종 세트를 만들어줘:\n${text}`
+          : `첨부된 총 ${cleanImages.length}장 세트의 [${subjectName}] 수업 프린트 사진을 순서대로 통합 분석해서, 억지 비유 없이 원리 이해 풀이와 예시 단계별 해부가 담긴 벼락치기 4종 세트를 만들어줘.`
+      });
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts }],
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: "OBJECT",
+              properties: {
+                subjectTitle: { type: "STRING" },
+                teacherPicks: { type: "ARRAY", items: { type: "STRING" } },
+                summaryCards: {
+                  type: "ARRAY",
+                  items: {
+                    type: "OBJECT",
+                    properties: {
+                      title: { type: "STRING" },
+                      coreSummary: { type: "STRING" },
+                      whyExplanation: { type: "STRING" },
+                      stepByStepExample: { type: "STRING" },
+                      isStarred: { type: "BOOLEAN" }
+                    },
+                    required: ["title", "coreSummary", "whyExplanation", "stepByStepExample", "isStarred"]
+                  }
+                },
+                blankItems: { type: "ARRAY", items: { type: "STRING" } },
+                oxQuiz: {
+                  type: "ARRAY",
+                  items: {
+                    type: "OBJECT",
+                    properties: {
+                      question: { type: "STRING" },
+                      answer: { type: "STRING" },
+                      trapExplanation: { type: "STRING" }
+                    },
+                    required: ["question", "answer", "trapExplanation"]
+                  }
+                },
+                audioScript: { type: "STRING" }
+              },
+              required: ["subjectTitle", "teacherPicks", "summaryCards", "blankItems", "oxQuiz", "audioScript"]
+            }
+          }
+        })
+      });
+
+      if (!response.ok) throw new Error(`API HTTP ${response.status}`);
+      const result = await response.json();
+      const rawJson = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!rawJson) throw new Error("Empty AI response");
+      return JSON.parse(rawJson);
+    }
+
+    function buildDynamicFallbackJokbo(text, imageCount = 0, subjectName = "국어") {
+      const cleanLines = (text || "")
+        .split(/\n+/)
+        .map(l => l.trim())
+        .filter(l => l.length > 2);
+
+      const firstTitle = cleanLines[0]
+        ? cleanLines[0].replace(/[\[\]#★]/g, "").slice(0, 24)
+        : (imageCount > 0 ? `${subjectName} 프린트 ${imageCount}장 세트 족보` : `${subjectName} 수업 프린트 원리 족보`);
+
+      const starredLines = cleanLines.filter(l => l.includes("★") || l.includes("주의") || l.includes("중요") || l.includes("예외"));
+      const picks = starredLines.length > 0
+        ? starredLines.slice(0, 2)
+        : [
+            `[${subjectName}] 프린트 세트 전체에서 비교·대조되는 두 개념의 '성립 조건 차이'가 출제 1순위입니다.`,
+            `원칙 뒤에 붙은 '예외 조항(단, ~의 경우는 제외)'이 객관식 함정 선지로 직결됩니다.`
+          ];
+
+      const cards = cleanLines.slice(0, 3).map((line, idx) => ({
+        title: `핵심 개념 ${idx + 1}`,
+        coreSummary: line,
+        whyExplanation: `이 개념을 정확히 이해하려면 단순 암기보다 '어떤 조건에서 이 규칙이 작동하는지' 인과관계를 먼저 파악해야 합니다. 시험에서는 기본 정의 자체보다 조건이 살짝 달라졌을 때 결과가 어떻게 바뀌는지를 묻는 문항이 주로 출제됩니다.`,
+        stepByStepExample: `① 실전 판별 3단계 적용:\n• 1단계: 제시된 문장·사례에서 핵심 조건 키워드 먼저 표시하기\n• 2단계: 기본 원칙에 해당하는지, 예외 조건에 해당하는지 대조하기\n• 3단계: 조건에 맞는 결과 도출하기`,
+        isStarred: idx === 0 || line.includes("★")
+      }));
+
+      if (cards.length === 0) {
+        cards.push({
+          title: `${subjectName} 프린트 ${imageCount || 1}장 세트 통합 분석`,
+          coreSummary: `업로드된 ${imageCount || 1}장의 ${subjectName} 프린트 세트 핵심 내용이 하나의 흐름으로 정리되었습니다.`,
+          whyExplanation: `여러 장으로 구성된 수업 프린트는 보통 앞장에서 기본 개념과 원리를 정의하고, 뒷장에서 예외 조항과 심화 사례를 다루는 구조로 출제됩니다. Vercel 배포 환경에서 Gemini API 키가 연결되면 각 페이지의 손글씨 필기와 도표까지 읽어서 맞춤형 원리 풀이를 제공합니다.`,
+          stepByStepExample: `① 세트 프린트 학습 순서:\n• 1단계: 1쪽의 핵심 개념 정의 및 성립 조건 확인\n• 2단계: 2~3쪽의 예외 사례를 1쪽 원리와 연결해 비교 정리`,
+          isStarred: true
+        });
+      }
+
+      const blanks = cleanLines.slice(0, 3).map(line => {
+        const words = line.split(/\s+/).filter(w => w.length >= 2);
+        const target = words[Math.min(2, words.length - 1)] || "핵심개념";
+        const cleanTarget = target.replace(/[.,()\[\]:;'"★]/g, "");
+        return line.replace(cleanTarget, `{{${cleanTarget}}}`);
+      });
+
+      return {
+        subjectTitle: `${subjectName} · ${firstTitle}`,
+        teacherPicks: picks,
+        summaryCards: cards,
+        blankItems: blanks.length > 0 ? blanks : ["시험 전날 반드시 암기해야 할 핵심은 {{예외 조항}}과 {{성립 조건}}이다."],
+        oxQuiz: [
+          {
+            question: "프린트에서 별표(★)나 '주의'로 표시된 예외 조항은 기본 원리와 동일한 조건에서만 적용된다.",
+            answer: "X",
+            trapExplanation: "함정! 예외 조항은 기본 원리와 다른 특수 조건에서 발생하므로 별도로 구분해 이해해야 합니다."
+          },
+          {
+            question: "내신 시험에서는 두 개념의 정의나 적용 조건을 서로 바꿔치기하는 말장난 선지가 자주 출제된다.",
+            answer: "O",
+            trapExplanation: "정답! A와 B의 조건을 뒤바꾸는 유형이 가장 흔한 오답 함정입니다."
+          },
+          {
+            question: "입력된 프린트 내용 중 핵심 키워드와 사례는 성립 원리를 기준으로 정확히 연결해 이해해야 한다.",
+            answer: "O",
+            trapExplanation: "정답! 개념의 인과 원리와 대표 예시를 함께 묶어 기억해야 응용 문제까지 해결할 수 있습니다."
+          }
+        ],
+        audioScript: `자, 시험 직전 일 분만 집중하자! 방금 정리한 ${subjectName} 단원에서 선생님이 가장 좋아하는 함정은 바로 성립 조건 뒤바꾸기야. 원칙이 적용되는 조건과 예외가 발생하는 이유를 정확히 구분해서 이해해 두면, 어떤 응용 문제가 나와도 절대 흔들리지 않아!`
+      };
+    }
+
+    // 6. 결과 화면 렌더링
+    function renderJokboResult(data) {
+      stopAudioBriefing();
+      oxAnswersState = {};
+
+      document.getElementById("resultSubjectBadge").textContent = data.subjectTitle || "벼락치기 핵심 족보";
+
+      const picksUl = document.getElementById("teacherPicksList");
+      picksUl.innerHTML = "";
+      (data.teacherPicks || []).forEach(pick => {
+        const li = document.createElement("li");
+        li.className = "flex items-start gap-2";
+        li.innerHTML = `<span class="text-volt-400 font-black shrink-0">•</span><span>${escapeHtml(pick)}</span>`;
+        picksUl.appendChild(li);
+      });
+
+      const summaryBox = document.getElementById("summaryCardsContainer");
+      summaryBox.innerHTML = "";
+      (data.summaryCards || []).forEach(card => {
+        const div = document.createElement("div");
+        div.className = card.isStarred
+          ? "bg-white border-2 border-electric-500/80 rounded-3xl p-4 shadow-xs space-y-3"
+          : "bg-white border border-slate-200 rounded-3xl p-4 shadow-xs space-y-3";
+
+        const coreText = card.coreSummary || card.content || "";
+        const whyText = card.whyExplanation || card.easyAnalogy || "";
+        const stepText = card.stepByStepExample || "";
+
+        div.innerHTML = `
+          <div class="flex items-start justify-between gap-2 pb-2 border-b border-slate-100">
+            <h4 class="text-xs font-black text-slate-950 leading-snug">${escapeHtml(card.title)}</h4>
+            ${card.isStarred ? `<span class="shrink-0 px-2 py-0.5 rounded-full bg-volt-400 text-slate-950 text-[10px] font-black">★ 출제 99%</span>` : ""}
+          </div>
+
+          <div class="space-y-1">
+            <span class="text-[11px] font-extrabold text-slate-500">📌 핵심 정리</span>
+            <p class="text-xs font-semibold text-slate-800 whitespace-pre-line leading-relaxed">${escapeHtml(coreText)}</p>
+          </div>
+
+          ${whyText ? `
+            <div class="bg-electric-50/70 border border-electric-100 rounded-2xl p-3 space-y-1">
+              <span class="inline-flex items-center gap-1 text-[11px] font-black text-electric-700">
+                <span>📖</span>
+                <span>왜 그럴까? · 원리 이해 풀이</span>
+              </span>
+              <p class="text-xs text-slate-800 whitespace-pre-line leading-relaxed">${escapeHtml(whyText)}</p>
+            </div>
+          ` : ""}
+
+          ${stepText ? `
+            <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 space-y-1">
+              <span class="inline-flex items-center gap-1 text-[11px] font-black text-slate-800">
+                <span>🔍</span>
+                <span>실전 예시 단계별 해부</span>
+              </span>
+              <p class="text-xs text-slate-700 whitespace-pre-line leading-relaxed">${escapeHtml(stepText)}</p>
+            </div>
+          ` : ""}
+        `;
+        summaryBox.appendChild(div);
+      });
+
+      const blankBox = document.getElementById("blankListContainer");
+      blankBox.innerHTML = "";
+      (data.blankItems || []).forEach((item, idx) => {
+        const p = document.createElement("div");
+        p.className = "p-3 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs text-slate-800 leading-loose";
+        const escapedItem = escapeHtml(item);
+        const blankPattern = /\{\{(.+?)\}\}/.test(escapedItem) ? /\{\{(.+?)\}\}/g : /\[([^\]]+?)\]/g;
+        const formattedHtml = escapedItem.replace(blankPattern, (_, ans) => {
+          return `<button type="button" data-answer="${ans}" data-revealed="false" onclick="toggleSingleBlank(this)" class="blank-pill inline-flex items-center justify-center px-2.5 py-0.5 mx-0.5 rounded-lg bg-volt-400 text-slate-950 font-black shadow-2xs cursor-pointer">  ?  </button>`;
+        });
+        p.innerHTML = `<span class="font-black text-electric-600 mr-1.5">Q${idx + 1}.</span>${formattedHtml}`;
+        blankBox.appendChild(p);
+      });
+
+      const oxBox = document.getElementById("oxQuizContainer");
+      oxBox.innerHTML = "";
+      const totalOx = (data.oxQuiz || []).length;
+      document.getElementById("oxScoreBadge").textContent = `0 / ${totalOx} 문제 완료`;
+
+      (data.oxQuiz || []).forEach((qItem, idx) => {
+        const card = document.createElement("div");
+        card.id = `ox-card-${idx}`;
+        card.className = "bg-white border border-slate-200 rounded-3xl p-4 shadow-xs space-y-3";
+        card.innerHTML = `
+          <div class="flex items-start gap-2">
+            <span class="px-2 py-0.5 rounded-lg bg-slate-900 text-volt-400 text-[11px] font-black shrink-0">OX ${idx + 1}</span>
+            <p class="text-xs font-bold text-slate-800 leading-relaxed">${escapeHtml(qItem.question)}</p>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="answerOx(${idx}, 'O')" id="ox-btn-${idx}-O" class="py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50 font-black text-sm text-blue-600 transition active:scale-95 cursor-pointer">⭕ O (맞다)</button>
+            <button type="button" onclick="answerOx(${idx}, 'X')" id="ox-btn-${idx}-X" class="py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-red-50 font-black text-sm text-red-600 transition active:scale-95 cursor-pointer">❌ X (틀리다)</button>
+          </div>
+          <div id="ox-exp-${idx}" class="hidden rounded-2xl p-3 text-xs leading-relaxed"></div>
+        `;
+        oxBox.appendChild(card);
+      });
+
+      renderAudioSentences(data.audioScript || "");
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function switchResultTab(tabKey) {
+      ["summary", "blank", "ox", "audio"].forEach(k => {
+        const panel = document.getElementById(`panel-${k}`);
+        const btn = document.getElementById(`tab-${k}`);
+        if (!panel || !btn) return;
+
+        if (k === tabKey) {
+          panel.classList.remove("hidden");
+          btn.className = "res-tab py-2 rounded-xl bg-white text-slate-900 font-black text-xs shadow-xs transition cursor-pointer";
+        } else {
+          panel.classList.add("hidden");
+          btn.className = "res-tab py-2 rounded-xl text-slate-600 font-bold text-xs hover:text-slate-900 transition cursor-pointer";
+        }
+      });
+
+      if (tabKey === "audio") {
+        loadBestKoreanVoices();
+      }
+    }
+
+    function backToInput() {
+      stopAudioBriefing();
+      document.getElementById("view-result").classList.add("hidden");
+      document.getElementById("view-input").classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // 7. 빈칸 암기 인터랙션
+    function toggleSingleBlank(btn) {
+      const revealed = btn.getAttribute("data-revealed") === "true";
+      const ans = btn.getAttribute("data-answer");
+      if (revealed) {
+        btn.setAttribute("data-revealed", "false");
+        btn.textContent = "  ?  ";
+        btn.className = "blank-pill inline-flex items-center justify-center px-2.5 py-0.5 mx-0.5 rounded-lg bg-volt-400 text-slate-950 font-black shadow-2xs cursor-pointer";
+      } else {
+        btn.setAttribute("data-revealed", "true");
+        btn.textContent = ans;
+        btn.className = "blank-pill inline-flex items-center justify-center px-2.5 py-0.5 mx-0.5 rounded-lg bg-electric-600 text-white font-black shadow-2xs cursor-pointer";
+      }
+    }
+
+    function toggleAllBlanks(show) {
+      document.querySelectorAll(".blank-pill").forEach(btn => {
+        const ans = btn.getAttribute("data-answer");
+        if (show) {
+          btn.setAttribute("data-revealed", "true");
+          btn.textContent = ans;
+          btn.className = "blank-pill inline-flex items-center justify-center px-2.5 py-0.5 mx-0.5 rounded-lg bg-electric-600 text-white font-black shadow-2xs cursor-pointer";
+        } else {
+          btn.setAttribute("data-revealed", "false");
+          btn.textContent = "  ?  ";
+          btn.className = "blank-pill inline-flex items-center justify-center px-2.5 py-0.5 mx-0.5 rounded-lg bg-volt-400 text-slate-950 font-black shadow-2xs cursor-pointer";
+        }
+      });
+    }
+
+    // 8. 함정 OX 퀴즈 인터랙션
+    function answerOx(idx, choice) {
+      if (!currentJokboData || !currentJokboData.oxQuiz[idx]) return;
+      const q = currentJokboData.oxQuiz[idx];
+      const normalizedAnswer = String(q.answer || "").trim().toUpperCase();
+      const isCorrect = normalizedAnswer.startsWith(choice);
+      oxAnswersState[idx] = isCorrect;
+
+      const btnO = document.getElementById(`ox-btn-${idx}-O`);
+      const btnX = document.getElementById(`ox-btn-${idx}-X`);
+      const expEl = document.getElementById(`ox-exp-${idx}`);
+
+      btnO.className = "py-2.5 rounded-xl border border-slate-200 bg-slate-50 font-black text-sm text-slate-400 transition cursor-pointer";
+      btnX.className = "py-2.5 rounded-xl border border-slate-200 bg-slate-50 font-black text-sm text-slate-400 transition cursor-pointer";
+
+      const selectedBtn = choice === "O" ? btnO : btnX;
+      selectedBtn.className = isCorrect
+        ? "py-2.5 rounded-xl border-2 border-emerald-500 bg-emerald-50 font-black text-sm text-emerald-700 transition cursor-pointer"
+        : "py-2.5 rounded-xl border-2 border-red-500 bg-red-50 font-black text-sm text-red-700 transition cursor-pointer";
+
+      expEl.classList.remove("hidden");
+      expEl.className = isCorrect
+        ? "rounded-2xl p-3 text-xs leading-relaxed bg-emerald-50 text-emerald-900 border border-emerald-200"
+        : "rounded-2xl p-3 text-xs leading-relaxed bg-red-50 text-red-900 border border-red-200";
+      expEl.innerHTML = `<strong class="block mb-0.5">${isCorrect ? "🎉 정답! 함정 돌파 성공!" : `🚨 앗, 함정에 낚였어요! (정답: ${q.answer})`}</strong>${escapeHtml(q.trapExplanation)}`;
+
+      const answeredCount = Object.keys(oxAnswersState).length;
+      const correctCount = Object.values(oxAnswersState).filter(Boolean).length;
+      const total = currentJokboData.oxQuiz.length;
+      document.getElementById("oxScoreBadge").textContent = `${answeredCount} / ${total} 완료 (정답 ${correctCount}개)`;
+    }
+
+    // 9. 기기 최고급 한국어 보이스 자동 탐색 + 문장 단위 호흡 튜닝 오디오
+    function scoreKoreanVoice(v) {
+      const name = (v.name || "").toLowerCase();
+      let score = 10;
+      if (name.includes("natural") || name.includes("online") || name.includes("neural") || name.includes("enhanced") || name.includes("premium")) score += 60;
+      if (name.includes("sunhi") || name.includes("injoon") || name.includes("ji-min") || name.includes("bongjin")) score += 50;
+      if (name.includes("google") && name.includes("한국")) score += 45;
+      if (name.includes("yuna") || name.includes("유나") || name.includes("sora") || name.includes("소라")) score += 42;
+      if (name.includes("samsung")) score += 25;
+      if (name.includes("heami")) score += 15;
+      if (v.localService === false) score += 10;
+      return score;
+    }
+
+    function loadBestKoreanVoices() {
+      if (!("speechSynthesis" in window)) return;
+      const allVoices = window.speechSynthesis.getVoices() || [];
+      const koVoices = allVoices.filter(v => (v.lang || "").toLowerCase().startsWith("ko"));
+
+      koVoices.sort((a, b) => scoreKoreanVoice(b) - scoreKoreanVoice(a));
+      availableKoVoices = koVoices;
+
+      const select = document.getElementById("voiceSelect");
+      if (!select) return;
+
+      if (koVoices.length === 0) {
+        select.innerHTML = `<option value="">기기 기본 한국어 음성 사용</option>`;
+        return;
+      }
+
+      if (!selectedVoiceURI || !koVoices.some(v => v.voiceURI === selectedVoiceURI)) {
+        selectedVoiceURI = koVoices[0].voiceURI;
+      }
+
+      select.innerHTML = "";
+      koVoices.forEach((v, idx) => {
+        const opt = document.createElement("option");
+        opt.value = v.voiceURI;
+        opt.className = "text-slate-900";
+        const cleanName = v.name.replace(/Microsoft |Google |Apple /gi, "").trim();
+        opt.textContent = idx === 0 ? `★ 추천 · ${cleanName}` : cleanName;
+        if (v.voiceURI === selectedVoiceURI) opt.selected = true;
+        select.appendChild(opt);
+      });
+    }
+
+    function onVoiceChange() {
+      const select = document.getElementById("voiceSelect");
+      if (select) selectedVoiceURI = select.value;
+      if (isSpeaking) {
+        stopAudioBriefing();
+        toggleAudioBriefing();
+      }
+    }
+
+    function renderAudioSentences(scriptText) {
+      const container = document.getElementById("audioScriptContainer");
+      if (!container) return;
+
+      const cleaned = (scriptText || "").replace(/\s+/g, " ").trim();
+      const rawParts = cleaned.match(/[^.!?]+[.!?]*/g) || [];
+      audioSentences = rawParts.map(s => s.trim()).filter(s => s.length > 0);
+
+      container.innerHTML = "";
+      audioSentences.forEach((sentence, idx) => {
+        const span = document.createElement("span");
+        span.id = `audio-sent-${idx}`;
+        span.className = "audio-sentence inline mr-1";
+        span.textContent = sentence;
+        container.appendChild(span);
+      });
+    }
+
+    function highlightAudioSentence(activeIdx) {
+      audioSentences.forEach((_, idx) => {
+        const el = document.getElementById(`audio-sent-${idx}`);
+        if (!el) return;
+        if (idx === activeIdx) {
+          el.classList.add("audio-sentence-active");
+        } else {
+          el.classList.remove("audio-sentence-active");
+        }
+      });
+    }
+
+    function speakSentenceAt(index, token) {
+      if (token !== audioPlayToken) return;
+
+      if (index >= audioSentences.length) {
+        isSpeaking = false;
+        highlightAudioSentence(-1);
+        document.getElementById("audioPlayIcon").textContent = "▶️";
+        document.getElementById("audioPlayLabel").textContent = "자연스러운 호흡으로 다시 듣기";
+        return;
+      }
+
+      const rawSentence = audioSentences[index];
+      const speakableText = rawSentence.replace(/[\[\]()★•·]/g, " ").replace(/\s+/g, " ").trim();
+      const utterance = new SpeechSynthesisUtterance(speakableText);
+      utterance.lang = "ko-KR";
+      utterance.rate = parseFloat(document.getElementById("audioRateSelect").value || "1.05");
+      utterance.pitch = rawSentence.endsWith("!") ? 1.06 : (rawSentence.endsWith("?") ? 1.08 : 1.01);
+
+      const chosenVoice = availableKoVoices.find(v => v.voiceURI === selectedVoiceURI) || availableKoVoices[0];
+      if (chosenVoice) {
+        utterance.voice = chosenVoice;
+      }
+
+      utterance.onstart = () => {
+        if (token !== audioPlayToken) return;
+        highlightAudioSentence(index);
+      };
+
+      utterance.onend = () => {
+        if (token !== audioPlayToken) return;
+        audioPauseTimer = setTimeout(() => {
+          speakSentenceAt(index + 1, token);
+        }, 250);
+      };
+
+      utterance.onerror = () => {
+        if (token !== audioPlayToken) return;
+        stopAudioBriefing();
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function toggleAudioBriefing() {
+      if (!("speechSynthesis" in window)) {
+        showToast("이 브라우저에서는 음성 재생을 지원하지 않아요.", "ℹ️");
+        return;
+      }
+
+      if (isSpeaking) {
+        stopAudioBriefing();
+        return;
+      }
+
+      if (audioSentences.length === 0) return;
+
+      loadBestKoreanVoices();
+      window.speechSynthesis.cancel();
+      if (audioPauseTimer) clearTimeout(audioPauseTimer);
+
+      audioPlayToken += 1;
+      isSpeaking = true;
+      document.getElementById("audioPlayIcon").textContent = "⏸️";
+      document.getElementById("audioPlayLabel").textContent = "브리핑 재생 중... (누르면 정지)";
+
+      speakSentenceAt(0, audioPlayToken);
+    }
+
+    function stopAudioBriefing() {
+      audioPlayToken += 1;
+      if (audioPauseTimer) {
+        clearTimeout(audioPauseTimer);
+        audioPauseTimer = null;
+      }
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+      isSpeaking = false;
+      highlightAudioSentence(-1);
+      const icon = document.getElementById("audioPlayIcon");
+      const label = document.getElementById("audioPlayLabel");
+      if (icon) icon.textContent = "▶️";
+      if (label) label.textContent = "자연스러운 호흡으로 재생하기";
+    }
+
+    function updateAudioRate() {
+      if (isSpeaking) {
+        stopAudioBriefing();
+        toggleAudioBriefing();
+      }
+    }
+
+    // 10. A4 시험지 미리보기 + PDF 저장 (저장 후 인쇄 단일 통일)
+    function buildA4SheetHtml(data) {
+      const subjectLabel = SUBJECT_CONFIG[selectedSubjectKey]?.name || "전 과목";
+
+      const picksHtml = (data.teacherPicks || [])
+        .map(p => `<li class="flex items-start gap-1.5"><span class="font-black">★</span><span>${escapeHtml(p)}</span></li>`)
+        .join("");
+
+      const cardsHtml = (data.summaryCards || [])
+        .map(c => {
+          const core = c.coreSummary || c.content || "";
+          const why = c.whyExplanation || "";
+          const step = c.stepByStepExample || "";
+          return `
+            <div class="border border-slate-400 rounded-lg p-2.5 print-avoid-break space-y-1.5">
+              <div class="flex items-center justify-between border-b border-slate-200 pb-1">
+                <strong class="text-[11.5px] font-black text-slate-950">${escapeHtml(c.title)}</strong>
+                ${c.isStarred ? `<span class="text-[9px] font-black border border-slate-800 px-1.5 py-0.5 rounded">출제 1순위</span>` : ""}
+              </div>
+              <p class="text-[10.5px] font-semibold text-slate-900 whitespace-pre-line leading-snug">${escapeHtml(core)}</p>
+              ${why ? `
+                <div class="pt-1 border-t border-dashed border-slate-300 text-[10px] text-slate-800 whitespace-pre-line leading-snug">
+                  <strong class="font-black text-slate-950">📖 원리 풀이:</strong> ${escapeHtml(why)}
+                </div>
+              ` : ""}
+              ${step ? `
+                <div class="bg-slate-50 border border-slate-200 rounded p-1.5 text-[10px] text-slate-700 whitespace-pre-line leading-snug">
+                  ${escapeHtml(step)}
+                </div>
+              ` : ""}
+            </div>
+          `;
+        })
+        .join("");
+
+      const blankAnswers = [];
+      const blanksHtml = (data.blankItems || [])
+        .map((item, idx) => {
+          const escapedItem = escapeHtml(item);
+          const blankPattern = /\{\{(.+?)\}\}/.test(escapedItem) ? /\{\{(.+?)\}\}/g : /\[([^\]]+?)\]/g;
+          const blankLine = escapedItem.replace(blankPattern, (_, ans) => {
+            blankAnswers.push(`(${idx + 1}) ${ans}`);
+            return `<span class="inline-block min-w-[66px] border-b-2 border-slate-900 text-center font-bold text-slate-300 select-none mx-0.5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>`;
+          });
+          return `<div class="text-[10.5px] leading-relaxed"><strong class="font-black mr-1">${idx + 1}.</strong>${blankLine}</div>`;
+        })
+        .join("");
+
+      const oxHtml = (data.oxQuiz || [])
+        .map((q, idx) => `
+          <div class="flex items-start justify-between gap-2 text-[10.5px] py-1 border-b border-slate-200 last:border-b-0 print-avoid-break">
+            <div class="leading-snug"><strong class="font-black mr-1">Q${idx + 1}.</strong>${escapeHtml(q.question)}</div>
+            <div class="shrink-0 font-black tracking-widest text-[10.5px]">[ O / X ]</div>
+          </div>
+        `)
+        .join("");
+
+      const oxAnswerList = (data.oxQuiz || [])
+        .map((q, idx) => `Q${idx + 1}:${q.answer}(${escapeHtml(q.trapExplanation)})`)
+        .join(" / ");
+
+      return `
+        <div class="space-y-3 text-slate-900 bg-white">
+          <div class="border-b-2 border-slate-900 pb-2 flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <div class="text-[10px] font-extrabold text-slate-600 tracking-wider">⚡ 찍으면 족보 · 벼락치기 [${subjectLabel}] 원리 이해 A4 워크시트</div>
+              <h1 class="text-base font-black text-slate-950 mt-0.5">${escapeHtml(data.subjectTitle || "핵심 벼락치기 족보")}</h1>
+            </div>
+            <div class="text-[10.5px] font-bold text-slate-800 border border-slate-400 rounded px-2.5 py-1">
+              학년 ____ &nbsp; 반 ____ &nbsp; 이름 ____________
+            </div>
+          </div>
+
+          <div class="border-2 border-slate-900 rounded-lg p-2.5 bg-slate-50 print-avoid-break">
+            <div class="text-[11px] font-black text-slate-950 mb-1">🎯 출제자 시선 · 함정 & 별표(★) 최우선 암기 포인트</div>
+            <ul class="space-y-0.5 text-[10.5px] text-slate-900 leading-snug">
+              ${picksHtml}
+            </ul>
+          </div>
+
+          <div>
+            <h2 class="text-[11.5px] font-black text-slate-950 mb-1.5">📖 핵심 개념 정리 · 원리 이해 풀이 · 실전 예시 해부</h2>
+            <div class="grid grid-cols-1 gap-2">
+              ${cardsHtml}
+            </div>
+          </div>
+
+          <div class="border border-slate-400 rounded-lg p-2.5 print-avoid-break">
+            <h2 class="text-[11.5px] font-black text-slate-950 mb-1.5">🟩 실전 빈칸 채우기 (펜으로 직접 써보세요!)</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
+              ${blanksHtml}
+            </div>
+          </div>
+
+          <div class="border border-slate-400 rounded-lg p-2.5 print-avoid-break">
+            <h2 class="text-[11.5px] font-black text-slate-950 mb-1">⚔️ 내신 말장난 함정 OX 퀴즈</h2>
+            <div>
+              ${oxHtml}
+            </div>
+          </div>
+
+          <div class="pt-1.5 border-t border-dashed border-slate-400 print-avoid-break">
+            <div class="text-[9px] text-slate-400 text-center mb-1">✂ ─────────────────── 접어서 확인하는 미니 정답지 ─────────────────── ✂</div>
+            <div style="transform: rotate(180deg);" class="transform rotate-180 bg-slate-50 border border-slate-300 rounded p-2 text-[9px] text-slate-700 leading-snug">
+              <div><strong>[빈칸 정답]</strong> ${escapeHtml(blankAnswers.join("  |  "))}</div>
+              <div class="mt-0.5"><strong>[OX 정답 및 함정 해설]</strong> ${oxAnswerList}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function openA4PreviewModal() {
+      if (!currentJokboData) {
+        showToast("먼저 벼락치기 족보를 생성해 주세요!", "⚠️");
+        return;
+      }
+      document.getElementById("a4PreviewContent").innerHTML = buildA4SheetHtml(currentJokboData);
+      document.getElementById("a4PreviewModal").classList.remove("hidden");
+    }
+
+    function closeA4PreviewModal() {
+      document.getElementById("a4PreviewModal").classList.add("hidden");
+    }
+
+    async function downloadA4Pdf() {
+      const targetEl = document.getElementById("a4PreviewContent");
+      const btn = document.getElementById("downloadPdfBtn");
+      const label = document.getElementById("downloadPdfLabel");
+
+      if (typeof html2pdf === "undefined") {
+        showToast("PDF 저장 도구를 불러오는 중입니다. 잠시 후 다시 눌러주세요!", "⏳");
+        return;
+      }
+
+      const rawTitle = (currentJokboData?.subjectTitle || "찍으면족보_A4_시험지")
+        .replace(/[\\/:*?"<>|·]/g, "_")
+        .replace(/\s+/g, "_")
+        .slice(0, 32);
+
+      btn.disabled = true;
+      label.textContent = "PDF 만드는 중...";
+      showToast("A4 고화질 PDF 파일을 생성하고 있어요!", "📄");
+
+      try {
+        const opt = {
+          margin: [8, 10, 8, 10],
+          filename: `${rawTitle}.pdf`,
+          image: { type: "jpeg", quality: 0.96 },
+          html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+          pagebreak: { mode: ["avoid-all", "css", "legacy"] }
+        };
+        await html2pdf().set(opt).from(targetEl).save();
+        showToast("PDF 저장 완료! 저장된 파일을 열어 인쇄하거나 필기하세요 🖨️", "✅");
+      } catch (err) {
+        showToast("PDF 저장 중 문제가 생겼어요. 외부 브라우저에서 다시 시도해 주세요!", "⚠️");
+      } finally {
+        btn.disabled = false;
+        label.textContent = "A4 PDF 저장";
+      }
+    }
+
+    // 11. 클립보드 복사 및 베타 후기 모달
+    function copyTextSafely(text) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+      } catch (e) {
+        console.error(e);
+      }
+      document.body.removeChild(ta);
+    }
+
+    function copyAllSummary() {
+      if (!currentJokboData) return;
+      const lines = [
+        `⚡ [찍으면 족보 · 벼락치기] ${currentJokboData.subjectTitle}`,
+        ``,
+        `🎯 출제 1순위:`,
+        ...(currentJokboData.teacherPicks || []).map(p => `- ${p}`),
+        ``,
+        `📖 핵심 원리 풀이 & 예시 해부:`,
+        ...(currentJokboData.summaryCards || []).map(c => {
+          const core = c.coreSummary || c.content || "";
+          const why = c.whyExplanation || "";
+          const step = c.stepByStepExample || "";
+          return `[${c.title}]\n📌 핵심: ${core}${why ? `\n📖 원리: ${why}` : ""}${step ? `\n🔍 예시: ${step}` : ""}`;
+        })
+      ];
+      copyTextSafely(lines.join("\n\n"));
+      showToast("원리 이해 족보 전체 텍스트가 복사되었어요!", "📋");
+    }
+
+    function copyShareChallenge() {
+      if (!currentJokboData) return;
+      const qList = (currentJokboData.oxQuiz || []).slice(0, 3).map((q, i) => `Q${i + 1}. ${q.question} (O/X)`).join("\n");
+      const shareMsg = `⚡ [찍으면 족보 · 벼락치기] 우리 반 1분 함정 OX 배틀!\n과목/단원: ${currentJokboData.subjectTitle}\n\n${qList}\n\n👉 몇 개 맞혔는지 단톡방에 바로 답해봐!`;
+      copyTextSafely(shareMsg);
+      showToast("단톡방 퀴즈 배틀 메시지가 복사되었어요!", "💬");
+    }
+
+    function openFeedbackModal() {
+      document.getElementById("feedbackModal").classList.remove("hidden");
+    }
+
+    function closeFeedbackModal() {
+      document.getElementById("feedbackModal").classList.add("hidden");
+    }
+
+    function selectRating(ratingText) {
+      selectedRating = ratingText;
+      document.querySelectorAll(".rating-btn").forEach(btn => {
+        if (btn.textContent.trim() === ratingText) {
+          btn.className = "rating-btn py-2 rounded-xl border-2 border-electric-500 bg-electric-50 text-electric-700 text-xs font-extrabold cursor-pointer";
+        } else {
+          btn.className = "rating-btn py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-bold cursor-pointer";
+        }
+      });
+    }
+
+    function submitBetaFeedback() {
+      const comment = document.getElementById("feedbackText").value.trim();
+      const summary = `[찍으면 족보 베타 후기] ${selectedRating}${comment ? " - " + comment : ""}`;
+      copyTextSafely(summary);
+      document.getElementById("feedbackText").value = "";
+      closeFeedbackModal();
+      showToast("소중한 베타 후기가 기록(복사)되었습니다! 고마워요 🙌", "🎉");
+    }
+
+    // 초기 구동 및 브라우저 보이스 로드 이벤트 등록
+    window.addEventListener("DOMContentLoaded", () => {
+      renderSubjectSampleButtons();
+      if ("speechSynthesis" in window) {
+        loadBestKoreanVoices();
+        window.speechSynthesis.onvoiceschanged = loadBestKoreanVoices;
+      }
+      if (/KAKAOTALK/i.test(navigator.userAgent || "")) {
+        const notice = document.getElementById("inAppBrowserNotice");
+        if (notice) notice.classList.remove("hidden");
+      }
+    });
+  </script>
+</body>
+</html>
