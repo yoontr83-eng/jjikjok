@@ -35,7 +35,7 @@ export default async function handler(req, res) {
     };
 
     const systemPrompt = `당신은 대한민국 고등학교 내신 [${subjectName}] 베테랑 1타 강사입니다.
-업로드된 학교 프린트 이미지(또는 텍스트)를 통합 분석하여 벼락치기 자료 4종 세트를 간결하고 핵심만 담아 JSON으로 출력하세요.
+업로드된 학교 프린트 이미지(또는 텍스트)를 통합 분석하여 벼락치기 자료 4종 세트를 핵심만 간결하게 담아 JSON으로 출력하세요.
 
 [과목 지침 - ${subjectName}]
 ${subjectGuides[subjectName] || ""}
@@ -46,7 +46,7 @@ ${subjectGuides[subjectName] || ""}
 3. summaryCards는 핵심 개념 3개로 구성하며 각 카드에 coreSummary(핵심 요약), whyExplanation(원리 풀이), stepByStepExample(예시 단계별 해부), isStarred를 포함하세요.
 4. blankItems는 핵심 암기 문장 3~4개를 작성하되, 빈칸 키워드만 {{정답}} 형식으로 감싸세요.
 5. oxQuiz는 내신 말장난 함정 선지를 섞어 4~5문제를 출제하고 1줄 해설을 다세요.
-6. audioScript는 등굣길에 듣는 200~280자 구어체 브리핑 대본으로 괄호나 특수기호 없이 작성하세요.`;
+6. audioScript는 등굣길에 듣는 200~260자 구어체 브리핑 대본으로 괄호나 특수기호 없이 작성하세요.`;
 
     const parts = [];
     imageList.forEach((img, idx) => {
@@ -71,9 +71,9 @@ ${subjectGuides[subjectName] || ""}
       contents: [{ parts }],
       systemInstruction: { parts: [{ text: systemPrompt }] },
       generationConfig: {
-        maxOutputTokens: 4096,
+        maxOutputTokens: 3500,
         thinkingConfig: {
-          thinkingLevel: "LOW"
+          thinkingLevel: "low"
         },
         responseMimeType: "application/json",
         responseSchema: {
@@ -115,29 +115,44 @@ ${subjectGuides[subjectName] || ""}
       }
     };
 
-    // 1순위 초고속 모델 -> 실패 시 2순위 검증 모델 자동 전환
-    const models = ["gemini-4-hydrogen", "gemini-3-flash-preview"];
+    // 1순위: 2~4초 초고속 멀티모달 경량 모델 -> 2순위: 고성능 Flash 모델
+    const models = ["gemini-3.5-flash-lite", "gemini-3.8-flash"];
     let lastStatus = 500;
     let lastErrorDetail = "";
 
     for (const modelName of models) {
-      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody)
-      });
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 22000);
 
-      if (response.ok) {
-        const data = await response.json();
-        const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (rawText) {
-          const cleanedJson = rawText.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
-          return res.status(200).json(JSON.parse(cleanedJson));
+      try {
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": apiKey
+          },
+          body: JSON.stringify(requestBody),
+          signal: controller.signal
+        });
+
+        clearTimeout(timer);
+
+        if (response.ok) {
+          const data = await response.json();
+          const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (rawText) {
+            const cleanedJson = rawText.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
+            return res.status(200).json(JSON.parse(cleanedJson));
+          }
+        } else {
+          lastStatus = response.status;
+          lastErrorDetail = await response.text();
         }
-      } else {
-        lastStatus = response.status;
-        lastErrorDetail = await response.text();
+      } catch (fetchErr) {
+        clearTimeout(timer);
+        lastStatus = 504;
+        lastErrorDetail = `${modelName} 응답 지연 (${fetchErr.message})`;
       }
     }
 
