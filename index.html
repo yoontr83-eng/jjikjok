@@ -315,6 +315,14 @@
           <button type="button" onclick="openArchiveModal()" class="font-black underline text-emerald-700 cursor-pointer">목록 열기</button>
         </div>
 
+        <!-- [위치 1] AI 오류(환각) 주의 안내 배너 (친근한 1타 강사 톤 - 스타일 A) -->
+        <div id="aiNoticeBanner" class="bg-amber-50/90 border border-amber-200 rounded-2xl px-3.5 py-2.5 flex items-start gap-2 text-[11px] text-amber-950 leading-snug">
+          <span class="text-sm shrink-0 mt-0.5">💡</span>
+          <p>
+            <strong>AI가 프린트를 분석해 정리한 족보예요!</strong> 가끔 AI도 글씨를 잘못 읽거나 실수할 수 있으니, 헷갈리는 개념과 OX 정답은 <strong>반드시 학교 프린트 원문과 한 번 더 대조</strong>해 보세요.
+          </p>
+        </div>
+
         <!-- AI 서버 연결 진단 안내 배너 (오류 발생 시에만 표시) -->
         <div id="fallbackDiagnosticBanner" class="hidden bg-red-50 border-2 border-red-300 rounded-2xl p-3.5 text-xs text-red-950 space-y-1">
           <div class="font-black flex items-center gap-1.5 text-red-700">
@@ -1692,15 +1700,6 @@
       renderUploadedImagesGrid();
     }
 
-    function clearAllUploadedImages() {
-      uploadedImages = [];
-      const albumInput = document.getElementById("printImageInput");
-      const cameraInput = document.getElementById("cameraImageInput");
-      if (albumInput) albumInput.value = "";
-      if (cameraInput) cameraInput.value = "";
-      renderUploadedImagesGrid();
-    }
-
     // 5. AI 벼락치기 족보 생성 실행 (성공 시 자동 보관함 저장)
     async function generateJokbo() {
       const text = document.getElementById("printTextInput").value.trim();
@@ -1852,7 +1851,8 @@ ${subjectGuides[subjectName] || ""}
 3. summaryCards는 핵심 개념 3개로 구성하며 각 카드에 coreSummary(핵심 요약), whyExplanation(원리 풀이), stepByStepExample(예시 단계별 해부), isStarred를 포함하세요.
 4. blankItems는 핵심 암기 문장 3~4개를 작성하되, 빈칸 키워드만 {{정답}} 형식으로 감싸세요.
 5. oxQuiz는 내신 말장난 함정 선지를 섞어 4~5문제를 출제하고 1줄 해설을 다세요.
-6. audioScript는 등굣길에 듣는 200~280자 구어체 브리핑 대본으로 괄호나 특수기호 없이 작성하세요.`;
+6. audioScript는 등굣길에 듣는 200~280자 구어체 브리핑 대본으로 괄호나 특수기호 없이 작성하세요.
+7. 반드시 업로드된 프린트 이미지와 텍스트에 근거한 내용만 작성하세요. 사진이 흐릿하거나 잘려서 판독이 어려운 글씨는 절대 추측해서 지어내지 말고, 판독 가능한 핵심 내용 위주로만 정리하세요.`;
 
       const parts = [];
       cleanImages.forEach((img, idx) => {
@@ -2491,6 +2491,10 @@ ${subjectGuides[subjectName] || ""}
             <div style="transform: rotate(180deg);" class="transform rotate-180 bg-slate-50 border border-slate-300 rounded p-2 text-[9px] text-slate-700 leading-snug">
               <div><strong>[빈칸 정답]</strong> ${blankAnswers.join("  |  ")}</div>
               <div class="mt-0.5"><strong>[OX 정답 및 함정 해설]</strong> ${oxAnswerList}</div>
+            </div>
+            <!-- [위치 2] A4 시험지 & PDF 하단 AI 오류(환각) 안내 각주 (스타일 A) -->
+            <div class="mt-1.5 text-[9px] text-slate-500 text-center leading-snug">
+              💡 <strong>AI가 프린트를 분석해 정리한 족보예요!</strong> 가끔 AI도 글씨를 잘못 읽거나 실수할 수 있으니, 헷갈리는 개념과 OX 정답은 <strong>반드시 학교 프린트 원문과 한 번 더 대조</strong>해 보세요.
             </div>
           </div>
         </div>
