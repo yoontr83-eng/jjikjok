@@ -84,7 +84,7 @@
     @media print {
       @page {
         size: A4 portrait;
-        margin: 12mm;
+        margin: 8mm;
       }
       html, body {
         background: #ffffff !important;
@@ -2447,8 +2447,8 @@ ${subjectGuides[subjectName] || ""}
         .join(" / ");
 
       return `
-        <div class="space-y-3 text-slate-900 bg-white">
-          <div class="border-b-2 border-slate-900 pb-2 flex flex-wrap items-end justify-between gap-2">
+        <div class="space-y-2 text-slate-900 bg-white">
+          <div class="border-b-2 border-slate-900 pb-1.5 flex flex-wrap items-end justify-between gap-2">
             <div>
               <div class="text-[10px] font-extrabold text-slate-600 tracking-wider">⚡ 찍으면 족보 · 벼락치기 [${subjectLabel}] 원리 이해 A4 워크시트 · <span class="text-slate-950 font-black">by SC 윤T</span></div>
               <h1 class="text-base font-black text-slate-950 mt-0.5">${escapeHtml(data.subjectTitle || "핵심 벼락치기 족보")}</h1>
@@ -2458,42 +2458,42 @@ ${subjectGuides[subjectName] || ""}
             </div>
           </div>
 
-          <div class="border-2 border-slate-900 rounded-lg p-2.5 bg-slate-50 print-avoid-break">
-            <div class="text-[11px] font-black text-slate-950 mb-1">🎯 출제자 시선 · 함정 & 별표(★) 최우선 암기 포인트</div>
+          <div class="border-2 border-slate-900 rounded-lg p-2 bg-slate-50 print-avoid-break">
+            <div class="text-[11px] font-black text-slate-950 mb-0.5">🎯 출제자 시선 · 함정 & 별표(★) 최우선 암기 포인트</div>
             <ul class="space-y-0.5 text-[10.5px] text-slate-900 leading-snug">
               ${picksHtml}
             </ul>
           </div>
 
           <div>
-            <h2 class="text-[11.5px] font-black text-slate-950 mb-1.5">📖 핵심 개념 정리 · 원리 이해 풀이 · 실전 예시 해부</h2>
-            <div class="grid grid-cols-1 gap-2">
+            <h2 class="text-[11.5px] font-black text-slate-950 mb-1">📖 핵심 개념 정리 · 원리 이해 풀이 · 실전 예시 해부</h2>
+            <div class="grid grid-cols-1 gap-1.5">
               ${cardsHtml}
             </div>
           </div>
 
-          <div class="border border-slate-400 rounded-lg p-2.5 print-avoid-break">
-            <h2 class="text-[11.5px] font-black text-slate-950 mb-1.5">🟩 실전 빈칸 채우기 (펜으로 직접 써보세요!)</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
+          <div class="border border-slate-400 rounded-lg p-2 print-avoid-break">
+            <h2 class="text-[11.5px] font-black text-slate-950 mb-1">🟩 실전 빈칸 채우기 (펜으로 직접 써보세요!)</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
               ${blanksHtml}
             </div>
           </div>
 
-          <div class="border border-slate-400 rounded-lg p-2.5 print-avoid-break">
+          <div class="border border-slate-400 rounded-lg p-2 print-avoid-break">
             <h2 class="text-[11.5px] font-black text-slate-950 mb-1">⚔️ 내신 말장난 함정 OX 퀴즈</h2>
             <div>
               ${oxHtml}
             </div>
           </div>
 
-          <div class="pt-1.5 border-t border-dashed border-slate-400 print-avoid-break">
+          <div class="pt-1 border-t border-dashed border-slate-400 print-avoid-break">
             <div class="text-[9px] text-slate-400 text-center mb-1">✂ ─────────────────── 접어서 확인하는 미니 정답지 ─────────────────── ✂</div>
             <div style="transform: rotate(180deg);" class="transform rotate-180 bg-slate-50 border border-slate-300 rounded p-2 text-[9px] text-slate-700 leading-snug">
               <div><strong>[빈칸 정답]</strong> ${blankAnswers.join("  |  ")}</div>
               <div class="mt-0.5"><strong>[OX 정답 및 함정 해설]</strong> ${oxAnswerList}</div>
             </div>
             <!-- [위치 2] A4 시험지 & PDF 하단 AI 오류(환각) 안내 각주 (스타일 A) -->
-            <div class="mt-1.5 text-[9px] text-slate-500 text-center leading-snug">
+            <div class="mt-1 text-[9px] text-slate-500 text-center leading-snug">
               💡 <strong>AI가 프린트를 분석해 정리한 족보예요!</strong> 가끔 AI도 글씨를 잘못 읽거나 실수할 수 있으니, 헷갈리는 개념과 OX 정답은 <strong>반드시 학교 프린트 원문과 한 번 더 대조</strong>해 보세요.
             </div>
           </div>
@@ -2552,7 +2552,7 @@ ${subjectGuides[subjectName] || ""}
       // 백지·절반잘림 원천 차단용 A4 전용 스테이지 생성 (일반 문서 흐름 static)
       const stage = document.createElement("div");
       stage.style.width = "750px";
-      stage.style.padding = "24px";
+      stage.style.padding = "14px 16px";
       stage.style.margin = "0";
       stage.style.backgroundColor = "#ffffff";
       stage.style.color = "#0f172a";
@@ -2578,12 +2578,14 @@ ${subjectGuides[subjectName] || ""}
           ? currentJokboData.subjectTitle
           : "벼락치기_시험지";
         const safeTitle = rawTitle.replace(/[\\/:*?"<>|\s]+/g, "_").slice(0, 24);
+        const filename = `찍으면족보_${safeTitle}.pdf`;
 
-        await html2pdf()
+        // 1. 시험지 전체를 고해상도 캔버스 1장으로 캡처
+        const worker = html2pdf()
           .set({
-            margin: [10, 10, 10, 10],
-            filename: `찍으면족보_${safeTitle}.pdf`,
-            image: { type: "jpeg", quality: 0.92 },
+            margin: 0,
+            filename,
+            image: { type: "jpeg", quality: 0.94 },
             html2canvas: {
               scale: 1.5,          // 모바일 메모리 초과(백지) 방지 안전 해상도
               useCORS: true,
@@ -2601,10 +2603,42 @@ ${subjectGuides[subjectName] || ""}
               orientation: "portrait"
             }
           })
-          .from(stage)
-          .save();
+          .from(stage);
 
-        showToast("A4 PDF 파일이 다운로드되었습니다!", "📥");
+        const canvas = await worker.toCanvas().get("canvas");
+        const pdf = await worker.toPdf().get("pdf");
+
+        // 2. 자동 분할된 여분 페이지를 제거하고 깨끗한 A4 1페이지만 남김
+        const getPageCount = () =>
+          typeof pdf.getNumberOfPages === "function"
+            ? pdf.getNumberOfPages()
+            : pdf.internal.getNumberOfPages();
+
+        while (getPageCount() > 1) {
+          pdf.deletePage(getPageCount());
+        }
+        pdf.setPage(1);
+
+        const pageW = pdf.internal.pageSize.getWidth();  // 210mm
+        const pageH = pdf.internal.pageSize.getHeight(); // 297mm
+        pdf.setFillColor(255, 255, 255);
+        pdf.rect(0, 0, pageW, pageH, "F");
+
+        // 3. A4 1페이지 여백(7mm) 안에 가로·세로 비율을 유지한 채 자동 맞춤(Fit-to-Page)
+        const marginMm = 7;
+        const maxW = pageW - marginMm * 2;
+        const maxH = pageH - marginMm * 2;
+        const fitRatio = Math.min(maxW / canvas.width, maxH / canvas.height);
+        const renderW = canvas.width * fitRatio;
+        const renderH = canvas.height * fitRatio;
+        const offsetX = (pageW - renderW) / 2;
+        const offsetY = marginMm;
+
+        const imgData = canvas.toDataURL("image/jpeg", 0.94);
+        pdf.addImage(imgData, "JPEG", offsetX, offsetY, renderW, renderH, undefined, "FAST");
+        pdf.save(filename);
+
+        showToast("A4 1장 맞춤 PDF 파일이 다운로드되었습니다!", "📥");
       } catch (err) {
         console.error("PDF 저장 오류:", err);
         showToast("PDF 저장에 실패했습니다. 크롬/사파리에서 다시 시도해 주세요.", "⚠️");
