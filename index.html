@@ -2398,40 +2398,71 @@ ${subjectGuides[subjectName] || ""}
       if (btn) btn.disabled = true;
       if (label) label.textContent = "PDF 만드는 중...";
 
-      // 1. 모바일 화면 폭/스크롤 영향 없는 A4 전용 깨끗한 복제본 생성 (A4 인쇄폭 718px 고정)
-      const pdfClone = document.createElement("div");
-      pdfClone.style.width = "718px";
-      pdfClone.style.maxWidth = "718px";
-      pdfClone.style.padding = "12px 16px";
-      pdfClone.style.backgroundColor = "#ffffff";
-      pdfClone.style.color = "#0f172a";
-      pdfClone.style.boxSizing = "border-box";
-      pdfClone.style.fontFamily = '"Noto Sans KR", "NanumBarunGothicYetHangul", sans-serif';
-      pdfClone.innerHTML = contentEl.innerHTML;
+      // 현재 스크롤 위치 기억 후 최상단(0,0)으로 임시 이동 (모바일 좌표 밀림 방지)
+      const prevScrollX = window.scrollX;
+      const prevScrollY = window.scrollY;
 
-      // 파일명 안전 정리
+      // 1. 실제 DOM(화면)에 잠시 마운트할 A4 전용 컨테이너 생성 (백지 방지 핵심!)
+      const host = document.createElement("div");
+      host.style.position = "absolute";
+      host.style.top = "0";
+      host.style.left = "0";
+      host.style.width = "718px";
+      host.style.backgroundColor = "#ffffff";
+      host.style.color = "#0f172a";
+      host.style.padding = "16px 20px";
+      host.style.boxSizing = "border-box";
+      host.style.zIndex = "99990";
+      host.style.fontFamily = '"Noto Sans KR", "NanumBarunGothicYetHangul", sans-serif';
+      host.innerHTML = contentEl.innerHTML;
+
+      // 사용자 화면이 깜빡이지 않도록 깔끔한 로딩 막을 바로 위에 덮기
+      const cover = document.createElement("div");
+      cover.style.position = "fixed";
+      cover.style.inset = "0";
+      cover.style.backgroundColor = "rgba(15, 23, 42, 0.88)";
+      cover.style.zIndex = "99999";
+      cover.style.display = "flex";
+      cover.style.alignItems = "center";
+      cover.style.justifyContent = "center";
+      cover.style.color = "#FACC15";
+      cover.style.fontWeight = "900";
+      cover.style.fontSize = "15px";
+      cover.textContent = "📄 A4 시험지 PDF를 깔끔하게 생성 중입니다...";
+
+      document.body.appendChild(host);
+      document.body.appendChild(cover);
+
       const rawTitle = (typeof currentJokbo !== "undefined" && currentJokbo?.subjectTitle)
         ? currentJokbo.subjectTitle
         : "벼락치기_시험지";
       const safeTitle = rawTitle.replace(/[\\/:*?"<>|\s]+/g, "_").slice(0, 22);
 
       try {
+        window.scrollTo(0, 0);
+        // 브라우저가 718px A4 레이아웃과 폰트를 완전히 그릴 수 있도록 잠깐 대기
+        await new Promise((resolve) => setTimeout(resolve, 250));
+
         await html2pdf()
           .set({
-            margin: [10, 10, 10, 10], // 상하좌우 10mm 여백
+            margin: [10, 10, 10, 10],
             filename: `찍으면족보_${safeTitle}.pdf`,
-            image: { type: "jpeg", quality: 0.96 },
+            image: { type: "jpeg", quality: 0.95 },
             html2canvas: {
               scale: 2,
               useCORS: true,
+              backgroundColor: "#ffffff",
+              x: 0,
+              y: 0,
               scrollX: 0,
               scrollY: 0,
-              windowWidth: 794 // A4 기준 가로폭 고정 (모바일 잘림 방지 핵심!)
+              width: 718,
+              windowWidth: 794
             },
             jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-            pagebreak: { mode: ["avoid-all", "css", "legacy"] }
+            pagebreak: { mode: ["css", "legacy"] } // avoid-all 제거 (백지 방지 핵심!)
           })
-          .from(pdfClone)
+          .from(host)
           .save();
 
         showToast("A4 시험지 PDF가 깔끔하게 저장되었습니다!", "📥");
@@ -2439,10 +2470,14 @@ ${subjectGuides[subjectName] || ""}
         console.error("PDF 저장 오류:", err);
         showToast("카톡 내부에서는 우측 하단 [⋮ → 다른 브라우저로 열기] 후 저장해 주세요!", "💡");
       } finally {
+        host.remove();
+        cover.remove();
+        window.scrollTo(prevScrollX, prevScrollY);
         if (btn) btn.disabled = false;
         if (label) label.textContent = "A4 PDF 저장";
       }
     }
+
 
 
     // 11. 클립보드 복사 및 베타 후기 모달
