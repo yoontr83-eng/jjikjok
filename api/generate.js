@@ -181,7 +181,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // 4. 시스템 프롬프트 및 멀티모달 파트 구성
+    // 4. 시스템 프롬프트 및 멀티모달 파트 구성 (환각 방지 규칙 포함)
     const systemPrompt = `당신은 대한민국 고등학교 내신 [${subjectName}] 베테랑 1타 강사입니다.
 업로드된 학교 프린트 이미지(또는 텍스트)를 통합 분석하여 벼락치기 자료 4종 세트를 핵심만 간결하게 담아 JSON으로 출력하세요.
 
@@ -194,7 +194,8 @@ ${SUBJECT_GUIDES[subjectName] || ""}
 3. summaryCards는 핵심 개념 3개로 구성하며 각 카드에 coreSummary(핵심 요약), whyExplanation(원리 풀이), stepByStepExample(예시 단계별 해부), isStarred를 포함하세요.
 4. blankItems는 핵심 암기 문장 3~4개를 작성하되, 빈칸 키워드만 {{정답}} 형식으로 감싸세요.
 5. oxQuiz는 내신 말장난 함정 선지를 섞어 4~5문제를 출제하고 1줄 해설을 다세요.
-6. audioScript는 등굣길에 듣는 200~260자 구어체 브리핑 대본으로 괄호나 특수기호 없이 작성하세요.`;
+6. audioScript는 등굣길에 듣는 200~260자 구어체 브리핑 대본으로 괄호나 특수기호 없이 작성하세요.
+7. 반드시 업로드된 프린트 이미지와 텍스트에 근거한 내용만 작성하세요. 사진이 흐릿하거나 잘려서 판독이 어려운 글씨는 절대 추측해서 지어내지 말고, 판독 가능한 핵심 내용 위주로만 정리하세요.`;
 
     const parts = [];
     validImages.forEach((img, idx) => {
