@@ -77,6 +77,36 @@
       break-inside: avoid;
       page-break-inside: avoid;
     }
+     #printOnlySheet {
+      display: none;
+    }
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 12mm;
+      }
+      html, body {
+        background: #ffffff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+      #appContainer,
+      #a4PreviewModal,
+      #archiveModal,
+      #feedbackModal,
+      #toastBox {
+        display: none !important;
+      }
+      #printOnlySheet {
+        display: block !important;
+        width: 100% !important;
+        background: #ffffff !important;
+        color: #0f172a !important;
+        font-family: "Noto Sans KR", "NanumBarunGothicYetHangul", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif !important;
+      }
+    }
   </style>
 </head>
 <body class="bg-slate-900 text-slate-800 antialiased selection:bg-volt-400 selection:text-slate-900">
@@ -2384,70 +2414,39 @@ ${subjectGuides[subjectName] || ""}
       document.getElementById("a4PreviewModal").classList.add("hidden");
     }
 
-     async function downloadA4Pdf() {
+      async function downloadA4Pdf() {
       const contentEl = document.getElementById("a4PreviewContent");
-      const btn = document.getElementById("downloadPdfBtn");
-      const label = document.getElementById("downloadPdfLabel");
-      if (!contentEl) return;
-
-      if (typeof html2pdf === "undefined") {
-        showToast("PDF 변환기를 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요.", "⚠️");
+      if (!contentEl || !contentEl.innerHTML.trim()) {
+        showToast("저장할 시험지 내용이 없습니다.", "⚠️");
         return;
       }
 
-      if (btn) btn.disabled = true;
-      if (label) label.textContent = "PDF 만드는 중...";
+      // 기존 인쇄 전용 영역이 있으면 재사용, 없으면 body 최상단에 생성
+      let printSheet = document.getElementById("printOnlySheet");
+      if (!printSheet) {
+        printSheet = document.createElement("div");
+        printSheet.id = "printOnlySheet";
+        document.body.appendChild(printSheet);
+      }
 
-      // 현재 스크롤 위치 기억 후 최상단으로 임시 이동
-      const prevScrollX = window.scrollX;
-      const prevScrollY = window.scrollY;
+      // 시험지 본문만 깨끗하게 복사 (모달 스크롤·폭 잘림 완벽 차단)
+      printSheet.innerHTML = contentEl.innerHTML;
 
-      // position: absolute 없이 일반 흐름(static) div로 내용만 깔끔하게 복사 (높이 0 백지 방지!)
-      const cleanDiv = document.createElement("div");
-      cleanDiv.style.width = "100%";
-      cleanDiv.style.backgroundColor = "#ffffff";
-      cleanDiv.style.color = "#0f172a";
-      cleanDiv.style.padding = "8px";
-      cleanDiv.style.boxSizing = "border-box";
-      cleanDiv.style.fontFamily = '"Noto Sans KR", "NanumBarunGothicYetHangul", sans-serif';
-      cleanDiv.innerHTML = contentEl.innerHTML;
-
+      // PDF 기본 파일명을 단원명으로 자동 설정
+      const prevTitle = document.title;
       const rawTitle = (typeof currentJokbo !== "undefined" && currentJokbo?.subjectTitle)
         ? currentJokbo.subjectTitle
         : "벼락치기_시험지";
-      const safeTitle = rawTitle.replace(/[\\/:*?"<>|\s]+/g, "_").slice(0, 22);
+      const safeTitle = rawTitle.replace(/[\\/:*?"<>|\s]+/g, "_").slice(0, 24);
+      document.title = `찍으면족보_${safeTitle}`;
 
-      try {
-        window.scrollTo(0, 0);
+      // 브라우저 기본 A4 PDF 저장 / 인쇄 창 즉시 호출
+      window.print();
 
-        await html2pdf()
-          .set({
-            margin: [10, 10, 10, 10],
-            filename: `찍으면족보_${safeTitle}.pdf`,
-            image: { type: "jpeg", quality: 0.92 },
-            html2canvas: {
-              scale: 1.5, // 모바일 캔버스 메모리 초과(백지) 방지 + 선명한 화질 유지
-              useCORS: true,
-              backgroundColor: "#ffffff",
-              scrollX: 0,
-              scrollY: 0,
-              windowWidth: 794 // 모바일(390px)에서도 A4 전체 폭(794px)이 안 잘리게 렌더링
-            },
-            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-            pagebreak: { mode: ["css", "legacy"] }
-          })
-          .from(cleanDiv)
-          .save();
-
-        showToast("A4 시험지 PDF가 저장되었습니다!", "📥");
-      } catch (err) {
-        console.error("PDF 저장 오류:", err);
-        showToast("카톡 내부에서는 우측 하단 [⋮ → 다른 브라우저로 열기] 후 저장해 주세요!", "💡");
-      } finally {
-        window.scrollTo(prevScrollX, prevScrollY);
-        if (btn) btn.disabled = false;
-        if (label) label.textContent = "A4 PDF 저장";
-      }
+      // 인쇄 창 닫힌 후 원래 제목 복구
+      setTimeout(() => {
+        document.title = prevTitle;
+      }, 1000);
     }
 
     // 11. 클립보드 복사 및 베타 후기 모달
