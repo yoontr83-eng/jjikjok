@@ -2384,7 +2384,7 @@ ${subjectGuides[subjectName] || ""}
       document.getElementById("a4PreviewModal").classList.add("hidden");
     }
 
-    async function downloadA4Pdf() {
+     async function downloadA4Pdf() {
       const contentEl = document.getElementById("a4PreviewContent");
       const btn = document.getElementById("downloadPdfBtn");
       const label = document.getElementById("downloadPdfLabel");
@@ -2398,40 +2398,19 @@ ${subjectGuides[subjectName] || ""}
       if (btn) btn.disabled = true;
       if (label) label.textContent = "PDF 만드는 중...";
 
-      // 현재 스크롤 위치 기억 후 최상단(0,0)으로 임시 이동 (모바일 좌표 밀림 방지)
+      // 현재 스크롤 위치 기억 후 최상단으로 임시 이동
       const prevScrollX = window.scrollX;
       const prevScrollY = window.scrollY;
 
-      // 1. 실제 DOM(화면)에 잠시 마운트할 A4 전용 컨테이너 생성 (백지 방지 핵심!)
-      const host = document.createElement("div");
-      host.style.position = "absolute";
-      host.style.top = "0";
-      host.style.left = "0";
-      host.style.width = "718px";
-      host.style.backgroundColor = "#ffffff";
-      host.style.color = "#0f172a";
-      host.style.padding = "16px 20px";
-      host.style.boxSizing = "border-box";
-      host.style.zIndex = "99990";
-      host.style.fontFamily = '"Noto Sans KR", "NanumBarunGothicYetHangul", sans-serif';
-      host.innerHTML = contentEl.innerHTML;
-
-      // 사용자 화면이 깜빡이지 않도록 깔끔한 로딩 막을 바로 위에 덮기
-      const cover = document.createElement("div");
-      cover.style.position = "fixed";
-      cover.style.inset = "0";
-      cover.style.backgroundColor = "rgba(15, 23, 42, 0.88)";
-      cover.style.zIndex = "99999";
-      cover.style.display = "flex";
-      cover.style.alignItems = "center";
-      cover.style.justifyContent = "center";
-      cover.style.color = "#FACC15";
-      cover.style.fontWeight = "900";
-      cover.style.fontSize = "15px";
-      cover.textContent = "📄 A4 시험지 PDF를 깔끔하게 생성 중입니다...";
-
-      document.body.appendChild(host);
-      document.body.appendChild(cover);
+      // position: absolute 없이 일반 흐름(static) div로 내용만 깔끔하게 복사 (높이 0 백지 방지!)
+      const cleanDiv = document.createElement("div");
+      cleanDiv.style.width = "100%";
+      cleanDiv.style.backgroundColor = "#ffffff";
+      cleanDiv.style.color = "#0f172a";
+      cleanDiv.style.padding = "8px";
+      cleanDiv.style.boxSizing = "border-box";
+      cleanDiv.style.fontFamily = '"Noto Sans KR", "NanumBarunGothicYetHangul", sans-serif';
+      cleanDiv.innerHTML = contentEl.innerHTML;
 
       const rawTitle = (typeof currentJokbo !== "undefined" && currentJokbo?.subjectTitle)
         ? currentJokbo.subjectTitle
@@ -2440,45 +2419,36 @@ ${subjectGuides[subjectName] || ""}
 
       try {
         window.scrollTo(0, 0);
-        // 브라우저가 718px A4 레이아웃과 폰트를 완전히 그릴 수 있도록 잠깐 대기
-        await new Promise((resolve) => setTimeout(resolve, 250));
 
         await html2pdf()
           .set({
             margin: [10, 10, 10, 10],
             filename: `찍으면족보_${safeTitle}.pdf`,
-            image: { type: "jpeg", quality: 0.95 },
+            image: { type: "jpeg", quality: 0.92 },
             html2canvas: {
-              scale: 2,
+              scale: 1.5, // 모바일 캔버스 메모리 초과(백지) 방지 + 선명한 화질 유지
               useCORS: true,
               backgroundColor: "#ffffff",
-              x: 0,
-              y: 0,
               scrollX: 0,
               scrollY: 0,
-              width: 718,
-              windowWidth: 794
+              windowWidth: 794 // 모바일(390px)에서도 A4 전체 폭(794px)이 안 잘리게 렌더링
             },
             jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-            pagebreak: { mode: ["css", "legacy"] } // avoid-all 제거 (백지 방지 핵심!)
+            pagebreak: { mode: ["css", "legacy"] }
           })
-          .from(host)
+          .from(cleanDiv)
           .save();
 
-        showToast("A4 시험지 PDF가 깔끔하게 저장되었습니다!", "📥");
+        showToast("A4 시험지 PDF가 저장되었습니다!", "📥");
       } catch (err) {
         console.error("PDF 저장 오류:", err);
         showToast("카톡 내부에서는 우측 하단 [⋮ → 다른 브라우저로 열기] 후 저장해 주세요!", "💡");
       } finally {
-        host.remove();
-        cover.remove();
         window.scrollTo(prevScrollX, prevScrollY);
         if (btn) btn.disabled = false;
         if (label) label.textContent = "A4 PDF 저장";
       }
     }
-
-
 
     // 11. 클립보드 복사 및 베타 후기 모달
     function copyTextSafely(text) {
