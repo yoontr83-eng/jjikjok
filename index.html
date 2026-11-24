@@ -2416,37 +2416,102 @@ ${subjectGuides[subjectName] || ""}
 
       async function downloadA4Pdf() {
       const contentEl = document.getElementById("a4PreviewContent");
+      const btn = document.getElementById("downloadPdfBtn");
+      const label = document.getElementById("downloadPdfLabel");
+
       if (!contentEl || !contentEl.innerHTML.trim()) {
         showToast("저장할 시험지 내용이 없습니다.", "⚠️");
         return;
       }
 
-      // 기존 인쇄 전용 영역이 있으면 재사용, 없으면 body 최상단에 생성
-      let printSheet = document.getElementById("printOnlySheet");
-      if (!printSheet) {
-        printSheet = document.createElement("div");
-        printSheet.id = "printOnlySheet";
-        document.body.appendChild(printSheet);
+      if (typeof html2pdf === "undefined") {
+        showToast("PDF 도구를 불러오는 중입니다. 잠시 후 다시 눌러주세요.", "⚠️");
+        return;
       }
 
-      // 시험지 본문만 깨끗하게 복사 (모달 스크롤·폭 잘림 완벽 차단)
-      printSheet.innerHTML = contentEl.innerHTML;
+      if (btn) btn.disabled = true;
+      if (label) label.textContent = "PDF 저장 중...";
 
-      // PDF 기본 파일명을 단원명으로 자동 설정
-      const prevTitle = document.title;
-      const rawTitle = (typeof currentJokbo !== "undefined" && currentJokbo?.subjectTitle)
-        ? currentJokbo.subjectTitle
-        : "벼락치기_시험지";
-      const safeTitle = rawTitle.replace(/[\\/:*?"<>|\s]+/g, "_").slice(0, 24);
-      document.title = `찍으면족보_${safeTitle}`;
+      // 캡처하는 1초 동안 화면 깜빡임을 가려줄 로딩 덮개 (PDF에는 찍히지 않음)
+      const overlay = document.createElement("div");
+      overlay.setAttribute("data-html2canvas-ignore", "true");
+      overlay.style.cssText = "position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,0.88);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#facc15;font-weight:800;font-size:15px;gap:8px;";
+      overlay.innerHTML = `<div style="font-size:32px;">📄</div><div>A4 PDF 파일을 생성하고 있어요...</div><div style="font-size:12px;color:#cbd5e1;font-weight:600;">잠시만 기다려 주세요 (1~2초)</div>`;
+      document.body.appendChild(overlay);
 
-      // 브라우저 기본 A4 PDF 저장 / 인쇄 창 즉시 호출
-      window.print();
+      // 기존 화면 요소와 스크롤 위치 기억
+      const prevScrollY = window.scrollY;
+      const appContainer = document.getElementById("appContainer");
+      const previewModal = document.getElementById("a4PreviewModal");
 
-      // 인쇄 창 닫힌 후 원래 제목 복구
-      setTimeout(() => {
-        document.title = prevTitle;
-      }, 1000);
+      // 백지·절반잘림 원천 차단용 A4 전용 스테이지 생성 (일반 문서 흐름 static)
+      const stage = document.createElement("div");
+      stage.style.width = "750px";
+      stage.style.padding = "24px";
+      stage.style.margin = "0";
+      stage.style.backgroundColor = "#ffffff";
+      stage.style.color = "#0f172a";
+      stage.style.boxSizing = "border-box";
+      stage.style.fontFamily = '"Noto Sans KR", "NanumBarunGothicYetHangul", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
+      stage.innerHTML = contentEl.innerHTML;
+
+      // 캡처 시 기존 모달/컨테이너가 좌표에 간섭하지 않도록 잠시 숨김
+      if (appContainer) appContainer.style.display = "none";
+      if (previewModal) previewModal.style.display = "none";
+      document.body.appendChild(stage);
+      window.scrollTo(0, 0);
+
+      try {
+        // 폰트와 DOM 레이아웃이 완전히 그려질 때까지 짧게 대기
+        if (document.fonts && document.fonts.ready) {
+          await document.fonts.ready;
+        }
+        await new Promise(resolve => setTimeout(resolve, 250));
+
+        const rawTitle = (typeof currentJokbo !== "undefined" && currentJokbo?.subjectTitle)
+          ? currentJokbo.subjectTitle
+          : "벼락치기_시험지";
+        const safeTitle = rawTitle.replace(/[\\/:*?"<>|\s]+/g, "_").slice(0, 24);
+
+        await html2pdf()
+          .set({
+            margin: [10, 10, 10, 10],
+            filename: `찍으면족보_${safeTitle}.pdf`,
+            image: { type: "jpeg", quality: 0.92 },
+            html2canvas: {
+              scale: 1.5,          // 모바일 메모리 초과(백지) 방지 안전 해상도
+              useCORS: true,
+              backgroundColor: "#ffffff",
+              width: 750,          // 스테이지 폭과 100% 일치 (절반 잘림 방지)
+              windowWidth: 750,    // 모바일 좁은 화면 무시하고 A4 폭 기준으로 캡처
+              x: 0,
+              y: 0,
+              scrollX: 0,
+              scrollY: 0
+            },
+            jsPDF: {
+              unit: "mm",
+              format: "a4",
+              orientation: "portrait"
+            }
+          })
+          .from(stage)
+          .save();
+
+        showToast("A4 PDF 파일이 다운로드되었습니다!", "📥");
+      } catch (err) {
+        console.error("PDF 저장 오류:", err);
+        showToast("PDF 저장에 실패했습니다. 크롬/사파리에서 다시 시도해 주세요.", "⚠️");
+      } finally {
+        // 캡처 완료 후 즉시 원래 화면 복구
+        stage.remove();
+        overlay.remove();
+        if (appContainer) appContainer.style.display = "";
+        if (previewModal) previewModal.style.display = "";
+        window.scrollTo(0, prevScrollY);
+        if (btn) btn.disabled = false;
+        if (label) label.textContent = "A4 PDF 저장";
+      }
     }
 
     // 11. 클립보드 복사 및 베타 후기 모달
