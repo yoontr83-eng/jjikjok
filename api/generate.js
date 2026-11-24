@@ -4,18 +4,19 @@ export const maxDuration = 60;
 // 설정 가능한 상수 (필요에 따라 값을 조정하세요)
 // ==============================================
 
-// 허용할 이미지 MIME 타입 목록
+// 허용할 업로드 MIME 타입 목록 (이미지 + PDF 네이티브 지원)
 const ALLOWED_MIME_TYPES = new Set([
   "image/jpeg",
   "image/jpg",
   "image/png",
-  "image/webp"
+  "image/webp",
+  "application/pdf"
 ]);
 
 // 입력값 크기 제한
-const MAX_IMAGE_COUNT = 3;
+const MAX_UPLOAD_COUNT = 3;
 const MAX_TEXT_LENGTH = 15000;
-const MAX_BASE64_LENGTH = 6 * 1024 * 1024; // 이미지 1장당 약 4.5MB 상당
+const MAX_BASE64_LENGTH = 4.5 * 1024 * 1024; // 파일 1개당 약 3.3MB 원본 상당
 
 // 타임아웃 예산 (Vercel 60초 / 프론트엔드 55초 제한보다 여유 있게 설정)
 const TOTAL_TIMEOUT_BUDGET_MS = 48000;
@@ -116,10 +117,11 @@ function resolveAllowedOrigin(req) {
  * HTTP 상태 코드에 따른 사용자 친화적 안내 문구를 반환합니다.
  */
 function getFriendlyErrorMessage(status) {
-  if (status === 400) return "입력된 이미지 또는 텍스트 형식을 처리할 수 없습니다. 다른 사진으로 시도해 주세요.";
+  if (status === 400) return "입력된 사진·PDF 또는 텍스트 형식을 처리할 수 없습니다. 다른 파일로 시도해 주세요.";
   if (status === 401 || status === 403) return "AI 서버 인증에 실패했습니다. 관리자에게 문의해 주세요.";
+  if (status === 413) return "업로드된 파일 용량이 너무 큽니다. 3MB 이하의 PDF나 사진으로 시도해 주세요.";
   if (status === 429) return "현재 요청이 많아 AI 서버가 혼잡합니다. 잠시 후 다시 시도해 주세요.";
-  if (status === 504) return "AI 분석 시간이 초과되었습니다. 사진 장수를 줄이거나 잠시 후 다시 시도해 주세요.";
+  if (status === 504) return "AI 분석 시간이 초과되었습니다. 파일 개수를 줄이거나 잠시 후 다시 시도해 주세요.";
   return "일시적인 AI 서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
 }
 
@@ -158,32 +160,32 @@ export default async function handler(req, res) {
     const { images, text, subject } = req.body || {};
     const subjectName = SUBJECT_GUIDES[subject] ? subject : "국어";
 
-    // 3. 입력값 사전 필터링 및 크기 제한
+    // 3. 입력값 사전 필터링 및 크기 제한 (이미지 + PDF 지원)
     const safeText = typeof text === "string" ? text.trim().slice(0, MAX_TEXT_LENGTH) : "";
 
-    const validImages = (Array.isArray(images) ? images : [])
-      .filter((img) => {
-        if (!img || typeof img.base64 !== "string" || typeof img.mimeType !== "string") {
+    const validFiles = (Array.isArray(images) ? images : [])
+      .filter((item) => {
+        if (!item || typeof item.base64 !== "string" || typeof item.mimeType !== "string") {
           return false;
         }
-        const normalizedMime = img.mimeType.toLowerCase().trim();
+        const normalizedMime = item.mimeType.toLowerCase().trim();
         return (
           ALLOWED_MIME_TYPES.has(normalizedMime) &&
-          img.base64.length > 0 &&
-          img.base64.length <= MAX_BASE64_LENGTH
+          item.base64.length > 0 &&
+          item.base64.length <= MAX_BASE64_LENGTH
         );
       })
-      .slice(0, MAX_IMAGE_COUNT);
+      .slice(0, MAX_UPLOAD_COUNT);
 
-    if (validImages.length === 0 && !safeText) {
+    if (validFiles.length === 0 && !safeText) {
       return res.status(400).json({
-        error: "유효한 프린트 사진(JPG/PNG/WEBP, 최대 3장)이나 텍스트를 입력해 주세요."
+        error: "유효한 사진(JPG/PNG/WEBP), PDF 파일(최대 3개, 3MB 이하), 또는 텍스트를 입력해 주세요."
       });
     }
 
     // 4. 시스템 프롬프트 및 멀티모달 파트 구성 (환각 방지 규칙 포함)
     const systemPrompt = `당신은 대한민국 고등학교 내신 [${subjectName}] 베테랑 1타 강사입니다.
-업로드된 학교 프린트 이미지(또는 텍스트)를 통합 분석하여 벼락치기 자료 4종 세트를 핵심만 간결하게 담아 JSON으로 출력하세요.
+업로드된 학교 프린트 이미지·PDF 문서(또는 텍스트)를 통합 분석하여 벼락치기 자료 4종 세트를 핵심만 간결하게 담아 JSON으로 출력하세요.
 
 [과목 지침 - ${subjectName}]
 ${SUBJECT_GUIDES[subjectName] || ""}
@@ -195,23 +197,28 @@ ${SUBJECT_GUIDES[subjectName] || ""}
 4. blankItems는 핵심 암기 문장 3~4개를 작성하되, 빈칸 키워드만 {{정답}} 형식으로 감싸세요.
 5. oxQuiz는 내신 말장난 함정 선지를 섞어 4~5문제를 출제하고 1줄 해설을 다세요.
 6. audioScript는 등굣길에 듣는 200~260자 구어체 브리핑 대본으로 괄호나 특수기호 없이 작성하세요.
-7. 반드시 업로드된 프린트 이미지와 텍스트에 근거한 내용만 작성하세요. 사진이 흐릿하거나 잘려서 판독이 어려운 글씨는 절대 추측해서 지어내지 말고, 판독 가능한 핵심 내용 위주로만 정리하세요.`;
+7. 반드시 업로드된 자료(이미지·PDF)와 텍스트에 근거한 내용만 작성하세요. 글씨가 흐릿하거나 잘려서 판독이 어려운 부분은 절대 추측해서 지어내지 말고, 판독 가능한 핵심 내용 위주로만 정리하세요.`;
 
     const parts = [];
-    validImages.forEach((img, idx) => {
-      parts.push({ text: `[${subjectName} 프린트 ${idx + 1}쪽]` });
+    validFiles.forEach((fileItem, idx) => {
+      const mime = fileItem.mimeType.toLowerCase().trim();
+      const labelText =
+        mime === "application/pdf"
+          ? `[${subjectName} PDF 학습 자료 ${idx + 1}]`
+          : `[${subjectName} 프린트 ${idx + 1}쪽]`;
+      parts.push({ text: labelText });
       parts.push({
         inlineData: {
-          mimeType: img.mimeType.toLowerCase().trim(),
-          data: img.base64
+          mimeType: mime,
+          data: fileItem.base64
         }
       });
     });
 
     parts.push({
       text: safeText
-        ? `위 [${subjectName}] 프린트(${validImages.length}장)와 아래 필기를 통합 분석해 벼락치기 4종 세트 JSON을 만들어줘:\n${safeText}`
-        : `첨부된 [${subjectName}] 프린트 사진(${validImages.length}장) 속 글씨와 필기를 읽고 핵심 원리 풀이 4종 세트 JSON을 만들어줘.`
+        ? `위 [${subjectName}] 자료(${validFiles.length}개)와 아래 필기를 통합 분석해 벼락치기 4종 세트 JSON을 만들어줘:\n${safeText}`
+        : `첨부된 [${subjectName}] 자료(${validFiles.length}개) 속 본문과 필기를 읽고 핵심 원리 풀이 4종 세트 JSON을 만들어줘.`
     });
 
     // 5. 전체 시간 예산 내에서 다중 모델 순차 시도
