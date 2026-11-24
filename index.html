@@ -166,7 +166,7 @@
             <span class="text-xs font-bold text-volt-400">자동 저장 · A4 PDF</span>
           </div>
           <h2 class="text-base font-extrabold leading-snug mt-1.5">
-            과목 고르고 교과서나 프린트 사진 올리면<br>
+            과목 고르고 사진이나 PDF 학습지 올리면<br>
             <span class="text-volt-400">원리 이해 풀이 · 예시 해부 · 함정 OX</span> 완성!
           </h2>
         </div>
@@ -217,14 +217,14 @@
           </div>
         </div>
 
-        <!-- Step 2: 교과서나 프린트 사진 촬영/업로드 (최대 3장 세트 지원) -->
+        <!-- Step 2: 교과서나 프린트 촬영 / PDF 파일 업로드 (최대 3개 지원) -->
         <div class="bg-white border border-slate-200 rounded-3xl p-4 shadow-sm space-y-3">
           <div class="flex items-center justify-between">
             <span class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
               <span class="w-5 h-5 rounded-full bg-slate-900 text-white text-[11px] flex items-center justify-center">2</span>
-              <span>교과서나 프린트 세트 촬영 (최대 3장)</span>
+              <span>프린트 촬영 · PDF 업로드 (최대 3개)</span>
             </span>
-            <span id="imageCountBadge" class="text-[11px] text-electric-600 font-extrabold bg-electric-50 px-2 py-0.5 rounded-full">0 / 3장 선택됨</span>
+            <span id="imageCountBadge" class="text-[11px] text-electric-600 font-extrabold bg-electric-50 px-2 py-0.5 rounded-full">0 / 3개 선택됨</span>
           </div>
 
           <div id="uploadPlaceholder" class="grid grid-cols-2 gap-2">
@@ -237,17 +237,17 @@
             </button>
             <button type="button" onclick="openAlbumPicker()" class="border-2 border-dashed border-slate-300 hover:border-electric-500 bg-slate-50/80 hover:bg-electric-50/40 rounded-2xl p-3.5 flex flex-col items-center justify-center text-center cursor-pointer transition active:scale-95">
               <div class="w-10 h-10 rounded-2xl bg-electric-100 text-electric-600 flex items-center justify-center text-lg mb-1.5">
-                🖼️
+                📂
               </div>
-              <p class="text-xs font-extrabold text-slate-800">앨범에서 선택</p>
-              <p class="text-[10px] text-slate-500 mt-0.5">1~3장 한 번에 올리기</p>
+              <p class="text-xs font-extrabold text-slate-800">앨범 · PDF 파일</p>
+              <p class="text-[10px] text-slate-500 mt-0.5">사진·PDF 최대 3개 (3MB↓)</p>
             </button>
           </div>
 
           <div id="imageSetContainer" class="hidden space-y-2.5">
             <div id="imageThumbGrid" class="grid grid-cols-3 gap-2"></div>
             <div class="flex items-center justify-between gap-2 bg-slate-900 text-volt-400 text-[11px] font-bold px-3 py-2 rounded-xl">
-              <span>✨ 모바일 초경량 최적화 완료!</span>
+              <span>✨ 분석 자료 준비 완료!</span>
               <div class="flex items-center gap-2 shrink-0">
                 <button type="button" id="quickCameraAddBtn" onclick="openCameraCapture()" class="px-2 py-1 rounded-lg bg-volt-400 text-slate-950 text-[10px] font-black active:scale-95 transition cursor-pointer">📸 다음 쪽 촬영</button>
                 <button type="button" onclick="clearAllUploadedImages()" class="text-slate-300 hover:text-white underline cursor-pointer">전체 삭제</button>
@@ -1181,13 +1181,16 @@
       }
     };
 
-    // 로컬 저장소 키 및 보관함 관리 상수
+    // 로컬 저장소 키 및 보관함/업로드 관리 상수
     const ARCHIVE_STORAGE_KEY = "jjikjok_saved_archive_v1";
     const MAX_ARCHIVE_ITEMS = 20;
+    const MAX_UPLOAD_FILES = 3;
+    const MAX_PDF_FILE_BYTES = 3 * 1024 * 1024;          // PDF 1개당 최대 3MB
+    const MAX_TOTAL_BASE64_CHARS = 4.2 * 1024 * 1024;    // Vercel 4.5MB 요청 제한 방어
 
     // 앱 전역 상태
     let selectedSubjectKey = "korean";
-    let uploadedImages = [];
+    let uploadedImages = []; // 이미지 및 PDF 파일 객체 배열
     let currentSampleKey = null;
     let currentJokboData = null;
     let oxAnswersState = {};
@@ -1312,7 +1315,7 @@
             <div class="text-center py-12 space-y-1.5">
               <div class="text-3xl">📭</div>
               <p class="text-xs font-extrabold text-slate-600">보관함이 아직 비어 있어요</p>
-              <p class="text-[11px] text-slate-400">프린트 사진이나 샘플로 족보를 만들면 자동으로 저장됩니다.</p>
+              <p class="text-[11px] text-slate-400">프린트 사진이나 PDF, 샘플로 족보를 만들면 자동으로 저장됩니다.</p>
             </div>
           `;
         } else {
@@ -1503,18 +1506,18 @@
       renderSubjectSampleButtons();
     }
 
-    // 4. 다중 이미지 업로드 (모바일 초경량 최적화: 960px / 0.65 품질)
+    // 4. 다중 이미지(초경량 압축) & PDF 파일 업로드
     // 매번 새로운 file input을 생성해 iOS/Android 연속 촬영 시 change 이벤트가 무시되는 버그 방지
-    function triggerFreshFileInput({ captureCamera = false, multiple = false }) {
-      const remainingSlots = 3 - uploadedImages.length;
+    function triggerFreshFileInput({ captureCamera = false, multiple = false, allowPdf = false }) {
+      const remainingSlots = MAX_UPLOAD_FILES - uploadedImages.length;
       if (remainingSlots <= 0) {
-        showToast("프린트는 최대 3장까지 한 세트로 올릴 수 있어요!", "⚠️");
+        showToast(`파일은 최대 ${MAX_UPLOAD_FILES}개까지 한 세트로 올릴 수 있어요!`, "⚠️");
         return;
       }
 
       const input = document.createElement("input");
       input.type = "file";
-      input.accept = "image/*";
+      input.accept = allowPdf ? "image/*,application/pdf,.pdf" : "image/*";
       if (captureCamera) {
         input.setAttribute("capture", "environment");
       }
@@ -1547,11 +1550,52 @@
     }
 
     function openCameraCapture() {
-      triggerFreshFileInput({ captureCamera: true, multiple: false });
+      triggerFreshFileInput({ captureCamera: true, multiple: false, allowPdf: false });
     }
 
     function openAlbumPicker() {
-      triggerFreshFileInput({ captureCamera: false, multiple: true });
+      triggerFreshFileInput({ captureCamera: false, multiple: true, allowPdf: true });
+    }
+
+    function isPdfFile(file) {
+      return (
+        (file.type && file.type.toLowerCase() === "application/pdf") ||
+        (file.name && file.name.toLowerCase().endsWith(".pdf"))
+      );
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes < 1024 * 1024) {
+        return `${Math.max(1, Math.round(bytes / 1024))}KB`;
+      }
+      return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+    }
+
+    function readPdfFileAsBase64(file) {
+      return new Promise((resolve, reject) => {
+        if (file.size > MAX_PDF_FILE_BYTES) {
+          reject(new Error("PDF_TOO_LARGE"));
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = String(reader.result || "");
+          const base64 = dataUrl.includes(",") ? dataUrl.split(",")[1] : "";
+          if (!base64) {
+            reject(new Error("PDF_READ_EMPTY"));
+            return;
+          }
+          resolve({
+            mimeType: "application/pdf",
+            base64,
+            fileName: file.name || "학습자료.pdf",
+            fileSizeLabel: formatFileSize(file.size),
+            isPdf: true
+          });
+        };
+        reader.onerror = () => reject(new Error("PDF_READ_ERROR"));
+        reader.readAsDataURL(file);
+      });
     }
 
     function compressSingleImageFile(file) {
@@ -1586,7 +1630,9 @@
           resolve({
             mimeType: "image/jpeg",
             base64: compressedDataUrl.split(",")[1],
-            previewUrl: compressedDataUrl
+            previewUrl: compressedDataUrl,
+            fileName: file.name || "프린트_사진.jpg",
+            isPdf: false
           });
         };
         img.onerror = (err) => {
@@ -1601,32 +1647,63 @@
       const files = Array.from(event.target.files || []);
       if (files.length === 0) return;
 
-      const remainingSlots = 3 - uploadedImages.length;
+      const remainingSlots = MAX_UPLOAD_FILES - uploadedImages.length;
       if (remainingSlots <= 0) {
-        showToast("프린트는 최대 3장까지 한 세트로 올릴 수 있어요!", "⚠️");
+        showToast(`파일은 최대 ${MAX_UPLOAD_FILES}개까지 한 세트로 올릴 수 있어요!`, "⚠️");
         event.target.value = "";
         return;
       }
 
       const filesToProcess = files.slice(0, remainingSlots);
       if (files.length > remainingSlots) {
-        showToast(`최대 3장까지만 가능해 앞의 ${remainingSlots}장만 추가할게요!`, "ℹ️");
+        showToast(`최대 ${MAX_UPLOAD_FILES}개까지만 가능해 앞의 ${remainingSlots}개만 추가할게요!`, "ℹ️");
       } else {
-        showToast(`모바일 사진 ${filesToProcess.length}장을 초경량 최적화하는 중...`, "📸");
+        showToast(`선택한 파일 ${filesToProcess.length}개를 분석용으로 준비 중...`, "📂");
       }
+
+      let addedCount = 0;
+      let currentTotalBase64 = uploadedImages.reduce((sum, item) => sum + (item.base64?.length || 0), 0);
 
       try {
         for (const file of filesToProcess) {
-          const compressed = await compressSingleImageFile(file);
-          uploadedImages.push(compressed);
+          let processed = null;
+
+          if (isPdfFile(file)) {
+            try {
+              processed = await readPdfFileAsBase64(file);
+            } catch (pdfErr) {
+              if (pdfErr.message === "PDF_TOO_LARGE") {
+                showToast("PDF는 3MB 이하만 올릴 수 있어요! 용량을 줄이거나 캡처해 올려주세요.", "⚠️");
+              } else {
+                showToast("PDF 파일을 읽는 중 문제가 생겼어요.", "⚠️");
+              }
+              continue;
+            }
+          } else if (file.type && file.type.startsWith("image/")) {
+            processed = await compressSingleImageFile(file);
+          } else {
+            showToast("사진(JPG/PNG) 또는 PDF 파일만 올릴 수 있어요!", "⚠️");
+            continue;
+          }
+
+          if (currentTotalBase64 + processed.base64.length > MAX_TOTAL_BASE64_CHARS) {
+            showToast("전체 파일 용량이 서버 한도(약 3MB)를 넘어 추가할 수 없어요!", "⚠️");
+            continue;
+          }
+
+          uploadedImages.push(processed);
+          currentTotalBase64 += processed.base64.length;
+          addedCount += 1;
         }
 
-        currentSampleKey = null;
-        renderSubjectSampleButtons();
-        renderUploadedImagesGrid();
-        showToast(`총 ${uploadedImages.length}장 세트가 준비되었습니다!`, "✅");
+        if (addedCount > 0) {
+          currentSampleKey = null;
+          renderSubjectSampleButtons();
+          renderUploadedImagesGrid();
+          showToast(`총 ${uploadedImages.length}개 자료 세트가 준비되었습니다!`, "✅");
+        }
       } catch (err) {
-        showToast("사진을 불러오는 중 문제가 생겼어요. 다시 시도해 주세요.", "⚠️");
+        showToast("파일을 불러오는 중 문제가 생겼어요. 다시 시도해 주세요.", "⚠️");
       } finally {
         event.target.value = "";
       }
@@ -1639,7 +1716,7 @@
       const grid = document.getElementById("imageThumbGrid");
       const quickCameraAddBtn = document.getElementById("quickCameraAddBtn");
 
-      countBadge.textContent = `${uploadedImages.length} / 3장 선택됨`;
+      countBadge.textContent = `${uploadedImages.length} / ${MAX_UPLOAD_FILES}개 선택됨`;
 
       if (uploadedImages.length === 0) {
         placeholder.classList.remove("hidden");
@@ -1651,39 +1728,50 @@
       placeholder.classList.add("hidden");
       setContainer.classList.remove("hidden");
       if (quickCameraAddBtn) {
-        if (uploadedImages.length < 3) {
+        if (uploadedImages.length < MAX_UPLOAD_FILES) {
           quickCameraAddBtn.classList.remove("hidden");
-          quickCameraAddBtn.textContent = `📸 ${uploadedImages.length + 1}쪽 촬영`;
+          quickCameraAddBtn.textContent = `📸 ${uploadedImages.length + 1}번 촬영`;
         } else {
           quickCameraAddBtn.classList.add("hidden");
         }
       }
       grid.innerHTML = "";
 
-      uploadedImages.forEach((imgObj, idx) => {
+      uploadedImages.forEach((fileObj, idx) => {
         const card = document.createElement("div");
-        card.className = "relative aspect-[3/4] rounded-2xl overflow-hidden border-2 border-slate-200 bg-slate-900 shadow-sm";
-        card.innerHTML = `
-          <img src="${imgObj.previewUrl}" alt="${idx + 1}쪽 프린트" class="w-full h-full object-cover" />
-          <span class="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-lg bg-slate-950/85 text-volt-400 text-[10px] font-black">${idx + 1}쪽</span>
-          <button type="button" onclick="removeUploadedImage(${idx})" class="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-red-600/90 hover:bg-red-600 text-white text-[11px] font-black flex items-center justify-center shadow cursor-pointer">✕</button>
-        `;
+        if (fileObj.isPdf) {
+          card.className = "relative aspect-[3/4] rounded-2xl overflow-hidden border-2 border-red-200 bg-gradient-to-b from-red-50 to-white shadow-sm flex flex-col items-center justify-center p-2 text-center";
+          card.innerHTML = `
+            <span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-lg bg-red-600 text-white text-[9px] font-black">PDF ${idx + 1}</span>
+            <button type="button" onclick="removeUploadedImage(${idx})" class="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-slate-900/80 hover:bg-red-600 text-white text-[11px] font-black flex items-center justify-center shadow cursor-pointer">✕</button>
+            <div class="text-2xl mb-1 mt-2">📄</div>
+            <p class="text-[10px] font-extrabold text-slate-800 line-clamp-2 break-all leading-tight px-0.5">${escapeHtml(fileObj.fileName || "문서.pdf")}</p>
+            <span class="mt-1 px-1.5 py-0.5 rounded-md bg-red-100 text-red-700 text-[9px] font-bold">${escapeHtml(fileObj.fileSizeLabel || "PDF")}</span>
+          `;
+        } else {
+          card.className = "relative aspect-[3/4] rounded-2xl overflow-hidden border-2 border-slate-200 bg-slate-900 shadow-sm";
+          card.innerHTML = `
+            <img src="${fileObj.previewUrl}" alt="${idx + 1}쪽 프린트" class="w-full h-full object-cover" />
+            <span class="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-lg bg-slate-950/85 text-volt-400 text-[10px] font-black">${idx + 1}쪽</span>
+            <button type="button" onclick="removeUploadedImage(${idx})" class="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-red-600/90 hover:bg-red-600 text-white text-[11px] font-black flex items-center justify-center shadow cursor-pointer">✕</button>
+          `;
+        }
         grid.appendChild(card);
       });
 
-      // 2~3쪽 추가 시에도 동적 input 생성 함수를 호출해 연속 촬영 안정성 확보
-      if (uploadedImages.length < 3) {
+      // 2~3번째 추가 시에도 카메라 촬영 / 앨범·PDF 선택 모두 지원
+      if (uploadedImages.length < MAX_UPLOAD_FILES) {
         const addSlot = document.createElement("div");
         addSlot.className = "aspect-[3/4] rounded-2xl border-2 border-dashed border-electric-300 bg-electric-50/50 p-1.5 flex flex-col justify-center gap-1.5";
         addSlot.innerHTML = `
-          <div class="text-center text-[10px] font-black text-electric-700 leading-none">${uploadedImages.length + 1}쪽 추가</div>
+          <div class="text-center text-[10px] font-black text-electric-700 leading-none">${uploadedImages.length + 1}번 추가</div>
           <button type="button" onclick="openCameraCapture()" class="flex-1 rounded-xl bg-electric-600 hover:bg-electric-500 text-white flex flex-col items-center justify-center cursor-pointer transition active:scale-95">
             <span class="text-sm leading-none">📸</span>
             <span class="text-[10px] font-extrabold mt-0.5">촬영</span>
           </button>
           <button type="button" onclick="openAlbumPicker()" class="flex-1 rounded-xl bg-white hover:bg-electric-100 border border-electric-200 text-electric-700 flex flex-col items-center justify-center cursor-pointer transition active:scale-95">
-            <span class="text-sm leading-none">🖼️</span>
-            <span class="text-[10px] font-extrabold mt-0.5">앨범</span>
+            <span class="text-sm leading-none">📂</span>
+            <span class="text-[10px] font-extrabold mt-0.5">앨범·PDF</span>
           </button>
         `;
         grid.appendChild(addSlot);
@@ -1706,7 +1794,7 @@
       const subjectName = SUBJECT_CONFIG[selectedSubjectKey].name;
 
       if (uploadedImages.length === 0 && !text) {
-        showToast("프린트 사진(1~3장)을 올리거나 내용을 입력해 주세요!", "⚠️");
+        showToast("프린트 사진·PDF 파일(1~3개)을 올리거나 내용을 입력해 주세요!", "⚠️");
         document.getElementById("printTextInput").focus();
         return;
       }
@@ -1714,12 +1802,15 @@
       const btn = document.getElementById("generateBtn");
       const icon = document.getElementById("generateBtnIcon");
       const label = document.getElementById("generateBtnText");
+      const hasPdf = uploadedImages.some(f => f.isPdf);
 
       btn.disabled = true;
       icon.textContent = "⏳";
       label.textContent = uploadedImages.length > 1
-        ? `[${subjectName}] 프린트 ${uploadedImages.length}장 초고속 통합 분석 중...`
-        : `[${subjectName}] 핵심 원리 풀이 & 예시 해부 생성 중...`;
+        ? `[${subjectName}] 자료 ${uploadedImages.length}개 초고속 통합 분석 중...`
+        : hasPdf
+          ? `[${subjectName}] PDF 학습지 정밀 분석 & 원리 족보 생성 중...`
+          : `[${subjectName}] 핵심 원리 풀이 & 예시 해부 생성 중...`;
 
       try {
         const cfg = SUBJECT_CONFIG[selectedSubjectKey];
@@ -1823,7 +1914,9 @@
           }
         } catch (_) {
           if (serverRes.status === 504) {
-            errDetail = "HTTP 504 (Vercel 서버 10초 제한 시간 초과)";
+            errDetail = "HTTP 504 (Vercel 서버 제한 시간 초과)";
+          } else if (serverRes.status === 413) {
+            errDetail = "HTTP 413 (업로드 파일 용량이 서버 한도를 초과했습니다)";
           }
         }
         throw new Error(errDetail);
@@ -1840,7 +1933,7 @@
       };
 
       const systemPrompt = `당신은 대한민국 고등학교 내신 [${subjectName}] 베테랑 1타 강사입니다.
-업로드된 학교 프린트 이미지(또는 텍스트)를 통합 분석하여 벼락치기 자료 4종 세트를 JSON으로 출력하세요.
+업로드된 학교 프린트 이미지·PDF 문서(또는 텍스트)를 통합 분석하여 벼락치기 자료 4종 세트를 JSON으로 출력하세요.
 
 [과목 지침 - ${subjectName}]
 ${subjectGuides[subjectName] || ""}
@@ -1852,23 +1945,26 @@ ${subjectGuides[subjectName] || ""}
 4. blankItems는 핵심 암기 문장 3~4개를 작성하되, 빈칸 키워드만 {{정답}} 형식으로 감싸세요.
 5. oxQuiz는 내신 말장난 함정 선지를 섞어 4~5문제를 출제하고 1줄 해설을 다세요.
 6. audioScript는 등굣길에 듣는 200~280자 구어체 브리핑 대본으로 괄호나 특수기호 없이 작성하세요.
-7. 반드시 업로드된 프린트 이미지와 텍스트에 근거한 내용만 작성하세요. 사진이 흐릿하거나 잘려서 판독이 어려운 글씨는 절대 추측해서 지어내지 말고, 판독 가능한 핵심 내용 위주로만 정리하세요.`;
+7. 반드시 업로드된 자료와 텍스트에 근거한 내용만 작성하세요. 사진이 흐릿하거나 잘려서 판독이 어려운 글씨는 절대 추측해서 지어내지 말고, 판독 가능한 핵심 내용 위주로만 정리하세요.`;
 
       const parts = [];
-      cleanImages.forEach((img, idx) => {
-        parts.push({ text: `[${subjectName} 프린트 ${idx + 1}쪽]` });
+      cleanImages.forEach((fileItem, idx) => {
+        const labelText = fileItem.mimeType === "application/pdf"
+          ? `[${subjectName} PDF 학습 자료 ${idx + 1}]`
+          : `[${subjectName} 프린트 ${idx + 1}쪽]`;
+        parts.push({ text: labelText });
         parts.push({
           inlineData: {
-            mimeType: img.mimeType,
-            data: img.base64
+            mimeType: fileItem.mimeType,
+            data: fileItem.base64
           }
         });
       });
 
       parts.push({
         text: text
-          ? `위 [${subjectName}] 프린트(${cleanImages.length}장)와 아래 필기를 통합 분석해 벼락치기 4종 세트 JSON을 만들어줘:\n${text}`
-          : `첨부된 [${subjectName}] 프린트 사진(${cleanImages.length}장) 속 글씨와 필기를 읽고 핵심 원리 풀이 4종 세트 JSON을 만들어줘.`
+          ? `위 [${subjectName}] 자료(${cleanImages.length}개)와 아래 필기를 통합 분석해 벼락치기 4종 세트 JSON을 만들어줘:\n${text}`
+          : `첨부된 [${subjectName}] 자료(${cleanImages.length}개) 속 본문과 필기를 읽고 핵심 원리 풀이 4종 세트 JSON을 만들어줘.`
       });
 
       const response = await fetchWithTimeout(apiUrl, {
@@ -1934,7 +2030,7 @@ ${subjectGuides[subjectName] || ""}
 
       const firstTitle = cleanLines[0]
         ? cleanLines[0].replace(/[\[\]#★]/g, "").slice(0, 24)
-        : (imageCount > 0 ? `${subjectName} 프린트 ${imageCount}장 세트 족보` : `${subjectName} 수업 프린트 원리 족보`);
+        : (imageCount > 0 ? `${subjectName} 자료 ${imageCount}개 세트 족보` : `${subjectName} 수업 프린트 원리 족보`);
 
       const starredLines = cleanLines.filter(l => l.includes("★") || l.includes("주의") || l.includes("중요") || l.includes("예외"));
       const picks = starredLines.length > 0
@@ -1954,10 +2050,10 @@ ${subjectGuides[subjectName] || ""}
 
       if (cards.length === 0) {
         cards.push({
-          title: `${subjectName} 프린트 ${imageCount || 1}장 세트 통합 분석`,
-          coreSummary: `업로드된 ${imageCount || 1}장의 ${subjectName} 프린트 세트 핵심 내용이 하나의 흐름으로 정리되었습니다.`,
+          title: `${subjectName} 자료 ${imageCount || 1}개 세트 통합 분석`,
+          coreSummary: `업로드된 ${imageCount || 1}개의 ${subjectName} 자료 핵심 내용이 하나의 흐름으로 정리되었습니다.`,
           whyExplanation: `상단 빨간색 진단 안내에 표시된 사유로 인해 기본 학습 가이드가 먼저 표시되었습니다. 원인 메시지를 확인해 주시면 즉시 해결해 드리겠습니다.`,
-          stepByStepExample: `① 세트 프린트 학습 순서:\n• 1단계: 1쪽의 핵심 개념 정의 및 성립 조건 확인\n• 2단계: 2~3쪽의 예외 사례를 1쪽 원리와 연결해 비교 정리`,
+          stepByStepExample: `① 세트 자료 학습 순서:\n• 1단계: 핵심 개념 정의 및 성립 조건 확인\n• 2단계: 예외 사례를 원리와 연결해 비교 정리`,
           isStarred: true
         });
       }
