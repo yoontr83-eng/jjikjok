@@ -197,14 +197,25 @@
             <span id="imageCountBadge" class="text-[11px] text-electric-600 font-extrabold bg-electric-50 px-2 py-0.5 rounded-full">0 / 3장 선택됨</span>
           </div>
 
-          <label for="printImageInput" id="uploadPlaceholder" class="border-2 border-dashed border-slate-300 hover:border-electric-500 bg-slate-50/80 hover:bg-electric-50/40 rounded-2xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition">
-            <div class="w-11 h-11 rounded-2xl bg-electric-100 text-electric-600 flex items-center justify-center text-xl mb-1.5">
-              📸
-            </div>
-            <p class="text-xs font-extrabold text-slate-800">터치해서 프린트 1~3장 한 번에 선택 또는 촬영</p>
-            <p class="text-[11px] text-slate-400 mt-0.5">앞뒷면·연속 프린트 3장까지 한 세트로 묶어 분석해요</p>
-          </label>
+           <div id="uploadPlaceholder" class="grid grid-cols-2 gap-2">
+            <label for="cameraImageInput" class="border-2 border-dashed border-electric-500/60 bg-electric-50/50 hover:bg-electric-50 rounded-2xl p-3.5 flex flex-col items-center justify-center text-center cursor-pointer transition active:scale-95">
+              <div class="w-10 h-10 rounded-2xl bg-electric-600 text-white flex items-center justify-center text-lg mb-1.5 shadow-xs">
+                📸
+              </div>
+              <p class="text-xs font-extrabold text-slate-900">카메라 바로 촬영</p>
+              <p class="text-[10px] text-slate-500 mt-0.5">프린트 바로 찍기</p>
+            </label>
+            <label for="printImageInput" class="border-2 border-dashed border-slate-300 hover:border-electric-500 bg-slate-50/80 hover:bg-electric-50/40 rounded-2xl p-3.5 flex flex-col items-center justify-center text-center cursor-pointer transition active:scale-95">
+              <div class="w-10 h-10 rounded-2xl bg-electric-100 text-electric-600 flex items-center justify-center text-lg mb-1.5">
+                🖼️
+              </div>
+              <p class="text-xs font-extrabold text-slate-800">앨범에서 선택</p>
+              <p class="text-[10px] text-slate-500 mt-0.5">1~3장 한 번에 올리기</p>
+            </label>
+          </div>
+          <input id="cameraImageInput" type="file" accept="image/*" capture="environment" onchange="handleImageUpload(event)" class="hidden" />
           <input id="printImageInput" type="file" accept="image/*" multiple onchange="handleImageUpload(event)" class="hidden" />
+
 
           <div id="imageSetContainer" class="hidden space-y-2.5">
             <div id="imageThumbGrid" class="grid grid-cols-3 gap-2"></div>
