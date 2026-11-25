@@ -5,6 +5,20 @@
   <!-- 모바일 핀치 줌(화면 확대) 허용으로 개선 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>찍으면 족보 - 시험 전날 밤 벼락치기 AI 족보 (by SC 윤T)</title>
+  <meta name="description" content="교과서·프린트 사진이나 PDF만 올리면 10초 만에 원리 이해 족보, 빈칸 암기, 함정 OX 퀴즈, 3분 오디오, A4 시험지까지! 시험 전날 밤 벼락치기 AI 족보 by SC 윤T" />
+  <meta name="theme-color" content="#0F172A" />
+  <!-- 카카오톡·SNS 공유 미리보기 (OG / Twitter 메타 태그) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="찍으면 족보" />
+  <meta property="og:title" content="⚡ 찍으면 족보 - 시험 전날 밤 벼락치기 AI 족보 (by SC 윤T)" />
+  <meta property="og:description" content="프린트 사진·PDF만 올리면 원리 족보, 빈칸 암기, 함정 OX 퀴즈, 3분 오디오, A4 시험지가 한 번에 완성!" />
+  <meta property="og:image" content="/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="⚡ 찍으면 족보 - 시험 전날 밤 벼락치기 AI 족보" />
+  <meta name="twitter:description" content="프린트 사진·PDF만 올리면 원리 족보, 빈칸 암기, 함정 OX 퀴즈, A4 시험지가 한 번에!" />
+  <meta name="twitter:image" content="/og-image.png" />
+  <!-- 앱 브랜드 파비콘 (별도 이미지 없이 즉시 표시되는 SVG 아이콘) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230F172A'/%3E%3Cpath d='M36 8L14 36h15l-3 20 24-28H35l1-20z' fill='%23FACC15'/%3E%3C/svg%3E" />
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- A4 PDF 직접 저장용 라이브러리 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -292,6 +306,21 @@
             <span id="generateBtnIcon" class="text-lg">⚡</span>
             <span id="generateBtnText">원리 이해 벼락치기 족보 생성하기</span>
           </button>
+
+          <!-- AI 생성 실패 시 가짜 족보 대신 표시되는 안전한 재시도 안내 카드 -->
+          <div id="generateErrorBox" class="hidden rounded-2xl border-2 border-red-200 bg-red-50/90 p-3.5 space-y-2.5 animate-pop">
+            <div class="flex items-start gap-2">
+              <span class="text-base shrink-0">😥</span>
+              <div class="space-y-0.5 min-w-0">
+                <p class="text-xs font-black text-red-800">지금은 족보를 만들지 못했어요</p>
+                <p id="generateErrorMsg" class="text-[11px] font-semibold text-red-700 leading-relaxed"></p>
+              </div>
+            </div>
+            <button type="button" onclick="generateJokbo()" class="w-full py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-black shadow-sm active:scale-[0.99] transition flex items-center justify-center gap-1.5 cursor-pointer">
+              <span>🔄</span>
+              <span>다시 시도하기</span>
+            </button>
+          </div>
         </div>
 
       </section>
@@ -331,15 +360,6 @@
           <p>
             <strong>AI가 프린트를 분석해 정리한 족보예요!</strong> 가끔 AI도 글씨를 잘못 읽거나 실수할 수 있으니, 헷갈리는 개념과 OX 정답은 <strong>반드시 학교 프린트 원문과 한 번 더 대조</strong>해 보세요.
           </p>
-        </div>
-
-        <!-- AI 서버 연결 진단 안내 배너 (오류 발생 시에만 표시) -->
-        <div id="fallbackDiagnosticBanner" class="hidden bg-red-50 border-2 border-red-300 rounded-2xl p-3.5 text-xs text-red-950 space-y-1">
-          <div class="font-black flex items-center gap-1.5 text-red-700">
-            <span>🚨</span>
-            <span>AI 서버 응답 지연/오류 진단 안내</span>
-          </div>
-          <p id="fallbackDiagnosticReason" class="leading-snug font-semibold"></p>
         </div>
 
         <!-- 선생님 별표/출제 1순위 하이라이트 박스 -->
@@ -449,8 +469,8 @@
         <!-- 하단 A4 PDF 저장 및 단톡방 공유 버튼 -->
         <div class="space-y-2 pt-1">
           <button type="button" onclick="openA4PreviewModal()" class="w-full py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-volt-400 font-black text-xs shadow-md active:scale-[0.99] transition flex items-center justify-center gap-2 cursor-pointer">
-            <span class="text-base">📥</span>
-            <span>A4 시험지 미리보기 · PDF 저장 (저장 후 인쇄)</span>
+            <span class="text-base">📄</span>
+            <span>A4 시험지 미리보기 · 선명한 인쇄 / PDF 저장</span>
           </button>
           <button type="button" onclick="copyShareChallenge()" class="w-full py-3.5 rounded-2xl bg-[#FEE500] hover:bg-[#FADA0A] text-[#191919] font-black text-xs shadow-md active:scale-[0.99] transition flex items-center justify-center gap-2 cursor-pointer">
             <span class="text-base">💬</span>
@@ -472,63 +492,22 @@
   </div>
 
   <!-- ============================================== -->
-  <!-- 내 족보 자동 보관함 (다시 보기) 전체 모달       -->
-  <!-- ============================================== -->
-  <div id="archiveModal" onclick="if (event.target === this) closeArchiveModal()" class="hidden fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-3 sm:p-4">
-    <div class="bg-white w-full max-w-md max-h-[86vh] flex flex-col rounded-3xl p-5 shadow-2xl animate-pop">
-      <div class="flex items-start justify-between gap-2 pb-3 border-b border-slate-100 shrink-0">
-        <div>
-          <h3 class="text-base font-black text-slate-900 flex items-center gap-1.5">
-            <span>📚</span>
-            <span>내 족보 자동 보관함 (다시 보기)</span>
-          </h3>
-          <p class="text-[11px] text-slate-500 mt-0.5">생성한 족보가 내 기기에 자동 저장됩니다 (최대 20개)</p>
-        </div>
-        <button type="button" onclick="closeArchiveModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-sm flex items-center justify-center cursor-pointer">✕</button>
-      </div>
-
-      <!-- 보관함 활용 팁 안내 박스 -->
-      <div class="mt-3 bg-electric-50/80 border border-electric-100 rounded-2xl p-3 text-[11px] text-slate-700 leading-relaxed shrink-0">
-        <strong class="text-electric-700 block mb-0.5">💡 이렇게 복습하면 효과가 2배!</strong>
-        저장된 족보를 다시 열면 <strong>원리 풀이 · 빈칸 암기 · 함정 OX 퀴즈 · 3분 오디오 · A4 PDF 저장</strong>까지 처음 만든 그대로 즉시 복습할 수 있어요. <em>(단, 브라우저 방문 기록/캐시를 지우면 초기화되니 중요한 시험지는 PDF로도 저장해 두세요!)</em>
-      </div>
-
-      <!-- 보관된 족보 목록 리스트 -->
-      <div id="archiveModalList" class="flex-1 overflow-y-auto py-3 space-y-2"></div>
-
-      <!-- 전체 비우기 2단계 안전 확인 바 (실수 방지용) -->
-      <div id="clearArchiveConfirmBar" class="hidden mb-2 p-2.5 rounded-2xl bg-red-50 border border-red-200 flex items-center justify-between gap-2 shrink-0">
-        <span class="text-[11px] font-extrabold text-red-700">⚠️ 보관된 족보를 모두 삭제할까요?</span>
-        <div class="flex items-center gap-1.5 shrink-0">
-          <button type="button" onclick="cancelClearAllArchive()" class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-600 text-[11px] font-bold cursor-pointer">취소</button>
-          <button type="button" onclick="confirmClearAllArchive()" class="px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white text-[11px] font-black cursor-pointer">네, 전체 삭제</button>
-        </div>
-      </div>
-
-      <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2 shrink-0">
-        <button type="button" onclick="requestClearAllArchive()" class="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-red-50 text-slate-500 hover:text-red-600 text-xs font-bold transition cursor-pointer">
-          전체 비우기
-        </button>
-        <button type="button" onclick="closeArchiveModal()" class="flex-1 py-2.5 rounded-xl bg-slate-900 text-volt-400 text-xs font-black transition cursor-pointer">
-          닫기
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============================================== -->
-  <!-- A4 시험지 미리보기 & PDF 저장 모달 (단일 통일) -->
+  <!-- A4 시험지 미리보기 & 인쇄 / PDF 저장 모달       -->
   <!-- ============================================== -->
   <div id="a4PreviewModal" onclick="if (event.target === this) closeA4PreviewModal()" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex flex-col">
-    <div class="bg-slate-900 text-white px-4 py-3 border-b border-slate-800 flex items-center justify-between gap-2 shrink-0">
+    <div class="bg-slate-900 text-white px-4 py-3 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 shrink-0">
       <div class="min-w-0">
         <h3 class="text-sm font-black text-volt-400 truncate">📄 찍으면 족보 · A4 벼락치기 시험지</h3>
-        <p class="text-[10px] text-slate-300">PDF로 저장한 뒤 프린터로 인쇄하거나 굿노트에서 바로 풀어보세요!</p>
+        <p class="text-[10px] text-slate-300">선명한 글자·다쪽 인쇄는 [선명한 PDF/인쇄], 모바일 1장 저장은 [1장 바로 저장]!</p>
       </div>
-      <div class="flex items-center gap-2 shrink-0">
-        <button type="button" id="downloadPdfBtn" onclick="downloadA4Pdf()" class="px-3.5 py-2 rounded-xl bg-volt-400 hover:bg-volt-500 disabled:opacity-60 text-slate-950 text-xs font-black shadow-sm active:scale-95 transition flex items-center gap-1.5 cursor-pointer">
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button type="button" onclick="printA4Sheet()" class="px-3 py-2 rounded-xl bg-electric-500 hover:bg-electric-600 text-white text-xs font-black shadow-sm active:scale-95 transition flex items-center gap-1 cursor-pointer">
+          <span>🖨️</span>
+          <span>선명한 PDF/인쇄</span>
+        </button>
+        <button type="button" id="downloadPdfBtn" onclick="downloadA4Pdf()" class="px-3 py-2 rounded-xl bg-volt-400 hover:bg-volt-500 disabled:opacity-60 text-slate-950 text-xs font-black shadow-sm active:scale-95 transition flex items-center gap-1 cursor-pointer">
           <span>📥</span>
-          <span id="downloadPdfLabel">A4 PDF 저장</span>
+          <span id="downloadPdfLabel">1장 바로 저장</span>
         </button>
         <button type="button" onclick="closeA4PreviewModal()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 font-black text-sm flex items-center justify-center cursor-pointer">✕</button>
       </div>
@@ -538,6 +517,37 @@
       <div id="a4PaperWrapper" class="w-full max-w-[794px] bg-white text-slate-900 shadow-2xl rounded-lg p-5 sm:p-8 h-fit">
         <div id="a4PreviewContent"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- 내 족보 자동 보관함 모달                        -->
+  <!-- ============================================== -->
+  <div id="archiveModal" onclick="if (event.target === this) closeArchiveModal()" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[82vh]">
+      <div class="bg-slate-900 text-white px-4 py-3.5 flex items-center justify-between shrink-0">
+        <div>
+          <h3 class="text-sm font-black text-volt-400">📚 내 족보 자동 보관함</h3>
+          <p class="text-[10px] text-slate-300">최근 만든 족보 최대 20개가 자동 저장됩니다</p>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button type="button" onclick="requestClearAllArchive()" class="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-red-500/80 text-[11px] font-bold text-slate-200 hover:text-white transition cursor-pointer">
+            전체 비우기
+          </button>
+          <button type="button" onclick="closeArchiveModal()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 font-black text-sm flex items-center justify-center cursor-pointer">✕</button>
+        </div>
+      </div>
+
+      <!-- 전체 비우기 2단계 안전 확인 바 -->
+      <div id="clearArchiveConfirmBar" class="hidden bg-red-50 border-b border-red-200 px-4 py-2.5 flex items-center justify-between gap-2 shrink-0">
+        <span class="text-[11px] font-bold text-red-800">저장된 족보를 모두 삭제할까요?</span>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button type="button" onclick="cancelClearAllArchive()" class="px-2.5 py-1 rounded-lg bg-white border border-slate-300 text-[11px] font-bold text-slate-700 cursor-pointer">취소</button>
+          <button type="button" onclick="confirmClearAllArchive()" class="px-2.5 py-1 rounded-lg bg-red-600 text-white text-[11px] font-black cursor-pointer">모두 삭제</button>
+        </div>
+      </div>
+
+      <div id="archiveModalList" class="p-3.5 space-y-2 overflow-y-auto flex-1"></div>
     </div>
   </div>
 
@@ -1368,7 +1378,7 @@
       currentJokboData = JSON.parse(JSON.stringify(found.data));
 
       closeArchiveModal();
-      hideFallbackDiagnostic();
+      hideGenerateError();
       renderJokboResult(currentJokboData);
 
       const banner = document.getElementById("savedStatusBanner");
@@ -1614,7 +1624,8 @@
         const img = new Image();
         img.onload = () => {
           URL.revokeObjectURL(objectUrl);
-          const MAX_SIZE = 960;
+          // A4 프린트 작은 글씨·손필기 인식 정확도 향상을 위해 긴 변 1600px / 화질 0.8 적용
+          const MAX_SIZE = 1600;
           let width = img.width;
           let height = img.height;
 
@@ -1636,7 +1647,7 @@
           ctx.fillRect(0, 0, width, height);
           ctx.drawImage(img, 0, 0, width, height);
 
-          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.65);
+          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.8);
           resolve({
             mimeType: "image/jpeg",
             base64: compressedDataUrl.split(",")[1],
@@ -1775,22 +1786,18 @@
         addSlot.className = "aspect-[3/4] rounded-2xl border-2 border-dashed border-electric-300 bg-electric-50/50 p-1.5 flex flex-col justify-center gap-1.5";
         addSlot.innerHTML = `
           <div class="text-center text-[10px] font-black text-electric-700 leading-none">${uploadedImages.length + 1}번 추가</div>
-          <button type="button" onclick="openCameraCapture()" class="flex-1 rounded-xl bg-electric-600 hover:bg-electric-500 text-white flex flex-col items-center justify-center cursor-pointer transition active:scale-95">
-            <span class="text-sm leading-none">📸</span>
-            <span class="text-[10px] font-extrabold mt-0.5">촬영</span>
-          </button>
-          <button type="button" onclick="openAlbumPicker()" class="flex-1 rounded-xl bg-white hover:bg-electric-100 border border-electric-200 text-electric-700 flex flex-col items-center justify-center cursor-pointer transition active:scale-95">
-            <span class="text-sm leading-none">📂</span>
-            <span class="text-[10px] font-extrabold mt-0.5">앨범·PDF</span>
-          </button>
+          <button type="button" onclick="openCameraCapture()" class="w-full py-1.5 rounded-xl bg-electric-600 hover:bg-electric-700 text-white text-[10px] font-black shadow-sm active:scale-95 transition cursor-pointer">📸 촬영</button>
+          <button type="button" onclick="openAlbumPicker()" class="w-full py-1.5 rounded-xl bg-white hover:bg-electric-100 border border-electric-200 text-electric-700 text-[10px] font-extrabold active:scale-95 transition cursor-pointer">📂 앨범·PDF</button>
         `;
         grid.appendChild(addSlot);
       }
     }
 
     function removeUploadedImage(index) {
+      if (index < 0 || index >= uploadedImages.length) return;
       uploadedImages.splice(index, 1);
       renderUploadedImagesGrid();
+      showToast("선택한 자료를 삭제했습니다.", "🗑️");
     }
 
     function clearAllUploadedImages() {
@@ -1798,7 +1805,49 @@
       renderUploadedImagesGrid();
     }
 
-    // 5. AI 벼락치기 족보 생성 실행 (성공 시 자동 보관함 저장)
+    // 5. AI 벼락치기 족보 생성 실행 (성공 시 자동 보관함 저장 / 실패 시 가짜 족보 없이 재시도 안내)
+    function showGenerateError(friendlyMsg) {
+      const box = document.getElementById("generateErrorBox");
+      const msgEl = document.getElementById("generateErrorMsg");
+      if (box && msgEl) {
+        msgEl.textContent = friendlyMsg;
+        box.classList.remove("hidden");
+        box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    }
+
+    function hideGenerateError() {
+      const box = document.getElementById("generateErrorBox");
+      if (box) box.classList.add("hidden");
+    }
+
+    function toFriendlyClientErrorMessage(err) {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        return "인터넷 연결이 끊겨 있어요. 와이파이나 데이터를 확인한 뒤 다시 시도해 주세요.";
+      }
+      if (err?.name === "AbortError") {
+        return "분석 시간이 조금 오래 걸리고 있어요. 사진 장수를 줄이거나 잠시 후 다시 시도해 주세요.";
+      }
+      const raw = String(err?.message || "").trim();
+      if (!raw || /failed to fetch|networkerror|load failed/i.test(raw)) {
+        return "인터넷 연결이 불안정하거나 서버에 닿지 못했어요. 잠시 후 다시 시도해 주세요.";
+      }
+      if (/HTTP 413|용량/i.test(raw)) {
+        return "올린 파일 용량이 너무 커요. 사진이나 3MB 이하 PDF로 다시 시도해 주세요.";
+      }
+      if (/HTTP 429/i.test(raw)) {
+        return "지금 많은 친구들이 동시에 쓰고 있어 AI 서버가 바빠요. 10초 뒤에 다시 눌러 주세요!";
+      }
+      if (/HTTP 504/i.test(raw)) {
+        return "AI 분석 시간이 초과되었어요. 파일 개수를 줄이거나 잠시 후 다시 시도해 주세요.";
+      }
+      if (/^HTTP \d+|^API HTTP|^Empty AI response/i.test(raw)) {
+        return "일시적인 AI 서버 오류가 발생했어요. 잠시 후 다시 시도해 주세요.";
+      }
+      // 백엔드(/api/generate)가 이미 학생 친화적 한국어 문구를 보낸 경우 그대로 사용
+      return raw;
+    }
+
     async function generateJokbo() {
       const text = document.getElementById("printTextInput").value.trim();
       const subjectName = SUBJECT_CONFIG[selectedSubjectKey].name;
@@ -1808,6 +1857,8 @@
         document.getElementById("printTextInput").focus();
         return;
       }
+
+      hideGenerateError();
 
       const btn = document.getElementById("generateBtn");
       const icon = document.getElementById("generateBtnIcon");
@@ -1847,7 +1898,6 @@
           `;
         }
 
-        hideFallbackDiagnostic();
         renderJokboResult(currentJokboData);
         document.getElementById("view-input").classList.add("hidden");
         document.getElementById("view-result").classList.remove("hidden");
@@ -1855,35 +1905,15 @@
         window.scrollTo({ top: 0, behavior: "smooth" });
         showToast(`[${subjectName}] 족보 완성 & 보관함에 자동 저장됐어요!`, "🎉");
       } catch (err) {
-        const diagMsg = err?.name === "AbortError"
-          ? "서버 응답 대기 시간(55초)을 초과했습니다. Vercel 서버의 maxDuration 설정을 확인해 주세요."
-          : `${err?.message || "알 수 없는 네트워크 오류"}`;
-        currentJokboData = buildDynamicFallbackJokbo(text, uploadedImages.length, subjectName, diagMsg);
-        renderJokboResult(currentJokboData);
-        showFallbackDiagnostic(diagMsg);
-        document.getElementById("view-input").classList.add("hidden");
-        document.getElementById("view-result").classList.remove("hidden");
-        switchResultTab("summary");
-        showToast("진단 안내를 확인해 주세요!", "⚠️");
+        console.error("[generateJokbo] 생성 실패:", err);
+        const friendlyMsg = toFriendlyClientErrorMessage(err);
+        showGenerateError(friendlyMsg);
+        showToast("족보 생성에 실패했어요. 다시 시도해 주세요!", "⚠️");
       } finally {
         btn.disabled = false;
         icon.textContent = "⚡";
         label.textContent = "원리 이해 벼락치기 족보 생성하기";
       }
-    }
-
-    function showFallbackDiagnostic(reasonText) {
-      const banner = document.getElementById("fallbackDiagnosticBanner");
-      const reasonEl = document.getElementById("fallbackDiagnosticReason");
-      if (banner && reasonEl) {
-        reasonEl.textContent = `원인: ${reasonText}`;
-        banner.classList.remove("hidden");
-      }
-    }
-
-    function hideFallbackDiagnostic() {
-      const banner = document.getElementById("fallbackDiagnosticBanner");
-      if (banner) banner.classList.add("hidden");
     }
 
     async function fetchWithTimeout(url, options, timeoutMs = 55000) {
@@ -1920,13 +1950,13 @@
         try {
           const errJson = await serverRes.json();
           if (errJson?.error) {
-            errDetail = `${errJson.error}${errJson.detail ? " (" + errJson.detail.slice(0, 100) + ")" : ""}`;
+            errDetail = errJson.error;
           }
         } catch (_) {
           if (serverRes.status === 504) {
-            errDetail = "HTTP 504 (Vercel 서버 제한 시간 초과)";
+            errDetail = "HTTP 504";
           } else if (serverRes.status === 413) {
-            errDetail = "HTTP 413 (업로드 파일 용량이 서버 한도를 초과했습니다)";
+            errDetail = "HTTP 413";
           }
         }
         throw new Error(errDetail);
@@ -2039,81 +2069,6 @@ ${subjectGuides[subjectName] || ""}
       const rawJson = result?.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!rawJson) throw new Error("Empty AI response");
       return JSON.parse(rawJson);
-    }
-
-    function buildDynamicFallbackJokbo(text, imageCount = 0, subjectName = "국어", errorReason = "") {
-      const cleanLines = (text || "")
-        .split(/\n+/)
-        .map(l => l.trim())
-        .filter(l => l.length > 2);
-
-      const firstTitle = cleanLines[0]
-        ? cleanLines[0].replace(/[\[\]#★]/g, "").slice(0, 24)
-        : (imageCount > 0 ? `${subjectName} 자료 ${imageCount}개 세트 족보` : `${subjectName} 수업 프린트 원리 족보`);
-
-      const starredLines = cleanLines.filter(l => l.includes("★") || l.includes("주의") || l.includes("중요") || l.includes("예외"));
-      const picks = starredLines.length > 0
-        ? starredLines.slice(0, 2)
-        : [
-            `[${subjectName}] 프린트 세트 전체에서 비교·대조되는 두 개념의 '성립 조건 차이'가 출제 1순위입니다.`,
-            `원칙 뒤에 붙은 '예외 조항(단, ~의 경우는 제외)'이 객관식 함정 선지로 직결됩니다.`
-          ];
-
-      const cards = cleanLines.slice(0, 3).map((line, idx) => ({
-        title: `핵심 개념 ${idx + 1}`,
-        coreSummary: line,
-        whyExplanation: `이 개념을 정확히 이해하려면 단순 암기보다 '어떤 조건에서 이 규칙이 작동하는지' 인과관계를 먼저 파악해야 합니다. 시험에서는 기본 정의 자체보다 조건이 살짝 달라졌을 때 결과가 어떻게 바뀌는지를 묻는 문항이 주로 출제됩니다.`,
-        stepByStepExample: `① 실전 판별 3단계 적용:\n• 1단계: 제시된 문장·사례에서 핵심 조건 키워드 먼저 표시하기\n• 2단계: 기본 원칙에 해당하는지, 예외 조건에 해당하는지 대조하기\n• 3단계: 조건에 맞는 결과 도출하기`,
-        isStarred: idx === 0 || line.includes("★")
-      }));
-
-      if (cards.length === 0) {
-        cards.push({
-          title: `${subjectName} 자료 ${imageCount || 1}개 세트 통합 분석`,
-          coreSummary: `업로드된 ${imageCount || 1}개의 ${subjectName} 자료 핵심 내용이 하나의 흐름으로 정리되었습니다.`,
-          whyExplanation: `상단 빨간색 진단 안내에 표시된 사유로 인해 기본 학습 가이드가 먼저 표시되었습니다. 원인 메시지를 확인해 주시면 즉시 해결해 드리겠습니다.`,
-          stepByStepExample: `① 세트 자료 학습 순서:\n• 1단계: 핵심 개념 정의 및 성립 조건 확인\n• 2단계: 예외 사례를 원리와 연결해 비교 정리`,
-          isStarred: true
-        });
-      }
-
-      // 빈 문자열 치환 버그 방지 로직 적용
-      const blanks = cleanLines.slice(0, 3).map(line => {
-        const words = line
-          .split(/\s+/)
-          .map(w => w.replace(/[.,()\[\]:;'"★]/g, "").trim())
-          .filter(w => w.length >= 2);
-        const cleanTarget = words[Math.min(2, words.length - 1)] || "";
-        if (cleanTarget && line.includes(cleanTarget)) {
-          return line.replace(cleanTarget, `{{${cleanTarget}}}`);
-        }
-        return `${line} — 핵심 키워드: {{핵심개념}}`;
-      });
-
-      return {
-        subjectTitle: `${subjectName} · ${firstTitle}`,
-        teacherPicks: picks,
-        summaryCards: cards,
-        blankItems: blanks.length > 0 ? blanks : ["시험 전날 반드시 암기해야 할 핵심은 {{예외 조항}}과 {{성립 조건}}이다."],
-        oxQuiz: [
-          {
-            question: "프린트에서 별표(★)나 '주의'로 표시된 예외 조항은 기본 원리와 동일한 조건에서만 적용된다.",
-            answer: "X",
-            trapExplanation: "함정! 예외 조항은 기본 원리와 다른 특수 조건에서 발생하므로 별도로 구분해 이해해야 합니다."
-          },
-          {
-            question: "내신 시험에서는 두 개념의 정의나 적용 조건을 서로 바꿔치기하는 말장난 선지가 자주 출제된다.",
-            answer: "O",
-            trapExplanation: "정답! A와 B의 조건을 뒤바꾸는 유형이 가장 흔한 오답 함정입니다."
-          },
-          {
-            question: "입력된 프린트 내용 중 핵심 키워드와 사례는 성립 원리를 기준으로 정확히 연결해 이해해야 한다.",
-            answer: "O",
-            trapExplanation: "정답! 개념의 인과 원리와 대표 예시를 함께 묶어 기억해야 응용 문제까지 해결할 수 있습니다."
-          }
-        ],
-        audioScript: `자, 시험 직전 일 분만 집중하자! 방금 정리한 ${subjectName} 단원에서 선생님이 가장 좋아하는 함정은 바로 성립 조건 뒤바꾸기야. 원칙이 적용되는 조건과 예외가 발생하는 이유를 정확히 구분해서 이해해 두면, 어떤 응용 문제가 나와도 절대 흔들리지 않아!`
-      };
     }
 
     // 6. 결과 화면 렌더링
@@ -2634,6 +2589,22 @@ ${subjectGuides[subjectName] || ""}
       syncBodyScrollLock();
     }
 
+    // 브라우저 네이티브 인쇄 / PDF로 저장 (벡터 글자 선명 유지 · 검색/복사 가능 · 자동 다쪽 분할)
+    function printA4Sheet() {
+      if (!currentJokboData) {
+        showToast("인쇄할 시험지 내용이 없습니다.", "⚠️");
+        return;
+      }
+      const printSheet = document.getElementById("printOnlySheet");
+      if (printSheet) {
+        printSheet.innerHTML = buildA4SheetHtml(currentJokboData);
+      }
+      if (/KAKAOTALK/i.test(navigator.userAgent || "")) {
+        showToast("카톡 화면에서는 인쇄가 제한될 수 있어요. 안 열리면 [1장 바로 저장]을 눌러주세요!", "💡");
+      }
+      window.print();
+    }
+
     async function downloadA4Pdf() {
       const contentEl = document.getElementById("a4PreviewContent");
       const btn = document.getElementById("downloadPdfBtn");
@@ -2764,7 +2735,7 @@ ${subjectGuides[subjectName] || ""}
         if (previewModal) previewModal.style.display = "";
         window.scrollTo(0, prevScrollY);
         if (btn) btn.disabled = false;
-        if (label) label.textContent = "A4 PDF 저장";
+        if (label) label.textContent = "1장 바로 저장";
       }
     }
 
@@ -2819,10 +2790,31 @@ ${subjectGuides[subjectName] || ""}
 
     async function copyShareChallenge() {
       if (!currentJokboData) return;
-      const qList = (currentJokboData.oxQuiz || []).slice(0, 3).map((q, i) => `Q${i + 1}. ${q.question} (O/X)`).join("\n");
-      const shareMsg = `⚡ [찍으면 족보 · by SC 윤T] 우리 반 1분 함정 OX 배틀!\n과목/단원: ${currentJokboData.subjectTitle}\n\n${qList}\n\n👉 몇 개 맞혔는지 단톡방에 바로 답해봐!`;
+      const pickedOx = (currentJokboData.oxQuiz || []).slice(0, 3);
+      const qList = pickedOx.map((q, i) => `Q${i + 1}. ${q.question} (O/X)`).join("\n");
+      const answerSummary = pickedOx.map((q, i) => `Q${i + 1}(${q.answer})`).join(" / ");
+      const appUrl = window.location.protocol.startsWith("http")
+        ? `${window.location.origin}${window.location.pathname}`
+        : "";
+      const urlLine = appUrl ? `\n🔗 나도 내 프린트로 족보 만들기: ${appUrl}` : "";
+
+      const shareMsg = [
+        `⚡ [찍으면 족보 · by SC 윤T] 우리 반 1분 함정 OX 배틀!`,
+        `과목/단원: ${currentJokboData.subjectTitle}`,
+        ``,
+        qList,
+        ``,
+        `👉 몇 개 맞혔는지 단톡방에 바로 답해봐!${urlLine}`,
+        ``,
+        `.`,
+        `.`,
+        `.`,
+        `👇 (스포 주의! 다 풀고 아래에서 정답 확인)`,
+        `✅ 정답: ${answerSummary}`
+      ].join("\n");
+
       await copyTextSafely(shareMsg);
-      showToast("단톡방 퀴즈 배틀 메시지가 복사되었어요!", "💬");
+      showToast("단톡방 OX 퀴즈(링크·정답 포함)가 복사되었어요!", "💬");
     }
 
     // 초기 구동, ESC 모달 닫기 및 브라우저 보이스 로드 이벤트 등록
