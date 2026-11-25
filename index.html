@@ -15,7 +15,7 @@
   <meta property="og:image" content="/og-image.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="⚡ 찍으면 족보 - 시험 전날 밤 벼락치기 AI 족보" />
-  <meta name="twitter:description" content="프린트 사진·PDF만 올리면 원리 족보, 빈칸 암기, 함정 OX 퀴즈, A4 시험지가 한 번에!" />
+  <meta name="twitter:description" content="프린트 사진·PDF만 올리면 원리 족보, 빈칸 암기, 함정 OX 퀴즈, 3분 오디오, A4 시험지가 한 번에!" />
   <meta name="twitter:image" content="/og-image.png" />
   <!-- 앱 브랜드 파비콘 (별도 이미지 없이 즉시 표시되는 SVG 아이콘) -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230F172A'/%3E%3Cpath d='M36 8L14 36h15l-3 20 24-28H35l1-20z' fill='%23FACC15'/%3E%3C/svg%3E" />
@@ -169,7 +169,7 @@
     <main class="flex-1 pb-10">
 
       <!-- ============================================== -->
-      <!-- 1. 입력 화면: 과목 선택 / 프린트 촬영 / 샘플   -->
+      <!-- 1. 입력 화면: 과목 선택 / 통합 자료 입력       -->
       <!-- ============================================== -->
       <section id="view-input" class="p-4 space-y-4 animate-pop">
 
@@ -183,155 +183,143 @@
 
         <!-- 상단 안내 배너 -->
         <div class="bg-gradient-to-r from-electric-600 to-indigo-700 rounded-2xl p-4 text-white shadow-md">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[11px] font-extrabold uppercase tracking-wider bg-white/15 px-2 py-0.5 rounded-full">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <span class="text-[11px] font-extrabold uppercase tracking-wider bg-white/15 px-2.5 py-0.5 rounded-full truncate">
               🏫 살레남고 2학기 기말고사 벼락치기
             </span>
-            <span class="text-xs font-bold text-volt-400">자동 저장 · A4 PDF</span>
+            <span class="text-xs font-bold text-volt-400 whitespace-nowrap shrink-0">자동 저장 · A4 PDF</span>
           </div>
           <h2 class="text-base font-extrabold leading-snug mt-1.5">
-            과목 고르고 사진이나 PDF 학습지 올리면<br>
+            과목 고르고 사진·PDF·텍스트 중 하나만 올리면<br>
             <span class="text-volt-400">원리 이해 풀이 · 예시 해부 · 함정 OX</span> 완성!
           </h2>
         </div>
 
-        <!-- 📚 내 족보 자동 보관함 (다시 보기) 안내 & 빠른 접근 카드 -->
-        <div class="bg-white border-2 border-electric-100 rounded-3xl p-4 shadow-sm space-y-2.5">
-          <div class="flex items-center justify-between gap-2">
-            <div class="flex items-center gap-1.5">
-              <span class="text-base">🗂️</span>
-              <h3 class="text-sm font-black text-slate-900">내 족보 자동 보관함 (다시 보기)</h3>
-            </div>
-            <button type="button" onclick="openArchiveModal()" class="min-h-[36px] px-3 py-1.5 rounded-full text-xs font-extrabold text-electric-600 hover:text-electric-700 bg-electric-50 inline-flex items-center whitespace-nowrap cursor-pointer">
-              전체 <span id="cardArchiveCount" class="mx-0.5">0</span>개 보기 ›
-            </button>
-          </div>
-
-          <p class="text-xs text-slate-600 leading-relaxed bg-slate-50 rounded-2xl p-3 border border-slate-200/70">
-            🔒 <strong>로그인 없이 자동 저장돼요!</strong> 한 번 만든 족보는 내 스마트폰 브라우저에 최대 <strong>20개까지 자동 보관</strong>되어, 등굣길 버스나 쉬는 시간에 터치 한 번으로 빈칸 암기와 OX 퀴즈를 다시 풀 수 있습니다.
-          </p>
-
-          <!-- 최근 만든 족보 2개 빠른 미리보기 리스트 -->
-          <div id="recentArchivePreviewList" class="space-y-1.5"></div>
+        <!-- 🗂️ 재방문 시에만 표시되는 1줄 컴팩트 보관함 바로가기 바 (첫 방문 시 숨김) -->
+        <div id="compactArchiveBar" class="hidden bg-white border border-electric-200 rounded-2xl px-3.5 py-2.5 shadow-sm flex items-center justify-between gap-2">
+          <button type="button" id="compactLatestBtn" class="min-w-0 flex-1 min-h-[36px] flex items-center gap-1.5 text-left cursor-pointer">
+            <span class="text-sm shrink-0">🗂️</span>
+            <span class="text-xs font-black text-electric-700 shrink-0 whitespace-nowrap">최근 족보</span>
+            <span id="compactLatestTitle" class="text-xs font-bold text-slate-800 truncate"></span>
+          </button>
+          <button type="button" onclick="openArchiveModal()" class="min-h-[36px] px-2.5 py-1.5 rounded-xl bg-electric-50 hover:bg-electric-100 text-xs font-black text-electric-700 whitespace-nowrap shrink-0 cursor-pointer">
+            전체 <span id="cardArchiveCount">0</span>개 ›
+          </button>
         </div>
 
         <!-- Step 1: 과목 선택 (국어 · 영어 · 통합과학 · 통합사회) -->
         <div class="bg-white border border-slate-200 rounded-3xl p-4 shadow-sm space-y-2.5">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
-              <span class="w-5 h-5 rounded-full bg-slate-900 text-white text-[11px] flex items-center justify-center">1</span>
-              <span>과목 선택 (과목별 출제 함정 자동 적용)</span>
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5 min-w-0">
+              <span class="w-5 h-5 rounded-full bg-slate-900 text-white text-[11px] flex items-center justify-center shrink-0">1</span>
+              <span class="truncate">과목 선택</span>
             </span>
-            <span id="selectedSubjectBadge" class="text-[11px] font-extrabold text-electric-600 bg-electric-50 px-2.5 py-0.5 rounded-full">📚 국어 선택됨</span>
+            <span id="selectedSubjectBadge" class="text-[11px] font-extrabold text-electric-600 bg-electric-50 px-2.5 py-1 rounded-full whitespace-nowrap shrink-0">📚 국어 선택됨</span>
           </div>
 
-          <div class="grid grid-cols-4 gap-1.5">
-            <button type="button" id="subj-korean" onclick="selectSubject('korean')" class="subj-btn py-2.5 px-1 rounded-2xl border-2 border-electric-500 bg-electric-50 text-electric-700 font-black text-xs text-center transition active:scale-95 cursor-pointer">
+          <div class="grid grid-cols-4 gap-1.5" role="group" aria-label="과목 선택">
+            <button type="button" id="subj-korean" aria-pressed="true" onclick="selectSubject('korean')" class="subj-btn min-h-[54px] py-2.5 px-1 rounded-2xl border-2 border-electric-500 bg-electric-50 text-electric-700 font-black text-xs text-center transition active:scale-95 cursor-pointer">
               📚<br>국어
             </button>
-            <button type="button" id="subj-english" onclick="selectSubject('english')" class="subj-btn py-2.5 px-1 rounded-2xl border border-slate-200 bg-slate-50 text-slate-700 font-extrabold text-xs text-center hover:border-electric-400 transition active:scale-95 cursor-pointer">
+            <button type="button" id="subj-english" aria-pressed="false" onclick="selectSubject('english')" class="subj-btn min-h-[54px] py-2.5 px-1 rounded-2xl border border-slate-200 bg-slate-50 text-slate-700 font-extrabold text-xs text-center hover:border-electric-400 transition active:scale-95 cursor-pointer">
               📘<br>영어
             </button>
-            <button type="button" id="subj-science" onclick="selectSubject('science')" class="subj-btn py-2.5 px-1 rounded-2xl border border-slate-200 bg-slate-50 text-slate-700 font-extrabold text-xs text-center hover:border-electric-400 transition active:scale-95 cursor-pointer">
+            <button type="button" id="subj-science" aria-pressed="false" onclick="selectSubject('science')" class="subj-btn min-h-[54px] py-2.5 px-1 rounded-2xl border border-slate-200 bg-slate-50 text-slate-700 font-extrabold text-xs text-center hover:border-electric-400 transition active:scale-95 cursor-pointer">
               🧪<br>통합과학
             </button>
-            <button type="button" id="subj-social" onclick="selectSubject('social')" class="subj-btn py-2.5 px-1 rounded-2xl border border-slate-200 bg-slate-50 text-slate-700 font-extrabold text-xs text-center hover:border-electric-400 transition active:scale-95 cursor-pointer">
+            <button type="button" id="subj-social" aria-pressed="false" onclick="selectSubject('social')" class="subj-btn min-h-[54px] py-2.5 px-1 rounded-2xl border border-slate-200 bg-slate-50 text-slate-700 font-extrabold text-xs text-center hover:border-electric-400 transition active:scale-95 cursor-pointer">
               🌍<br>통합사회
             </button>
           </div>
         </div>
 
-        <!-- Step 2: 교과서나 프린트 촬영 / PDF 파일 업로드 (최대 3개 지원) -->
+        <!-- Step 2: 학습 자료 입력 (사진·PDF / 텍스트 / 샘플 중 택 1 통합 카드) -->
         <div class="bg-white border border-slate-200 rounded-3xl p-4 shadow-sm space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
-              <span class="w-5 h-5 rounded-full bg-slate-900 text-white text-[11px] flex items-center justify-center">2</span>
-              <span>프린트 촬영 · PDF 업로드 (최대 3개)</span>
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5 min-w-0">
+              <span class="w-5 h-5 rounded-full bg-slate-900 text-white text-[11px] flex items-center justify-center shrink-0">2</span>
+              <span class="truncate">학습 자료 입력</span>
             </span>
-            <span id="imageCountBadge" class="text-[11px] text-electric-600 font-extrabold bg-electric-50 px-2 py-0.5 rounded-full">0 / 3개 선택됨</span>
+            <span class="text-[11px] font-extrabold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full whitespace-nowrap shrink-0">3가지 중 선택</span>
           </div>
 
-          <div id="uploadPlaceholder" class="grid grid-cols-2 gap-2">
-            <button type="button" onclick="openCameraCapture()" class="border-2 border-dashed border-electric-500/60 bg-electric-50/50 hover:bg-electric-50 rounded-2xl p-3.5 flex flex-col items-center justify-center text-center cursor-pointer transition active:scale-95">
-              <div class="w-10 h-10 rounded-2xl bg-electric-600 text-white flex items-center justify-center text-lg mb-1.5 shadow-sm">
-                📸
-              </div>
-              <p class="text-xs font-extrabold text-slate-900">카메라 바로 촬영</p>
-              <p class="text-[10px] text-slate-500 mt-0.5">프린트 바로 찍기</p>
+          <!-- 입력 방식 선택 세그먼트 탭 -->
+          <div role="tablist" aria-label="자료 입력 방식 선택" class="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-2xl">
+            <button type="button" role="tab" id="input-tab-photo" aria-selected="true" aria-controls="input-panel-photo" onclick="switchInputMode('photo')" class="input-mode-tab min-h-[38px] py-2 px-1.5 rounded-xl bg-white text-slate-900 font-black text-xs whitespace-nowrap shadow-sm transition cursor-pointer">
+              📸 사진·PDF
             </button>
-            <button type="button" onclick="openAlbumPicker()" class="border-2 border-dashed border-slate-300 hover:border-electric-500 bg-slate-50/80 hover:bg-electric-50/40 rounded-2xl p-3.5 flex flex-col items-center justify-center text-center cursor-pointer transition active:scale-95">
-              <div class="w-10 h-10 rounded-2xl bg-electric-100 text-electric-600 flex items-center justify-center text-lg mb-1.5">
-                📂
-              </div>
-              <p class="text-xs font-extrabold text-slate-800">앨범 · PDF 파일</p>
-              <p class="text-[10px] text-slate-500 mt-0.5">사진·PDF 최대 3개 (3MB↓)</p>
+            <button type="button" role="tab" id="input-tab-text" aria-selected="false" aria-controls="input-panel-text" onclick="switchInputMode('text')" class="input-mode-tab min-h-[38px] py-2 px-1.5 rounded-xl text-slate-600 font-bold text-xs whitespace-nowrap hover:text-slate-900 transition cursor-pointer">
+              ✍️ 텍스트
+            </button>
+            <button type="button" role="tab" id="input-tab-sample" aria-selected="false" aria-controls="input-panel-sample" onclick="switchInputMode('sample')" class="input-mode-tab min-h-[38px] py-2 px-1.5 rounded-xl text-slate-600 font-bold text-xs whitespace-nowrap hover:text-slate-900 transition cursor-pointer">
+              ⚡ 1초 샘플
             </button>
           </div>
 
-          <div id="imageSetContainer" class="hidden space-y-2.5">
-            <div id="imageThumbGrid" class="grid grid-cols-3 gap-2"></div>
-            <div class="flex items-center justify-between gap-2 bg-slate-900 text-volt-400 text-xs font-bold px-3 py-2 rounded-xl">
-              <span>✨ 분석 자료 준비 완료!</span>
-              <div class="flex items-center gap-2 shrink-0">
-                <button type="button" id="quickCameraAddBtn" onclick="openCameraCapture()" class="min-h-[34px] px-2.5 py-1 rounded-lg bg-volt-400 text-slate-950 text-xs font-black active:scale-95 transition cursor-pointer">📸 다음 쪽 촬영</button>
-                <button type="button" onclick="clearAllUploadedImages()" class="min-h-[34px] px-2 py-1 text-slate-300 hover:text-white underline cursor-pointer">전체 삭제</button>
-              </div>
-            </div>
-          </div>
-
-          <p class="text-xs text-slate-500 leading-relaxed bg-slate-50 rounded-xl px-3 py-2 border border-slate-200/70">
-            🔒 업로드한 자료는 AI 분석에만 사용되며 서버에 저장되지 않아요. <strong>이름·학번·얼굴</strong> 등 개인정보가 찍히지 않게 주의해 주세요!
-          </p>
-        </div>
-
-        <!-- Step 3: 과목별 핵심 샘플 & 프린트 텍스트 직접 입력 -->
-        <div class="bg-white border border-slate-200 rounded-3xl p-4 shadow-sm space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
-              <span class="w-5 h-5 rounded-full bg-slate-900 text-white text-[11px] flex items-center justify-center">3</span>
-              <span>과목별 샘플 체험 또는 프린트 본문 입력</span>
-            </span>
-          </div>
-
-          <div>
-            <p id="sampleSectionTitle" class="text-xs font-bold text-slate-500 mb-1.5">⚡ [국어] 핵심 프린트 1초 불러오기</p>
-            <div id="sampleButtonsGrid" class="grid grid-cols-3 gap-1.5"></div>
-          </div>
-
-          <div class="space-y-1.5">
-            <div class="flex items-center justify-between gap-2">
-              <label for="printTextInput" class="text-xs font-bold text-slate-600">프린트 본문 / 선생님 강조 필기 내용</label>
-              <button type="button" onclick="clearTextInput()" class="min-h-[36px] px-3 py-1.5 rounded-lg hover:bg-slate-100 text-xs font-bold text-slate-500 hover:text-slate-700 inline-flex items-center whitespace-nowrap cursor-pointer">내용 지우기</button>
-            </div>
-            <textarea id="printTextInput" rows="5" placeholder="여기에 수업 프린트 텍스트를 붙여넣거나, 위 핵심 단원 샘플 버튼을 눌러 바로 테스트해 보세요!" class="w-full rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white p-3 text-sm text-slate-800 leading-relaxed placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-electric-500/40 focus:border-electric-500 transition"></textarea>
-          </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 3: 과목별 핵심 샘플 & 프린트 텍스트 직접 입력 -->
-        <div class="bg-white border border-slate-200 rounded-3xl p-4 shadow-sm space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
-              <span class="w-5 h-5 rounded-full bg-slate-900 text-white text-[11px] flex items-center justify-center">3</span>
-              <span>과목별 샘플 체험 또는 프린트 본문 입력</span>
-            </span>
-          </div>
-
-          <div>
-            <p id="sampleSectionTitle" class="text-[11px] font-bold text-slate-500 mb-1.5">⚡ [국어] 핵심 프린트 1초 불러오기</p>
-            <div id="sampleButtonsGrid" class="grid grid-cols-3 gap-1.5"></div>
-          </div>
-
-          <div class="space-y-1.5">
+          <!-- [입력 방식 1] 사진 촬영 · PDF 업로드 -->
+          <div id="input-panel-photo" role="tabpanel" aria-labelledby="input-tab-photo" class="space-y-2.5">
             <div class="flex items-center justify-between">
-              <label for="printTextInput" class="text-[11px] font-bold text-slate-600">프린트 본문 / 선생님 강조 필기 내용</label>
-              <button type="button" onclick="clearTextInput()" class="text-[11px] text-slate-400 hover:text-slate-600 cursor-pointer">내용 지우기</button>
+              <span class="text-xs font-bold text-slate-600">프린트 사진 또는 PDF 파일 (최대 3개)</span>
+              <span id="imageCountBadge" class="text-[11px] text-electric-600 font-extrabold bg-electric-50 px-2 py-0.5 rounded-full whitespace-nowrap">0 / 3개 선택됨</span>
             </div>
-            <textarea id="printTextInput" rows="5" placeholder="여기에 수업 프린트 텍스트를 붙여넣거나, 위 핵심 단원 샘플 버튼을 눌러 바로 테스트해 보세요!" class="w-full rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white p-3 text-xs text-slate-800 leading-relaxed placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-electric-500/40 focus:border-electric-500 transition"></textarea>
+
+            <div id="uploadPlaceholder" class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="openCameraCapture()" class="min-h-[96px] border-2 border-dashed border-electric-500/60 bg-electric-50/50 hover:bg-electric-50 rounded-2xl p-3.5 flex flex-col items-center justify-center text-center cursor-pointer transition active:scale-95">
+                <div class="w-10 h-10 rounded-2xl bg-electric-600 text-white flex items-center justify-center text-lg mb-1.5 shadow-sm">
+                  📸
+                </div>
+                <p class="text-xs font-extrabold text-slate-900">카메라 바로 촬영</p>
+                <p class="text-[11px] text-slate-500 mt-0.5">프린트 바로 찍기</p>
+              </button>
+              <button type="button" onclick="openAlbumPicker()" class="min-h-[96px] border-2 border-dashed border-slate-300 hover:border-electric-500 bg-slate-50/80 hover:bg-electric-50/40 rounded-2xl p-3.5 flex flex-col items-center justify-center text-center cursor-pointer transition active:scale-95">
+                <div class="w-10 h-10 rounded-2xl bg-electric-100 text-electric-600 flex items-center justify-center text-lg mb-1.5">
+                  📂
+                </div>
+                <p class="text-xs font-extrabold text-slate-800">앨범 · PDF 파일</p>
+                <p class="text-[11px] text-slate-500 mt-0.5">사진·PDF 최대 3개 (3MB↓)</p>
+              </button>
+            </div>
+
+            <div id="imageSetContainer" class="hidden space-y-2.5">
+              <div id="imageThumbGrid" class="grid grid-cols-3 gap-2"></div>
+              <div class="flex items-center justify-between gap-2 bg-slate-900 text-volt-400 text-xs font-bold px-3 py-2 rounded-xl">
+                <span class="truncate">✨ 분석 자료 준비 완료!</span>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <button type="button" id="quickCameraAddBtn" onclick="openCameraCapture()" class="min-h-[34px] px-2.5 py-1 rounded-lg bg-volt-400 text-slate-950 text-xs font-black whitespace-nowrap active:scale-95 transition cursor-pointer">📸 다음 쪽 촬영</button>
+                  <button type="button" onclick="clearAllUploadedImages()" class="min-h-[34px] px-2 py-1 text-slate-300 hover:text-white underline whitespace-nowrap cursor-pointer">전체 삭제</button>
+                </div>
+              </div>
+            </div>
+
+            <p class="text-xs text-slate-500 leading-relaxed bg-slate-50 rounded-xl px-3 py-2 border border-slate-200/70">
+              🔒 업로드한 자료는 AI 분석에만 사용되며 서버에 저장되지 않아요. <strong>이름·학번·얼굴</strong> 등 개인정보가 찍히지 않게 주의해 주세요!
+            </p>
           </div>
 
-          <button type="button" id="generateBtn" onclick="generateJokbo()" class="w-full py-4 rounded-2xl bg-slate-900 hover:bg-slate-800 disabled:opacity-60 text-volt-400 font-black text-sm shadow-lg active:scale-[0.99] transition flex items-center justify-center gap-2 cursor-pointer">
+          <!-- [입력 방식 2] 텍스트 직접 붙여넣기 -->
+          <div id="input-panel-text" role="tabpanel" aria-labelledby="input-tab-text" class="hidden space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <label for="printTextInput" class="text-xs font-bold text-slate-600">프린트 본문 / 선생님 강조 필기</label>
+              <button type="button" onclick="clearTextInput()" class="min-h-[36px] px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-600 inline-flex items-center shrink-0 whitespace-nowrap cursor-pointer">내용 지우기</button>
+            </div>
+            <textarea id="printTextInput" rows="5" placeholder="여기에 수업 프린트 텍스트나 선생님 강조 필기를 붙여넣어 주세요!" class="w-full rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white p-3 text-sm text-slate-800 leading-relaxed placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-electric-500/40 focus:border-electric-500 transition"></textarea>
+          </div>
+
+          <!-- [입력 방식 3] 과목별 핵심 샘플 1초 체험 -->
+          <div id="input-panel-sample" role="tabpanel" aria-labelledby="input-tab-sample" class="hidden space-y-2.5">
+            <p id="sampleSectionTitle" class="text-xs font-bold text-slate-600">⚡ [국어] 핵심 프린트 1초 불러오기</p>
+            <div id="sampleButtonsGrid" class="grid grid-cols-3 gap-1.5"></div>
+            <div id="samplePreviewBox" class="rounded-2xl border border-slate-200 bg-slate-50 p-3 space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <span id="samplePreviewStatus" class="text-xs font-extrabold text-slate-600">위 단원 버튼을 누르면 샘플 본문이 불러와집니다</span>
+                <button type="button" id="editSampleTextBtn" onclick="switchInputMode('text')" class="hidden min-h-[34px] px-2.5 py-1 rounded-lg bg-white border border-slate-300 text-xs font-bold text-slate-700 whitespace-nowrap shrink-0 cursor-pointer">✍️ 본문 수정</button>
+              </div>
+              <p id="samplePreviewText" class="hidden text-xs text-slate-600 whitespace-pre-line line-clamp-4 leading-relaxed bg-white p-2.5 rounded-xl border border-slate-200/80"></p>
+            </div>
+          </div>
+
+          <!-- 생성하기 CTA 버튼 -->
+          <button type="button" id="generateBtn" onclick="generateJokbo()" class="w-full min-h-[50px] py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 disabled:opacity-60 text-volt-400 font-black text-sm shadow-lg active:scale-[0.99] transition flex items-center justify-center gap-2 cursor-pointer">
             <span id="generateBtnIcon" class="text-lg">⚡</span>
             <span id="generateBtnText">원리 이해 벼락치기 족보 생성하기</span>
           </button>
@@ -342,14 +330,19 @@
               <span class="text-base shrink-0">😥</span>
               <div class="space-y-0.5 min-w-0">
                 <p class="text-xs font-black text-red-800">지금은 족보를 만들지 못했어요</p>
-                <p id="generateErrorMsg" class="text-[11px] font-semibold text-red-700 leading-relaxed"></p>
+                <p id="generateErrorMsg" class="text-xs font-semibold text-red-700 leading-relaxed"></p>
               </div>
             </div>
-            <button type="button" onclick="generateJokbo()" class="w-full py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-black shadow-sm active:scale-[0.99] transition flex items-center justify-center gap-1.5 cursor-pointer">
+            <button type="button" onclick="generateJokbo()" class="w-full min-h-[42px] py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-black shadow-sm active:scale-[0.99] transition flex items-center justify-center gap-1.5 cursor-pointer">
               <span>🔄</span>
               <span>다시 시도하기</span>
             </button>
           </div>
+
+          <!-- 브라우저 저장 위치 명확 안내 -->
+          <p class="text-[11px] text-slate-400 text-center leading-relaxed">
+            💾 생성된 족보는 로그인 없이 <strong>이 기기의 현재 브라우저에만</strong> 자동 저장됩니다.
+          </p>
         </div>
 
       </section>
@@ -378,27 +371,39 @@
         <div id="savedStatusBanner" class="bg-emerald-50 border border-emerald-200 rounded-2xl px-3.5 py-2 flex items-center justify-between gap-2 text-xs text-emerald-900">
           <span class="font-bold flex items-center gap-1.5">
             <span>✅</span>
-            <span>내 스마트폰 <strong>[보관함]</strong>에 자동 저장되었습니다!</span>
+            <span><strong>이 기기의 현재 브라우저 [보관함]</strong>에 자동 저장됨</span>
           </span>
           <button type="button" onclick="openArchiveModal()" class="min-h-[36px] px-2.5 py-1.5 rounded-lg hover:bg-emerald-100/80 font-black underline text-emerald-700 inline-flex items-center shrink-0 whitespace-nowrap cursor-pointer">목록 열기</button>
         </div>
 
-        <!-- [위치 1] AI 오류(환각) 주의 안내 배너 (친근한 1타 강사 톤 - 스타일 A) -->
-        <div id="aiNoticeBanner" class="bg-amber-50/90 border border-amber-200 rounded-2xl px-3.5 py-3 flex items-start gap-2 text-xs text-amber-950 leading-relaxed">
-          <span class="text-sm shrink-0 mt-0.5">💡</span>
-          <p>
-            <strong>AI가 프린트를 분석해 정리한 족보예요!</strong> 가끔 AI도 글씨를 잘못 읽거나 실수할 수 있으니, 헷갈리는 개념과 OX 정답은 <strong>반드시 학교 프린트 원문과 한 번 더 대조</strong>해 보세요.
-          </p>
+        <!-- AI 오류(환각) 주의 안내 & 원문 대조 바로 열기 카드 -->
+        <div class="bg-amber-50/90 border border-amber-200 rounded-2xl p-3 space-y-2 text-xs text-amber-950">
+          <div class="flex items-start gap-2 leading-relaxed">
+            <span class="text-sm shrink-0 mt-0.5">💡</span>
+            <p class="flex-1">
+              <strong>AI가 정리한 보조 자료예요!</strong> 글씨 오독이나 실수가 있을 수 있으니 <strong>원문과 대조</strong>하고, 틀린 부분은 각 카드의 <strong>[✏️ 수정]</strong> 버튼으로 바로 고쳐 저장하세요.
+            </p>
+          </div>
+          <div class="pt-1 border-t border-amber-200/70">
+            <button type="button" id="toggleSourceCompareBtn" aria-expanded="false" onclick="toggleSourceCompare()" class="w-full min-h-[36px] px-3 py-1.5 rounded-xl bg-white/80 hover:bg-white border border-amber-300/80 text-xs font-black text-amber-900 flex items-center justify-between gap-2 transition cursor-pointer">
+              <span class="flex items-center gap-1.5">
+                <span>📄</span>
+                <span>입력 원문 · 근거 자료 펼쳐서 대조하기</span>
+              </span>
+              <span id="sourceCompareArrow">▾</span>
+            </button>
+            <div id="sourceComparePanel" class="hidden mt-2 bg-white rounded-xl p-3 border border-amber-200 space-y-2"></div>
+          </div>
         </div>
 
-        <!-- 선생님 별표/출제 1순위 하이라이트 박스 -->
+        <!-- 선생님 별표/우선 복습 하이라이트 박스 -->
         <div class="bg-slate-900 text-white rounded-3xl p-4 shadow-md border border-slate-800 space-y-2.5">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between gap-2">
             <span class="text-xs font-black text-volt-400 flex items-center gap-1.5">
               <span>🎯</span>
-              <span>출제자 시선 · 함정 & 별표(★) 1순위</span>
+              <span>출제자 시선 · 함정 & 별표(★) 우선 복습</span>
             </span>
-            <span class="text-[11px] font-bold bg-white/10 px-2.5 py-0.5 rounded-full text-slate-300">필수 암기</span>
+            <span class="text-[11px] font-bold bg-white/10 px-2.5 py-0.5 rounded-full text-slate-300 whitespace-nowrap shrink-0">우선 복습</span>
           </div>
           <ul id="teacherPicksList" class="space-y-2 text-sm text-slate-100 leading-relaxed"></ul>
         </div>
@@ -419,8 +424,14 @@
           </button>
         </div>
 
-        <!-- [탭 1] 원리 이해 1페이지 족보 -->
+        <!-- [탭 1] 원리 이해 1페이지 족보 (핵심 요약 우선 + 원리·예시 펼쳐보기) -->
         <div id="panel-summary" role="tabpanel" aria-labelledby="tab-summary" class="space-y-3 animate-pop">
+          <div class="bg-white border border-slate-200 rounded-2xl px-3.5 py-2.5 flex items-center justify-between gap-2">
+            <span class="text-xs font-bold text-slate-600">핵심 요약 먼저 보고, 깊은 원리는 펼쳐보세요</span>
+            <button type="button" id="toggleAllDetailsBtn" onclick="toggleAllSummaryDetails()" class="min-h-[36px] px-3 py-1.5 rounded-xl bg-electric-50 hover:bg-electric-100 text-electric-700 text-xs font-black whitespace-nowrap shrink-0 transition cursor-pointer">
+              📖 전체 원리·예시 펼치기
+            </button>
+          </div>
           <div id="summaryCardsContainer" class="space-y-3"></div>
           <button type="button" onclick="copyAllSummary()" class="w-full min-h-[44px] py-3 rounded-2xl bg-white border border-slate-300 hover:bg-slate-100 text-slate-800 font-extrabold text-xs shadow-sm active:scale-95 transition flex items-center justify-center gap-1.5 cursor-pointer">
             <span>📋</span>
@@ -431,31 +442,33 @@
         <!-- [탭 2] 빈칸 뚫기 암기 시트 -->
         <div id="panel-blank" role="tabpanel" aria-labelledby="tab-blank" class="hidden space-y-3 animate-pop">
           <div class="bg-white border border-slate-200 rounded-3xl p-4 space-y-3 shadow-sm">
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-xs font-extrabold text-slate-800">노란 빈칸을 터치해 정답을 확인하세요!</span>
-              <div class="flex gap-1.5 shrink-0">
-                <button type="button" onclick="toggleAllBlanks(false)" class="min-h-[36px] px-2.5 py-1.5 rounded-lg bg-slate-100 text-xs font-bold text-slate-600 whitespace-nowrap cursor-pointer">모두 가리기</button>
-                <button type="button" onclick="toggleAllBlanks(true)" class="min-h-[36px] px-2.5 py-1.5 rounded-lg bg-electric-100 text-xs font-bold text-electric-700 whitespace-nowrap cursor-pointer">정답 보기</button>
+            <div class="space-y-2">
+              <p class="text-xs font-extrabold text-slate-800">노란 빈칸을 터치해 정답을 확인하세요!</p>
+              <div class="grid grid-cols-2 gap-2">
+                <button type="button" onclick="toggleAllBlanks(false)" class="min-h-[38px] px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-extrabold text-slate-700 whitespace-nowrap cursor-pointer">🙈 모두 가리기</button>
+                <button type="button" onclick="toggleAllBlanks(true)" class="min-h-[38px] px-3 py-2 rounded-xl bg-electric-100 hover:bg-electric-200 text-xs font-extrabold text-electric-700 whitespace-nowrap cursor-pointer">👀 정답 보기</button>
               </div>
             </div>
             <div id="blankListContainer" class="space-y-2.5"></div>
           </div>
         </div>
 
-        <!-- [탭 3] 출제자 말장난 함정 OX 퀴즈 -->
+        <!-- [탭 3] 출제자 말장난 함정 OX 퀴즈 (이어 풀기 / 틀린 문제만 / 처음부터 구분) -->
         <div id="panel-ox" role="tabpanel" aria-labelledby="tab-ox" class="hidden space-y-3 animate-pop">
-          <div class="bg-white border border-slate-200 rounded-2xl p-3 space-y-2">
+          <div class="bg-white border border-slate-200 rounded-2xl p-3.5 space-y-2.5">
             <div class="flex items-center justify-between gap-2">
-              <span class="text-xs font-extrabold text-slate-700">내신 말장난 함정 돌파 현황</span>
-              <span id="oxScoreBadge" class="px-2.5 py-1 rounded-full bg-electric-100 text-electric-700 text-xs font-black whitespace-nowrap">0 / 5 문제 완료</span>
+              <span id="oxModeTitle" class="text-xs font-extrabold text-slate-700">내신 말장난 함정 돌파 현황</span>
+              <span id="oxScoreBadge" class="px-2.5 py-1 rounded-full bg-electric-100 text-electric-700 text-xs font-black whitespace-nowrap shrink-0">0 / 5 문제 완료</span>
             </div>
-            <div id="oxActionRow" class="hidden flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
-              <button type="button" id="oxWrongOnlyBtn" onclick="toggleWrongOnlyOx()" class="min-h-[36px] px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-xs font-black flex items-center gap-1 transition active:scale-95 cursor-pointer">
-                <span>🔄</span>
-                <span id="oxWrongOnlyLabel">틀린 문제만 다시 풀기</span>
+            <div id="oxActionRow" class="hidden grid grid-cols-3 gap-1.5 pt-2 border-t border-slate-100">
+              <button type="button" id="oxModeAllBtn" onclick="setOxMode('all')" class="min-h-[36px] px-2 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-black whitespace-nowrap transition cursor-pointer">
+                ▶️ 이어 풀기
               </button>
-              <button type="button" onclick="resetOxAnswers()" class="min-h-[36px] px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition cursor-pointer">
-                ↺ 전체 초기화
+              <button type="button" id="oxModeWrongBtn" onclick="setOxMode('wrong')" class="min-h-[36px] px-2 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-xs font-black whitespace-nowrap transition cursor-pointer">
+                🔄 틀린 문제만
+              </button>
+              <button type="button" onclick="resetOxAnswers()" class="min-h-[36px] px-2 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold whitespace-nowrap transition cursor-pointer">
+                ↺ 처음부터
               </button>
             </div>
           </div>
@@ -535,21 +548,33 @@
   <!-- A4 시험지 미리보기 & 인쇄 / PDF 저장 모달       -->
   <!-- ============================================== -->
   <div id="a4PreviewModal" role="dialog" aria-modal="true" aria-labelledby="a4ModalTitle" onclick="if (event.target === this) closeA4PreviewModal()" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex flex-col">
-    <div class="bg-slate-900 text-white px-4 py-3 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 shrink-0">
-      <div class="min-w-0">
-        <h3 id="a4ModalTitle" class="text-sm font-black text-volt-400 truncate">📄 찍으면 족보 · A4 벼락치기 시험지</h3>
-        <p class="text-[11px] text-slate-300">선명한 글자·다쪽 인쇄는 [선명한 PDF/인쇄], 모바일 1장 저장은 [1장 바로 저장]!</p>
+    <div class="bg-slate-900 text-white px-4 py-3 border-b border-slate-800 space-y-2.5 shrink-0">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="min-w-0">
+          <h3 id="a4ModalTitle" class="text-sm font-black text-volt-400 truncate">📄 찍으면 족보 · A4 벼락치기 시험지</h3>
+          <p class="text-[11px] text-slate-300">화면에서 볼지, 종이로 인쇄해 접어 볼지 정답지 방향을 선택하세요!</p>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button type="button" onclick="printA4Sheet()" class="min-h-[38px] px-3 py-2 rounded-xl bg-electric-500 hover:bg-electric-600 text-white text-xs font-black shadow-sm active:scale-95 transition flex items-center gap-1 whitespace-nowrap cursor-pointer">
+            <span>🖨️</span>
+            <span>선명한 PDF/인쇄</span>
+          </button>
+          <button type="button" id="downloadPdfBtn" onclick="downloadA4Pdf()" class="min-h-[38px] px-3 py-2 rounded-xl bg-volt-400 hover:bg-volt-500 disabled:opacity-60 text-slate-950 text-xs font-black shadow-sm active:scale-95 transition flex items-center gap-1 whitespace-nowrap cursor-pointer">
+            <span>📥</span>
+            <span id="downloadPdfLabel">1장 바로 저장</span>
+          </button>
+          <button type="button" aria-label="A4 미리보기 닫기" onclick="closeA4PreviewModal()" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 font-black text-sm flex items-center justify-center shrink-0 cursor-pointer">✕</button>
+        </div>
       </div>
-      <div class="flex items-center gap-1.5 shrink-0">
-        <button type="button" onclick="printA4Sheet()" class="min-h-[38px] px-3 py-2 rounded-xl bg-electric-500 hover:bg-electric-600 text-white text-xs font-black shadow-sm active:scale-95 transition flex items-center gap-1 cursor-pointer">
-          <span>🖨️</span>
-          <span>선명한 PDF/인쇄</span>
+
+      <!-- 화면·태블릿용(정방향 정답) vs 종이 인쇄용(접어보는 뒤집힌 정답) 전환 토글 -->
+      <div role="group" aria-label="A4 정답지 표시 방식 선택" class="grid grid-cols-2 gap-1.5 bg-slate-800/90 p-1 rounded-xl max-w-md">
+        <button type="button" id="a4OrientUprightBtn" aria-pressed="true" onclick="setA4AnswerOrientation('upright')" class="min-h-[34px] px-2.5 py-1.5 rounded-lg bg-volt-400 text-slate-950 text-xs font-black whitespace-nowrap transition cursor-pointer">
+          📱 화면·태블릿용 (정방향 정답)
         </button>
-        <button type="button" id="downloadPdfBtn" onclick="downloadA4Pdf()" class="min-h-[38px] px-3 py-2 rounded-xl bg-volt-400 hover:bg-volt-500 disabled:opacity-60 text-slate-950 text-xs font-black shadow-sm active:scale-95 transition flex items-center gap-1 cursor-pointer">
-          <span>📥</span>
-          <span id="downloadPdfLabel">1장 바로 저장</span>
+        <button type="button" id="a4OrientFlippedBtn" aria-pressed="false" onclick="setA4AnswerOrientation('flipped')" class="min-h-[34px] px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white text-xs font-bold whitespace-nowrap transition cursor-pointer">
+          🖨️ 종이 인쇄용 (뒤집힌 정답)
         </button>
-        <button type="button" aria-label="A4 미리보기 닫기" onclick="closeA4PreviewModal()" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 font-black text-sm flex items-center justify-center cursor-pointer">✕</button>
       </div>
     </div>
 
@@ -565,13 +590,13 @@
   <!-- ============================================== -->
   <div id="archiveModal" role="dialog" aria-modal="true" aria-labelledby="archiveModalTitle" onclick="if (event.target === this) closeArchiveModal()" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[82vh]">
-      <div class="bg-slate-900 text-white px-4 py-3.5 flex items-center justify-between shrink-0">
-        <div>
+      <div class="bg-slate-900 text-white px-4 py-3.5 flex items-center justify-between gap-2 shrink-0">
+        <div class="min-w-0">
           <h3 id="archiveModalTitle" class="text-sm font-black text-volt-400">📚 내 족보 자동 보관함</h3>
-          <p class="text-[11px] text-slate-300">최근 만든 족보 최대 20개가 자동 저장됩니다</p>
+          <p class="text-[11px] text-slate-300 leading-snug mt-0.5">로그인 없이 <strong>이 기기의 현재 브라우저에만</strong> 최대 20개 저장됩니다</p>
         </div>
-        <div class="flex items-center gap-1.5">
-          <button type="button" onclick="requestClearAllArchive()" class="min-h-[36px] px-3 py-1.5 rounded-xl bg-white/10 hover:bg-red-500/80 text-xs font-bold text-slate-200 hover:text-white transition cursor-pointer">
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button type="button" onclick="requestClearAllArchive()" class="min-h-[36px] px-3 py-1.5 rounded-xl bg-white/10 hover:bg-red-500/80 text-xs font-bold text-slate-200 hover:text-white whitespace-nowrap transition cursor-pointer">
             전체 비우기
           </button>
           <button type="button" aria-label="보관함 닫기" onclick="closeArchiveModal()" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 font-black text-sm flex items-center justify-center cursor-pointer">✕</button>
@@ -1250,12 +1275,16 @@
 
     // 앱 전역 상태
     let selectedSubjectKey = "korean";
+    let currentInputMode = "photo"; // 'photo' | 'text' | 'sample'
     let uploadedImages = []; // 이미지 및 PDF 파일 객체 배열
     let currentSampleKey = null;
     let currentJokboData = null;
     let currentArchiveId = null;
     let oxUserChoices = {};      // { [문항인덱스]: 'O' | 'X' }
-    let oxFilterWrongOnly = false;
+    let oxViewMode = "all";      // 'all' (이어 풀기) | 'wrong' (틀린 문제만 다시 풀기)
+    let allSummaryExpanded = false;
+    let a4AnswerOrientation = "upright"; // 'upright' (화면·태블릿용 정방향) | 'flipped' (종이 인쇄용 뒤집힘)
+    let toastTimer = null;
 
     // 오디오 상태
     let isSpeaking = false;
@@ -1338,6 +1367,18 @@
       renderArchiveUI();
     }
 
+    function updateCurrentArchiveData() {
+      if (!currentArchiveId || !currentJokboData) return;
+      const list = getSavedArchiveList();
+      const target = list.find(it => it.id === currentArchiveId);
+      if (!target) return;
+      target.title = currentJokboData.subjectTitle || target.title;
+      target.data = JSON.parse(JSON.stringify(currentJokboData));
+      target.oxUserChoices = { ...oxUserChoices };
+      setSavedArchiveList(list);
+      renderArchiveUI();
+    }
+
     function syncOxChoicesToArchive() {
       if (!currentArchiveId) return;
       const list = getSavedArchiveList();
@@ -1354,30 +1395,18 @@
       if (headerBadge) headerBadge.textContent = String(list.length);
       if (cardBadge) cardBadge.textContent = String(list.length);
 
-      const previewBox = document.getElementById("recentArchivePreviewList");
-      if (previewBox) {
-        previewBox.innerHTML = "";
+      // 첫 방문(0개) 시에는 컴팩트 바를 숨겨 과목 선택 → 자료 입력이 바로 보이도록 유지
+      const compactBar = document.getElementById("compactArchiveBar");
+      const compactLatestBtn = document.getElementById("compactLatestBtn");
+      const compactLatestTitle = document.getElementById("compactLatestTitle");
+      if (compactBar && compactLatestBtn && compactLatestTitle) {
         if (list.length === 0) {
-          previewBox.innerHTML = `
-            <div class="text-center py-3 px-2 rounded-2xl border border-dashed border-slate-200 text-xs text-slate-400">
-              아직 저장된 족보가 없어요. 아래에서 프린트를 올리면 이곳에 자동 저장됩니다!
-            </div>
-          `;
+          compactBar.classList.add("hidden");
         } else {
-          list.slice(0, 2).forEach(item => {
-            const btn = document.createElement("button");
-            btn.type = "button";
-            btn.onclick = () => openSavedJokboById(item.id);
-            btn.className = "w-full min-h-[44px] p-2.5 rounded-2xl bg-slate-50 hover:bg-electric-50/70 border border-slate-200/90 hover:border-electric-400 flex items-center justify-between gap-2 text-left transition active:scale-[0.99] cursor-pointer";
-            btn.innerHTML = `
-              <div class="min-w-0 flex items-center gap-2">
-                <span class="shrink-0 px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-[11px] font-black text-electric-700">${item.subjectIcon} ${escapeHtml(item.subjectName)}</span>
-                <span class="truncate text-xs font-extrabold text-slate-800">${escapeHtml(item.title)}</span>
-              </div>
-              <span class="shrink-0 text-[11px] font-bold text-slate-400">${formatKoreanDateTime(item.createdAt)} ›</span>
-            `;
-            previewBox.appendChild(btn);
-          });
+          const latest = list[0];
+          compactBar.classList.remove("hidden");
+          compactLatestTitle.textContent = `[${latest.subjectName}] ${latest.title}`;
+          compactLatestBtn.onclick = () => openSavedJokboById(latest.id);
         }
       }
 
@@ -1444,7 +1473,7 @@
         banner.innerHTML = `
           <span class="font-bold flex items-center gap-1.5">
             <span>📚</span>
-            <span>보관함에서 불러온 자료 (${formatKoreanDateTime(found.createdAt)} 저장)</span>
+            <span>이 기기 브라우저 보관함 (${formatKoreanDateTime(found.createdAt)} 저장)</span>
           </span>
           <button type="button" onclick="openArchiveModal()" class="min-h-[36px] px-2.5 py-1.5 rounded-lg hover:bg-emerald-100/80 font-black underline text-emerald-700 inline-flex items-center shrink-0 whitespace-nowrap cursor-pointer">목록 열기</button>
         `;
@@ -1492,35 +1521,60 @@
     function openArchiveModal() {
       cancelClearAllArchive();
       renderArchiveUI();
-      document.getElementById("archiveModal").classList.remove("hidden");
+      const modal = document.getElementById("archiveModal");
+      if (modal) modal.classList.remove("hidden");
       syncBodyScrollLock();
     }
 
     function closeArchiveModal() {
       cancelClearAllArchive();
-      document.getElementById("archiveModal").classList.add("hidden");
+      const modal = document.getElementById("archiveModal");
+      if (modal) modal.classList.add("hidden");
       syncBodyScrollLock();
     }
 
-    // 2. 토스트 알림
-    let toastTimer = null;
-    function showToast(msg, icon = "⚡") {
-      const box = document.getElementById("toastBox");
-      const textEl = document.getElementById("toastMessage");
-      if (!box || !textEl) return;
+    // ==============================================
+    // 3. 과목 선택 & 통합 입력 모드 전환 & 샘플 버튼 동적 렌더링
+    // ==============================================
+    function switchInputMode(mode) {
+      if (!["photo", "text", "sample"].includes(mode)) return;
+      currentInputMode = mode;
 
-      textEl.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
-      box.classList.remove("opacity-0", "-translate-y-2");
-      box.classList.add("opacity-100", "translate-y-0");
-
-      if (toastTimer) clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => {
-        box.classList.remove("opacity-100", "translate-y-0");
-        box.classList.add("opacity-0", "-translate-y-2");
-      }, 3400);
+      ["photo", "text", "sample"].forEach(m => {
+        const tab = document.getElementById(`input-tab-${m}`);
+        const panel = document.getElementById(`input-panel-${m}`);
+        if (!tab || !panel) return;
+        if (m === mode) {
+          tab.setAttribute("aria-selected", "true");
+          tab.className = "input-mode-tab min-h-[38px] py-2 px-1.5 rounded-xl bg-white text-slate-900 font-black text-xs whitespace-nowrap shadow-sm transition cursor-pointer";
+          panel.classList.remove("hidden");
+        } else {
+          tab.setAttribute("aria-selected", "false");
+          tab.className = "input-mode-tab min-h-[38px] py-2 px-1.5 rounded-xl text-slate-600 font-bold text-xs whitespace-nowrap hover:text-slate-900 transition cursor-pointer";
+          panel.classList.add("hidden");
+        }
+      });
     }
 
-    // 3. 과목 선택 & 샘플 버튼 동적 렌더링 (silent 옵션 추가)
+    function updateSamplePreviewBox(sampleObj) {
+      const statusEl = document.getElementById("samplePreviewStatus");
+      const textEl = document.getElementById("samplePreviewText");
+      const editBtn = document.getElementById("editSampleTextBtn");
+      if (!statusEl || !textEl || !editBtn) return;
+
+      if (!sampleObj) {
+        statusEl.textContent = "위 단원 버튼을 누르면 샘플 본문이 불러와집니다";
+        textEl.classList.add("hidden");
+        textEl.textContent = "";
+        editBtn.classList.add("hidden");
+      } else {
+        statusEl.textContent = `✅ [${sampleObj.btnTitle.replace(/^[0-9️⃣\s]+/, "")}] 샘플 준비 완료! 바로 생성 버튼을 누르세요`;
+        textEl.textContent = sampleObj.rawText;
+        textEl.classList.remove("hidden");
+        editBtn.classList.remove("hidden");
+      }
+    }
+
     function selectSubject(subjKey, silent = false) {
       if (!SUBJECT_CONFIG[subjKey]) return;
       selectedSubjectKey = subjKey;
@@ -1530,9 +1584,11 @@
         const btn = document.getElementById(`subj-${k}`);
         if (!btn) return;
         if (k === subjKey) {
-          btn.className = "subj-btn py-2.5 px-1 rounded-2xl border-2 border-electric-500 bg-electric-50 text-electric-700 font-black text-xs text-center transition active:scale-95 cursor-pointer";
+          btn.setAttribute("aria-pressed", "true");
+          btn.className = "subj-btn min-h-[54px] py-2.5 px-1 rounded-2xl border-2 border-electric-500 bg-electric-50 text-electric-700 font-black text-xs text-center transition active:scale-95 cursor-pointer";
         } else {
-          btn.className = "subj-btn py-2.5 px-1 rounded-2xl border border-slate-200 bg-slate-50 text-slate-700 font-extrabold text-xs text-center hover:border-electric-400 transition active:scale-95 cursor-pointer";
+          btn.setAttribute("aria-pressed", "false");
+          btn.className = "subj-btn min-h-[54px] py-2.5 px-1 rounded-2xl border border-slate-200 bg-slate-50 text-slate-700 font-extrabold text-xs text-center hover:border-electric-400 transition active:scale-95 cursor-pointer";
         }
       });
 
@@ -1540,6 +1596,7 @@
       document.getElementById("selectedSubjectBadge").textContent = `${cfg.icon} ${cfg.name} 선택됨`;
       document.getElementById("sampleSectionTitle").textContent = `⚡ [${cfg.name}] 핵심 프린트 1초 불러오기`;
       document.getElementById("printTextInput").placeholder = cfg.placeholder;
+      updateSamplePreviewBox(null);
 
       renderSubjectSampleButtons();
       if (!silent) {
@@ -1559,11 +1616,12 @@
         const isActive = currentSampleKey === s.key;
         const btn = document.createElement("button");
         btn.type = "button";
+        btn.setAttribute("aria-pressed", isActive ? "true" : "false");
         btn.onclick = () => loadSubjectSample(s.key);
         btn.className = isActive
-          ? "py-2 px-2 rounded-xl border-2 border-electric-500 bg-electric-50 text-[11px] font-black text-electric-700 text-center transition active:scale-95 cursor-pointer"
-          : "py-2 px-2 rounded-xl border border-slate-200 bg-slate-50 hover:border-electric-500 text-[11px] font-extrabold text-slate-700 text-center transition active:scale-95 cursor-pointer";
-        btn.innerHTML = `${s.btnTitle}<br><span class="text-[10px] font-normal text-slate-500">${s.btnSub}</span>`;
+          ? "min-h-[48px] py-2 px-2 rounded-xl border-2 border-electric-500 bg-electric-50 text-xs font-black text-electric-700 text-center transition active:scale-95 cursor-pointer"
+          : "min-h-[48px] py-2 px-2 rounded-xl border border-slate-200 bg-slate-50 hover:border-electric-500 text-xs font-extrabold text-slate-700 text-center transition active:scale-95 cursor-pointer";
+        btn.innerHTML = `${s.btnTitle}<br><span class="text-[11px] font-normal text-slate-500">${s.btnSub}</span>`;
         grid.appendChild(btn);
       });
     }
@@ -1577,17 +1635,20 @@
       currentSampleKey = sampleKey;
       renderSubjectSampleButtons();
       document.getElementById("printTextInput").value = found.rawText;
+      updateSamplePreviewBox(found);
       showToast(`[${cfg.name}] ${found.btnTitle.replace(/^[0-9️⃣\s]+/, "")} 프린트를 불러왔어요!`, cfg.icon);
     }
 
     function clearTextInput() {
       document.getElementById("printTextInput").value = "";
       currentSampleKey = null;
+      updateSamplePreviewBox(null);
       renderSubjectSampleButtons();
     }
 
+    // ==============================================
     // 4. 다중 이미지(초경량 압축) & PDF 파일 업로드
-    // 매번 새로운 file input을 생성해 iOS/Android 연속 촬영 시 change 이벤트가 무시되는 버그 방지
+    // ==============================================
     function triggerFreshFileInput({ captureCamera = false, multiple = false, allowPdf = false }) {
       const remainingSlots = MAX_UPLOAD_FILES - uploadedImages.length;
       if (remainingSlots <= 0) {
@@ -1604,7 +1665,6 @@
       if (multiple) {
         input.multiple = true;
       }
-      // display:none 대신 시각적으로만 숨겨 모바일 브라우저의 클릭 차단 방지
       input.style.cssText = "position:fixed;left:-9999px;top:0;opacity:0;width:1px;height:1px;pointer-events:none;";
 
       let cleaned = false;
@@ -1622,7 +1682,6 @@
         }
       }, { once: true });
 
-      // 사용자가 촬영/선택을 취소했을 때도 DOM 찌꺼기가 남지 않도록 정리
       input.addEventListener("cancel", cleanup, { once: true });
 
       document.body.appendChild(input);
@@ -1779,6 +1838,7 @@
 
         if (addedCount > 0) {
           currentSampleKey = null;
+          updateSamplePreviewBox(null);
           renderSubjectSampleButtons();
           renderUploadedImagesGrid();
           showToast(`총 ${uploadedImages.length}개 자료 세트가 준비되었습니다!`, "✅");
@@ -1865,7 +1925,9 @@
       renderUploadedImagesGrid();
     }
 
+    // ==============================================
     // 5. AI 벼락치기 족보 생성 실행 (성공 시 자동 보관함 저장 / 실패 시 가짜 족보 없이 재시도 안내)
+    // ==============================================
     function showGenerateError(friendlyMsg) {
       const box = document.getElementById("generateErrorBox");
       const msgEl = document.getElementById("generateErrorMsg");
@@ -1904,17 +1966,29 @@
       if (/^HTTP \d+|^API HTTP|^Empty AI response/i.test(raw)) {
         return "일시적인 AI 서버 오류가 발생했어요. 잠시 후 다시 시도해 주세요.";
       }
-      // 백엔드(/api/generate)가 이미 학생 친화적 한국어 문구를 보낸 경우 그대로 사용
       return raw;
+    }
+
+    async function fetchWithTimeout(url, options, timeoutMs = 55000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        return await fetch(url, { ...options, signal: controller.signal });
+      } finally {
+        clearTimeout(timer);
+      }
     }
 
     async function generateJokbo() {
       const text = document.getElementById("printTextInput").value.trim();
-      const subjectName = SUBJECT_CONFIG[selectedSubjectKey].name;
+      const cfg = SUBJECT_CONFIG[selectedSubjectKey];
+      const subjectName = cfg.name;
 
       if (uploadedImages.length === 0 && !text) {
         showToast("프린트 사진·PDF 파일(1~3개)을 올리거나 내용을 입력해 주세요!", "⚠️");
-        document.getElementById("printTextInput").focus();
+        if (currentInputMode === "text") {
+          document.getElementById("printTextInput").focus();
+        }
         return;
       }
 
@@ -1934,15 +2008,66 @@
           : `[${subjectName}] 핵심 원리 풀이 & 예시 해부 생성 중...`;
 
       try {
-        const cfg = SUBJECT_CONFIG[selectedSubjectKey];
-        const matchedSample = cfg.samples.find(s => s.key === currentSampleKey);
+        let generatedResult = null;
 
-        if (uploadedImages.length === 0 && matchedSample && text === matchedSample.rawText.trim()) {
-          await new Promise(r => setTimeout(r, 350));
-          currentJokboData = JSON.parse(JSON.stringify(matchedSample.data));
-        } else {
-          currentJokboData = await callMultimodalJokboAI(uploadedImages, text, subjectName);
+        // 내장 샘플을 수정하지 않고 그대로 실행한 경우 즉시 검증된 샘플 데이터 반환
+        if (uploadedImages.length === 0 && currentSampleKey) {
+          const matchedSample = (cfg.samples || []).find(s => s.key === currentSampleKey);
+          if (matchedSample && matchedSample.rawText.trim() === text) {
+            generatedResult = JSON.parse(JSON.stringify(matchedSample.data));
+          }
         }
+
+        // 실제 AI 서버(/api/generate) 호출
+        if (!generatedResult) {
+          const payload = {
+            images: uploadedImages.map(f => ({
+              mimeType: f.mimeType,
+              base64: f.base64
+            })),
+            text,
+            subject: subjectName
+          };
+
+          const response = await fetchWithTimeout(
+            "/api/generate",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+            },
+            55000
+          );
+
+          let responseJson = null;
+          try {
+            responseJson = await response.json();
+          } catch (_) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          if (!response.ok) {
+            throw new Error(responseJson?.error || `HTTP ${response.status}`);
+          }
+
+          if (!responseJson || !Array.isArray(responseJson.summaryCards) || responseJson.summaryCards.length === 0) {
+            throw new Error("Empty AI response");
+          }
+
+          generatedResult = responseJson;
+        }
+
+        currentJokboData = generatedResult;
+
+        // 원본 대조를 위해 입력 자료 메타데이터 보관 (용량 안전을 위해 base64 제외)
+        currentJokboData.sourceMeta = {
+          rawText: text || "",
+          files: uploadedImages.map((f, idx) => ({
+            name: f.fileName || (f.isPdf ? `PDF_${idx + 1}.pdf` : `프린트_${idx + 1}쪽.jpg`),
+            isPdf: Boolean(f.isPdf),
+            fileSizeLabel: f.fileSizeLabel || ""
+          }))
+        };
 
         // 정상 생성 시 내 족보 보관함에 자동 저장!
         saveJokboToArchive(currentJokboData, selectedSubjectKey);
@@ -1952,7 +2077,7 @@
           banner.innerHTML = `
             <span class="font-bold flex items-center gap-1.5">
               <span>✅</span>
-              <span>내 스마트폰 <strong>[보관함]</strong>에 자동 저장되었습니다!</span>
+              <span><strong>이 기기의 현재 브라우저 [보관함]</strong>에 자동 저장됨</span>
             </span>
             <button type="button" onclick="openArchiveModal()" class="min-h-[36px] px-2.5 py-1.5 rounded-lg hover:bg-emerald-100/80 font-black underline text-emerald-700 inline-flex items-center shrink-0 whitespace-nowrap cursor-pointer">목록 열기</button>
           `;
@@ -1963,12 +2088,10 @@
         document.getElementById("view-result").classList.remove("hidden");
         switchResultTab("summary");
         window.scrollTo({ top: 0, behavior: "smooth" });
-        showToast(`[${subjectName}] 족보 완성 & 보관함에 자동 저장됐어요!`, "🎉");
+        showToast("원리 이해 벼락치기 족보가 완성되었어요!", "⚡");
       } catch (err) {
-        console.error("[generateJokbo] 생성 실패:", err);
-        const friendlyMsg = toFriendlyClientErrorMessage(err);
-        showGenerateError(friendlyMsg);
-        showToast("족보 생성에 실패했어요. 다시 시도해 주세요!", "⚠️");
+        console.error("족보 생성 실패:", err);
+        showGenerateError(toFriendlyClientErrorMessage(err));
       } finally {
         btn.disabled = false;
         icon.textContent = "⚡";
@@ -1976,61 +2099,224 @@
       }
     }
 
-    async function fetchWithTimeout(url, options, timeoutMs = 55000) {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
-      try {
-        const res = await fetch(url, { ...options, signal: controller.signal });
-        return res;
-      } finally {
-        clearTimeout(timer);
+    function backToInput() {
+      stopAudioBriefing();
+      document.getElementById("view-result").classList.add("hidden");
+      document.getElementById("view-input").classList.remove("hidden");
+      renderArchiveUI();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // ==============================================
+    // 6. 결과 화면 렌더링 (원문 대조, 핵심 요약 우선 펼치기, 카드별 직접 수정 지원)
+    // ==============================================
+    function toggleSourceCompare() {
+      const panel = document.getElementById("sourceComparePanel");
+      const btn = document.getElementById("toggleSourceCompareBtn");
+      const arrow = document.getElementById("sourceCompareArrow");
+      if (!panel || !btn || !arrow) return;
+
+      const isHidden = panel.classList.contains("hidden");
+      if (isHidden) {
+        renderSourceCompareContent();
+        panel.classList.remove("hidden");
+        btn.setAttribute("aria-expanded", "true");
+        arrow.textContent = "▴";
+      } else {
+        panel.classList.add("hidden");
+        btn.setAttribute("aria-expanded", "false");
+        arrow.textContent = "▾";
       }
     }
 
-    async function callMultimodalJokboAI(images, text, subjectName) {
-      const cleanImages = (images || []).map(img => ({
-        base64: img.base64,
-        mimeType: img.mimeType
-      }));
+    function renderSourceCompareContent() {
+      const panel = document.getElementById("sourceComparePanel");
+      if (!panel || !currentJokboData) return;
 
-      if (!window.location.protocol.startsWith("http") || window.location.hostname.includes("usercontent")) {
-        throw new Error("웹 배포 주소(https)로 접속해야 AI 분석 서버를 이용할 수 있어요.");
+      const meta = currentJokboData.sourceMeta || {};
+      const files = Array.isArray(meta.files) ? meta.files : [];
+      const rawText = typeof meta.rawText === "string" ? meta.rawText.trim() : "";
+
+      let html = "";
+      if (files.length > 0) {
+        const chips = files
+          .map(f => `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700">${f.isPdf ? "📄" : "🖼️"} ${escapeHtml(f.name)}</span>`)
+          .join(" ");
+        html += `<div class="space-y-1"><p class="text-[11px] font-extrabold text-slate-500">첨부된 원본 자료 (${files.length}개)</p><div class="flex flex-wrap gap-1.5">${chips}</div></div>`;
       }
 
-      const serverRes = await fetchWithTimeout("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ images: cleanImages, text, subject: subjectName })
-      }, 55000);
-
-      if (serverRes.ok) {
-        const serverData = await serverRes.json();
-        if (serverData && serverData.subjectTitle) {
-          return serverData;
-        }
+      if (rawText) {
+        html += `
+          <div class="space-y-1">
+            <p class="text-[11px] font-extrabold text-slate-500">입력된 원문 텍스트</p>
+            <div class="max-h-44 overflow-y-auto p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 whitespace-pre-line leading-relaxed">${escapeHtml(rawText)}</div>
+          </div>
+        `;
       }
 
-      let errDetail = `HTTP ${serverRes.status}`;
-      try {
-        const errJson = await serverRes.json();
-        if (errJson?.error) {
-          errDetail = errJson.error;
-        }
-      } catch (_) {
-        if (serverRes.status === 504) {
-          errDetail = "HTTP 504";
-        } else if (serverRes.status === 413) {
-          errDetail = "HTTP 413";
-        }
+      if (!files.length && !rawText) {
+        html = `<p class="text-xs text-slate-500">저장된 원본 텍스트가 없습니다. 촬영하신 학교 프린트 실물과 대조해 주세요!</p>`;
       }
-      throw new Error(errDetail);
+
+      panel.innerHTML = html;
     }
 
-    // 6. 결과 화면 렌더링
+    function renderSummaryCardsSection() {
+      const summaryBox = document.getElementById("summaryCardsContainer");
+      const toggleAllBtn = document.getElementById("toggleAllDetailsBtn");
+      if (!summaryBox || !currentJokboData) return;
+
+      if (toggleAllBtn) {
+        toggleAllBtn.textContent = allSummaryExpanded ? "⚡ 핵심 요약만 보기" : "📖 전체 원리·예시 펼치기";
+      }
+
+      summaryBox.innerHTML = "";
+      (currentJokboData.summaryCards || []).forEach((card, idx) => {
+        const div = document.createElement("div");
+        div.className = card.isStarred
+          ? "bg-white border-2 border-electric-500/80 rounded-3xl p-4 shadow-sm space-y-3"
+          : "bg-white border border-slate-200 rounded-3xl p-4 shadow-sm space-y-3";
+
+        const coreText = card.coreSummary || card.content || "";
+        const whyText = card.whyExplanation || card.easyAnalogy || "";
+        const stepText = card.stepByStepExample || "";
+        const hasDetails = Boolean(whyText || stepText);
+
+        div.innerHTML = `
+          <div id="summary-view-${idx}" class="space-y-3">
+            <div class="flex items-start justify-between gap-2 pb-2.5 border-b border-slate-100">
+              <h4 class="text-sm font-black text-slate-950 leading-snug">${escapeHtml(card.title)}</h4>
+              <div class="flex items-center gap-1.5 shrink-0">
+                ${card.isStarred ? `<span class="px-2.5 py-0.5 rounded-full bg-volt-400 text-slate-950 text-[11px] font-black whitespace-nowrap">★ 핵심 개념</span>` : ""}
+                <button type="button" onclick="openEditSummaryCard(${idx})" class="min-h-[32px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-[11px] font-extrabold text-slate-700 whitespace-nowrap cursor-pointer">✏️ 수정</button>
+              </div>
+            </div>
+
+            <div class="space-y-1.5">
+              <span class="text-xs font-extrabold text-slate-500">📌 핵심 정리</span>
+              <p class="text-sm font-semibold text-slate-800 whitespace-pre-line leading-relaxed">${escapeHtml(coreText)}</p>
+            </div>
+
+            ${hasDetails ? `
+              <button type="button" id="summary-detail-btn-${idx}" aria-expanded="${allSummaryExpanded ? "true" : "false"}" aria-controls="summary-detail-${idx}" onclick="toggleSingleSummaryDetail(${idx})" class="w-full min-h-[38px] px-3 py-2 rounded-xl bg-slate-50 hover:bg-electric-50/70 border border-slate-200 text-xs font-extrabold text-electric-700 flex items-center justify-between transition cursor-pointer">
+                <span>${allSummaryExpanded ? "📖 원리 풀이 · 예시 해부 접기" : "📖 원리 풀이 · 예시 해부 펼쳐보기"}</span>
+                <span id="summary-detail-arrow-${idx}">${allSummaryExpanded ? "▴" : "▾"}</span>
+              </button>
+              <div id="summary-detail-${idx}" class="${allSummaryExpanded ? "" : "hidden"} space-y-2.5">
+                ${whyText ? `
+                  <div class="bg-electric-50/70 border border-electric-100 rounded-2xl p-3.5 space-y-1.5">
+                    <span class="inline-flex items-center gap-1 text-xs font-black text-electric-700">
+                      <span>📖</span>
+                      <span>왜 그럴까? · 원리 이해 풀이</span>
+                    </span>
+                    <p class="text-sm text-slate-800 whitespace-pre-line leading-relaxed">${escapeHtml(whyText)}</p>
+                  </div>
+                ` : ""}
+                ${stepText ? `
+                  <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 space-y-1.5">
+                    <span class="inline-flex items-center gap-1 text-xs font-black text-slate-800">
+                      <span>🔍</span>
+                      <span>실전 예시 단계별 해부</span>
+                    </span>
+                    <p class="text-sm text-slate-700 whitespace-pre-line leading-relaxed">${escapeHtml(stepText)}</p>
+                  </div>
+                ` : ""}
+              </div>
+            ` : ""}
+          </div>
+
+          <!-- 카드 직접 수정 폼 -->
+          <div id="summary-edit-${idx}" class="hidden space-y-2.5 bg-slate-50 p-3 rounded-2xl border border-electric-300">
+            <p class="text-xs font-black text-electric-700">✏️ 개념 카드 직접 수정 (저장 시 보관함에도 반영)</p>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">제목</label>
+              <input type="text" id="edit-sum-title-${idx}" value="${escapeHtml(card.title)}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-900" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">📌 핵심 정리</label>
+              <textarea id="edit-sum-core-${idx}" rows="3" class="w-full rounded-xl border border-slate-300 bg-white p-2.5 text-xs text-slate-800 leading-relaxed">${escapeHtml(coreText)}</textarea>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">📖 원리 이해 풀이</label>
+              <textarea id="edit-sum-why-${idx}" rows="3" class="w-full rounded-xl border border-slate-300 bg-white p-2.5 text-xs text-slate-800 leading-relaxed">${escapeHtml(whyText)}</textarea>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">🔍 실전 예시 해부</label>
+              <textarea id="edit-sum-step-${idx}" rows="3" class="w-full rounded-xl border border-slate-300 bg-white p-2.5 text-xs text-slate-800 leading-relaxed">${escapeHtml(stepText)}</textarea>
+            </div>
+            <div class="flex justify-end gap-2 pt-1">
+              <button type="button" onclick="cancelEditSummaryCard(${idx})" class="min-h-[36px] px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-xs font-bold text-slate-700 cursor-pointer">취소</button>
+              <button type="button" onclick="saveEditedSummaryCard(${idx})" class="min-h-[36px] px-3.5 py-1.5 rounded-xl bg-electric-600 text-white text-xs font-black cursor-pointer">💾 저장하기</button>
+            </div>
+          </div>
+        `;
+        summaryBox.appendChild(div);
+      });
+    }
+
+    function toggleSingleSummaryDetail(idx) {
+      const box = document.getElementById(`summary-detail-${idx}`);
+      const btn = document.getElementById(`summary-detail-btn-${idx}`);
+      const arrow = document.getElementById(`summary-detail-arrow-${idx}`);
+      if (!box || !btn || !arrow) return;
+
+      const isHidden = box.classList.contains("hidden");
+      if (isHidden) {
+        box.classList.remove("hidden");
+        btn.setAttribute("aria-expanded", "true");
+        btn.firstElementChild.textContent = "📖 원리 풀이 · 예시 해부 접기";
+        arrow.textContent = "▴";
+      } else {
+        box.classList.add("hidden");
+        btn.setAttribute("aria-expanded", "false");
+        btn.firstElementChild.textContent = "📖 원리 풀이 · 예시 해부 펼쳐보기";
+        arrow.textContent = "▾";
+      }
+    }
+
+    function toggleAllSummaryDetails() {
+      allSummaryExpanded = !allSummaryExpanded;
+      renderSummaryCardsSection();
+    }
+
+    function openEditSummaryCard(idx) {
+      document.getElementById(`summary-view-${idx}`)?.classList.add("hidden");
+      document.getElementById(`summary-edit-${idx}`)?.classList.remove("hidden");
+    }
+
+    function cancelEditSummaryCard(idx) {
+      document.getElementById(`summary-edit-${idx}`)?.classList.add("hidden");
+      document.getElementById(`summary-view-${idx}`)?.classList.remove("hidden");
+    }
+
+    function saveEditedSummaryCard(idx) {
+      if (!currentJokboData || !currentJokboData.summaryCards[idx]) return;
+      const card = currentJokboData.summaryCards[idx];
+      card.title = document.getElementById(`edit-sum-title-${idx}`).value.trim() || card.title;
+      card.coreSummary = document.getElementById(`edit-sum-core-${idx}`).value.trim();
+      card.whyExplanation = document.getElementById(`edit-sum-why-${idx}`).value.trim();
+      card.stepByStepExample = document.getElementById(`edit-sum-step-${idx}`).value.trim();
+
+      updateCurrentArchiveData();
+      renderSummaryCardsSection();
+      const printSheet = document.getElementById("printOnlySheet");
+      if (printSheet) printSheet.innerHTML = buildA4SheetHtml(currentJokboData);
+      showToast("수정된 내용이 보관함에 저장되었습니다!", "💾");
+    }
+
     function renderJokboResult(data, restoredOxChoices = {}) {
       stopAudioBriefing();
       oxUserChoices = restoredOxChoices && typeof restoredOxChoices === "object" ? { ...restoredOxChoices } : {};
-      oxFilterWrongOnly = false;
+      oxViewMode = "all";
+      allSummaryExpanded = false;
+
+      // 원문 대조 패널 접힌 상태로 초기화
+      const srcPanel = document.getElementById("sourceComparePanel");
+      const srcBtn = document.getElementById("toggleSourceCompareBtn");
+      const srcArrow = document.getElementById("sourceCompareArrow");
+      if (srcPanel) srcPanel.classList.add("hidden");
+      if (srcBtn) srcBtn.setAttribute("aria-expanded", "false");
+      if (srcArrow) srcArrow.textContent = "▾";
 
       document.getElementById("resultSubjectBadge").textContent = data.subjectTitle || "벼락치기 핵심 족보";
 
@@ -2043,51 +2329,7 @@
         picksUl.appendChild(li);
       });
 
-      const summaryBox = document.getElementById("summaryCardsContainer");
-      summaryBox.innerHTML = "";
-      (data.summaryCards || []).forEach(card => {
-        const div = document.createElement("div");
-        div.className = card.isStarred
-          ? "bg-white border-2 border-electric-500/80 rounded-3xl p-4 shadow-sm space-y-3"
-          : "bg-white border border-slate-200 rounded-3xl p-4 shadow-sm space-y-3";
-
-        const coreText = card.coreSummary || card.content || "";
-        const whyText = card.whyExplanation || card.easyAnalogy || "";
-        const stepText = card.stepByStepExample || "";
-
-        div.innerHTML = `
-          <div class="flex items-start justify-between gap-2 pb-2.5 border-b border-slate-100">
-            <h4 class="text-sm font-black text-slate-950 leading-snug">${escapeHtml(card.title)}</h4>
-            ${card.isStarred ? `<span class="shrink-0 px-2.5 py-0.5 rounded-full bg-volt-400 text-slate-950 text-[11px] font-black">★ 출제 99%</span>` : ""}
-          </div>
-
-          <div class="space-y-1.5">
-            <span class="text-xs font-extrabold text-slate-500">📌 핵심 정리</span>
-            <p class="text-sm font-semibold text-slate-800 whitespace-pre-line leading-relaxed">${escapeHtml(coreText)}</p>
-          </div>
-
-          ${whyText ? `
-            <div class="bg-electric-50/70 border border-electric-100 rounded-2xl p-3.5 space-y-1.5">
-              <span class="inline-flex items-center gap-1 text-xs font-black text-electric-700">
-                <span>📖</span>
-                <span>왜 그럴까? · 원리 이해 풀이</span>
-              </span>
-              <p class="text-sm text-slate-800 whitespace-pre-line leading-relaxed">${escapeHtml(whyText)}</p>
-            </div>
-          ` : ""}
-
-          ${stepText ? `
-            <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 space-y-1.5">
-              <span class="inline-flex items-center gap-1 text-xs font-black text-slate-800">
-                <span>🔍</span>
-                <span>실전 예시 단계별 해부</span>
-              </span>
-              <p class="text-sm text-slate-700 whitespace-pre-line leading-relaxed">${escapeHtml(stepText)}</p>
-            </div>
-          ` : ""}
-        `;
-        summaryBox.appendChild(div);
-      });
+      renderSummaryCardsSection();
 
       const blankBox = document.getElementById("blankListContainer");
       blankBox.innerHTML = "";
@@ -2137,55 +2379,41 @@
           btn.className = "res-tab min-h-[40px] py-2 px-1 rounded-xl text-slate-600 font-bold text-[11px] sm:text-xs whitespace-nowrap hover:text-slate-900 transition cursor-pointer";
         }
       });
-
-      if (tabKey === "audio") {
-        loadBestKoreanVoices();
-      }
     }
 
-    function backToInput() {
-      stopAudioBriefing();
-      renderArchiveUI();
-      document.getElementById("view-result").classList.add("hidden");
-      document.getElementById("view-input").classList.remove("hidden");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
-    // 7. 빈칸 암기 인터랙션
-    function toggleSingleBlank(btn) {
-      const revealed = btn.getAttribute("data-revealed") === "true";
-      const ans = btn.getAttribute("data-answer");
-      if (revealed) {
+    // ==============================================
+    // 7. 빈칸 뚫기 암기 인터랙션
+    // ==============================================
+    function setBlankButtonState(btn, reveal) {
+      if (!btn) return;
+      const ans = btn.getAttribute("data-answer") || "";
+      if (reveal) {
+        btn.setAttribute("data-revealed", "true");
+        btn.setAttribute("aria-label", `빈칸 정답 숨기기: ${ans}`);
+        btn.textContent = ans;
+        btn.className = "blank-pill inline-flex items-center justify-center min-h-[32px] px-3 py-0.5 mx-0.5 rounded-lg bg-electric-600 text-white text-sm font-black shadow-sm cursor-pointer";
+      } else {
         btn.setAttribute("data-revealed", "false");
         btn.setAttribute("aria-label", "빈칸 정답 보기");
         btn.textContent = "  ?  ";
         btn.className = "blank-pill inline-flex items-center justify-center min-h-[32px] px-3 py-0.5 mx-0.5 rounded-lg bg-volt-400 text-slate-950 text-sm font-black shadow-sm cursor-pointer";
-      } else {
-        btn.setAttribute("data-revealed", "true");
-        btn.setAttribute("aria-label", `정답: ${ans}`);
-        btn.textContent = ans;
-        btn.className = "blank-pill inline-flex items-center justify-center min-h-[32px] px-3 py-0.5 mx-0.5 rounded-lg bg-electric-600 text-white text-sm font-black shadow-sm cursor-pointer";
       }
     }
 
-    function toggleAllBlanks(show) {
-      document.querySelectorAll(".blank-pill").forEach(btn => {
-        const ans = btn.getAttribute("data-answer");
-        if (show) {
-          btn.setAttribute("data-revealed", "true");
-          btn.setAttribute("aria-label", `정답: ${ans}`);
-          btn.textContent = ans;
-          btn.className = "blank-pill inline-flex items-center justify-center min-h-[32px] px-3 py-0.5 mx-0.5 rounded-lg bg-electric-600 text-white text-sm font-black shadow-sm cursor-pointer";
-        } else {
-          btn.setAttribute("data-revealed", "false");
-          btn.setAttribute("aria-label", "빈칸 정답 보기");
-          btn.textContent = "  ?  ";
-          btn.className = "blank-pill inline-flex items-center justify-center min-h-[32px] px-3 py-0.5 mx-0.5 rounded-lg bg-volt-400 text-slate-950 text-sm font-black shadow-sm cursor-pointer";
-        }
+    function toggleSingleBlank(btn) {
+      const isRevealed = btn.getAttribute("data-revealed") === "true";
+      setBlankButtonState(btn, !isRevealed);
+    }
+
+    function toggleAllBlanks(reveal) {
+      document.querySelectorAll("#blankListContainer .blank-pill").forEach(btn => {
+        setBlankButtonState(btn, Boolean(reveal));
       });
     }
 
-    // 8. 함정 OX 퀴즈 인터랙션 (기록 보관 & 틀린 문제만 다시 풀기 지원)
+    // ==============================================
+    // 8. 함정 OX 퀴즈 인터랙션 (이어 풀기 / 틀린 문제만 / 처음부터 구분 & 직접 수정 지원)
+    // ==============================================
     function isOxChoiceCorrect(qItem, choice) {
       const normalizedAnswer = String(qItem?.answer || "").trim().toUpperCase();
       return normalizedAnswer.startsWith(choice);
@@ -2213,6 +2441,17 @@
       const correctCount = answeredIndices.filter(k => isOxChoiceCorrect(quizList[Number(k)], oxUserChoices[k])).length;
       const wrongCount = answeredCount - correctCount;
 
+      const modeTitle = document.getElementById("oxModeTitle");
+      if (modeTitle) {
+        if (oxViewMode === "wrong") {
+          modeTitle.textContent = "🔄 틀린 문제 집중 복습 중";
+        } else if (answeredCount > 0 && answeredCount < total) {
+          modeTitle.textContent = "▶️ 이전 풀이 이어 풀기";
+        } else {
+          modeTitle.textContent = "내신 말장난 함정 돌파 현황";
+        }
+      }
+
       const scoreBadge = document.getElementById("oxScoreBadge");
       if (scoreBadge) {
         scoreBadge.textContent = answeredCount > 0
@@ -2221,27 +2460,24 @@
       }
 
       const actionRow = document.getElementById("oxActionRow");
-      const wrongOnlyBtn = document.getElementById("oxWrongOnlyBtn");
-      const wrongOnlyLabel = document.getElementById("oxWrongOnlyLabel");
+      const modeAllBtn = document.getElementById("oxModeAllBtn");
+      const modeWrongBtn = document.getElementById("oxModeWrongBtn");
 
-      if (actionRow && wrongOnlyBtn && wrongOnlyLabel) {
-        if (answeredCount > 0 || oxFilterWrongOnly) {
+      if (actionRow && modeAllBtn && modeWrongBtn) {
+        if (answeredCount > 0 || oxViewMode === "wrong") {
           actionRow.classList.remove("hidden");
         } else {
           actionRow.classList.add("hidden");
         }
 
-        if (oxFilterWrongOnly) {
-          wrongOnlyBtn.classList.remove("hidden");
-          wrongOnlyBtn.className = "min-h-[36px] px-3 py-1.5 rounded-xl bg-electric-600 hover:bg-electric-700 text-white text-xs font-black flex items-center gap-1 transition active:scale-95 cursor-pointer";
-          wrongOnlyLabel.textContent = "📋 전체 문제 보기";
-        } else if (wrongCount > 0) {
-          wrongOnlyBtn.classList.remove("hidden");
-          wrongOnlyBtn.className = "min-h-[36px] px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-xs font-black flex items-center gap-1 transition active:scale-95 cursor-pointer";
-          wrongOnlyLabel.textContent = `🔄 틀린 문제만 다시 풀기 (${wrongCount}개)`;
-        } else {
-          wrongOnlyBtn.classList.add("hidden");
-        }
+        modeAllBtn.className = oxViewMode === "all"
+          ? "min-h-[36px] px-2 py-1.5 rounded-xl bg-slate-900 text-volt-400 text-xs font-black whitespace-nowrap transition cursor-pointer"
+          : "min-h-[36px] px-2 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold whitespace-nowrap transition cursor-pointer";
+
+        modeWrongBtn.textContent = `🔄 틀린 문제만 (${wrongCount})`;
+        modeWrongBtn.className = oxViewMode === "wrong"
+          ? "min-h-[36px] px-2 py-1.5 rounded-xl bg-red-600 text-white text-xs font-black whitespace-nowrap transition cursor-pointer"
+          : "min-h-[36px] px-2 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-xs font-black whitespace-nowrap transition cursor-pointer";
       }
     }
 
@@ -2254,36 +2490,74 @@
       const entries = quizList
         .map((qItem, idx) => ({ qItem, idx }))
         .filter(({ qItem, idx }) => {
-          if (!oxFilterWrongOnly) return true;
+          if (oxViewMode !== "wrong") return true;
           const choice = oxUserChoices[idx];
           return (choice === "O" || choice === "X") && !isOxChoiceCorrect(qItem, choice);
         });
 
-      if (oxFilterWrongOnly && entries.length === 0) {
-        oxFilterWrongOnly = false;
-        renderOxQuizSection();
+      if (oxViewMode === "wrong" && entries.length === 0) {
+        oxBox.innerHTML = `
+          <div class="bg-emerald-50 border border-emerald-200 rounded-3xl p-5 text-center space-y-2">
+            <div class="text-2xl">🎉</div>
+            <p class="text-sm font-black text-emerald-900">틀린 문제가 모두 해결되었어요!</p>
+            <button type="button" onclick="setOxMode('all')" class="min-h-[38px] px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-black cursor-pointer">전체 문제로 돌아가기</button>
+          </div>
+        `;
+        updateOxStatusBar();
         return;
       }
 
       entries.forEach(({ qItem, idx }) => {
+        const savedChoice = oxUserChoices[idx];
+        const isWrongRetryCard = oxViewMode === "wrong";
         const card = document.createElement("div");
         card.id = `ox-card-${idx}`;
         card.className = "bg-white border border-slate-200 rounded-3xl p-4 shadow-sm space-y-3";
         card.innerHTML = `
-          <div class="flex items-start gap-2">
-            <span class="px-2 py-0.5 rounded-lg bg-slate-900 text-volt-400 text-xs font-black shrink-0">OX ${idx + 1}</span>
-            <p class="text-sm font-bold text-slate-800 leading-relaxed">${escapeHtml(qItem.question)}</p>
+          <div id="ox-view-${idx}" class="space-y-3">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-start gap-2 min-w-0">
+                <span class="px-2 py-0.5 rounded-lg bg-slate-900 text-volt-400 text-xs font-black shrink-0 whitespace-nowrap">OX ${idx + 1}</span>
+                <p class="text-sm font-bold text-slate-800 leading-relaxed">${escapeHtml(qItem.question)}</p>
+              </div>
+              <button type="button" onclick="openEditOxCard(${idx})" class="min-h-[32px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-[11px] font-extrabold text-slate-700 whitespace-nowrap shrink-0 cursor-pointer">✏️ 수정</button>
+            </div>
+            ${isWrongRetryCard ? `<p class="text-xs font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-xl">이전 선택: <strong>${escapeHtml(savedChoice)}</strong> (오답) · 다시 정답을 골라보세요!</p>` : ""}
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="answerOx(${idx}, 'O')" id="ox-btn-${idx}-O" class="min-h-[42px] py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50 font-black text-sm text-blue-600 transition active:scale-95 cursor-pointer">⭕ O (맞다)</button>
+              <button type="button" onclick="answerOx(${idx}, 'X')" id="ox-btn-${idx}-X" class="min-h-[42px] py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-red-50 font-black text-sm text-red-600 transition active:scale-95 cursor-pointer">❌ X (틀리다)</button>
+            </div>
+            <div id="ox-exp-${idx}" class="hidden rounded-2xl p-3.5 text-sm leading-relaxed"></div>
           </div>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" onclick="answerOx(${idx}, 'O')" id="ox-btn-${idx}-O" class="min-h-[42px] py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50 font-black text-sm text-blue-600 transition active:scale-95 cursor-pointer">⭕ O (맞다)</button>
-            <button type="button" onclick="answerOx(${idx}, 'X')" id="ox-btn-${idx}-X" class="min-h-[42px] py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-red-50 font-black text-sm text-red-600 transition active:scale-95 cursor-pointer">❌ X (틀리다)</button>
+
+          <!-- OX 문항 직접 수정 폼 -->
+          <div id="ox-edit-${idx}" class="hidden space-y-2.5 bg-slate-50 p-3 rounded-2xl border border-electric-300">
+            <p class="text-xs font-black text-electric-700">✏️ OX 문항 직접 수정</p>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">문제 문장</label>
+              <textarea id="edit-ox-q-${idx}" rows="2" class="w-full rounded-xl border border-slate-300 bg-white p-2.5 text-xs text-slate-900 leading-relaxed">${escapeHtml(qItem.question)}</textarea>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">정답 선택</label>
+              <select id="edit-ox-ans-${idx}" class="w-full min-h-[38px] rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-black text-slate-900">
+                <option value="O" ${String(qItem.answer).toUpperCase().startsWith("O") ? "selected" : ""}>⭕ O (맞다)</option>
+                <option value="X" ${String(qItem.answer).toUpperCase().startsWith("X") ? "selected" : ""}>❌ X (틀리다)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">해설</label>
+              <textarea id="edit-ox-exp-${idx}" rows="2" class="w-full rounded-xl border border-slate-300 bg-white p-2.5 text-xs text-slate-800 leading-relaxed">${escapeHtml(qItem.trapExplanation)}</textarea>
+            </div>
+            <div class="flex justify-end gap-2 pt-1">
+              <button type="button" onclick="cancelEditOxCard(${idx})" class="min-h-[36px] px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-xs font-bold text-slate-700 cursor-pointer">취소</button>
+              <button type="button" onclick="saveEditedOxCard(${idx})" class="min-h-[36px] px-3.5 py-1.5 rounded-xl bg-electric-600 text-white text-xs font-black cursor-pointer">💾 저장하기</button>
+            </div>
           </div>
-          <div id="ox-exp-${idx}" class="hidden rounded-2xl p-3.5 text-sm leading-relaxed"></div>
         `;
         oxBox.appendChild(card);
 
-        const savedChoice = oxUserChoices[idx];
-        if (savedChoice === "O" || savedChoice === "X") {
+        // '이어 풀기(all)' 모드에서만 기존 풀이 결과 시각 복원; '틀린 문제만(wrong)' 모드에서는 기록을 보존한 채 선택 대기 상태로 표시
+        if (!isWrongRetryCard && (savedChoice === "O" || savedChoice === "X")) {
           applyOxCardVisual(idx, savedChoice);
         }
       });
@@ -2324,45 +2598,57 @@
       syncOxChoicesToArchive();
     }
 
-    function toggleWrongOnlyOx() {
-      if (oxFilterWrongOnly) {
-        oxFilterWrongOnly = false;
+    function setOxMode(mode) {
+      if (mode === "wrong") {
+        const wrongIndices = getWrongOxIndices();
+        if (wrongIndices.length === 0) {
+          showToast("틀린 문제가 없어요! 완벽합니다 🎉", "✅");
+          return;
+        }
+        oxViewMode = "wrong";
         renderOxQuizSection();
-        showToast("전체 OX 문제를 다시 표시합니다.", "📋");
-        return;
+        showToast(`틀렸던 ${wrongIndices.length}문제만 모아왔어요! 다시 풀어보세요 🔥`, "🔄");
+      } else {
+        oxViewMode = "all";
+        renderOxQuizSection();
       }
-
-      const wrongIndices = getWrongOxIndices();
-      if (wrongIndices.length === 0) {
-        showToast("틀린 문제가 없어요! 완벽합니다 🎉", "✅");
-        return;
-      }
-
-      // 틀린 문항만 필터링한 뒤, 다시 풀 수 있도록 해당 문항들의 선택 기록을 초기화
-      oxFilterWrongOnly = true;
-      renderOxQuizSection();
-      wrongIndices.forEach(idx => {
-        delete oxUserChoices[idx];
-        const btnO = document.getElementById(`ox-btn-${idx}-O`);
-        const btnX = document.getElementById(`ox-btn-${idx}-X`);
-        const expEl = document.getElementById(`ox-exp-${idx}`);
-        if (btnO) btnO.className = "min-h-[42px] py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50 font-black text-sm text-blue-600 transition active:scale-95 cursor-pointer";
-        if (btnX) btnX.className = "min-h-[42px] py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-red-50 font-black text-sm text-red-600 transition active:scale-95 cursor-pointer";
-        if (expEl) expEl.classList.add("hidden");
-      });
-      syncOxChoicesToArchive();
-      showToast(`틀렸던 ${wrongIndices.length}문제만 모아왔어요! 다시 풀어보세요 🔥`, "🔄");
     }
 
     function resetOxAnswers() {
       oxUserChoices = {};
-      oxFilterWrongOnly = false;
+      oxViewMode = "all";
       renderOxQuizSection();
       syncOxChoicesToArchive();
-      showToast("OX 풀이 기록을 초기화했습니다.", "↺");
+      showToast("OX 풀이 기록을 초기화하고 처음부터 시작합니다.", "↺");
     }
 
+    function openEditOxCard(idx) {
+      document.getElementById(`ox-view-${idx}`)?.classList.add("hidden");
+      document.getElementById(`ox-edit-${idx}`)?.classList.remove("hidden");
+    }
+
+    function cancelEditOxCard(idx) {
+      document.getElementById(`ox-edit-${idx}`)?.classList.add("hidden");
+      document.getElementById(`ox-view-${idx}`)?.classList.remove("hidden");
+    }
+
+    function saveEditedOxCard(idx) {
+      if (!currentJokboData || !currentJokboData.oxQuiz[idx]) return;
+      const q = currentJokboData.oxQuiz[idx];
+      q.question = document.getElementById(`edit-ox-q-${idx}`).value.trim() || q.question;
+      q.answer = document.getElementById(`edit-ox-ans-${idx}`).value;
+      q.trapExplanation = document.getElementById(`edit-ox-exp-${idx}`).value.trim();
+
+      updateCurrentArchiveData();
+      renderOxQuizSection();
+      const printSheet = document.getElementById("printOnlySheet");
+      if (printSheet) printSheet.innerHTML = buildA4SheetHtml(currentJokboData);
+      showToast("OX 문항 수정 내용이 저장되었습니다!", "💾");
+    }
+
+    // ==============================================
     // 9. 기기 최고급 한국어 보이스 자동 탐색 + 문장 단위 호흡 튜닝 오디오
+    // ==============================================
     function scoreKoreanVoice(v) {
       const name = (v.name || "").toLowerCase();
       let score = 10;
@@ -2505,26 +2791,30 @@
 
       loadBestKoreanVoices();
       window.speechSynthesis.cancel();
-      if (audioPauseTimer) clearTimeout(audioPauseTimer);
+      if (audioPauseTimer) {
+        clearTimeout(audioPauseTimer);
+        audioPauseTimer = null;
+      }
 
       audioPlayToken += 1;
       isSpeaking = true;
       document.getElementById("audioPlayIcon").textContent = "⏸️";
-      document.getElementById("audioPlayLabel").textContent = "브리핑 재생 중... (누르면 정지)";
-
+      document.getElementById("audioPlayLabel").textContent = "브리핑 일시 정지 (재생 중)";
       speakSentenceAt(0, audioPlayToken);
     }
 
     function stopAudioBriefing() {
       audioPlayToken += 1;
+      isSpeaking = false;
       if (audioPauseTimer) {
         clearTimeout(audioPauseTimer);
         audioPauseTimer = null;
       }
       if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
+        try {
+          window.speechSynthesis.cancel();
+        } catch (_) {}
       }
-      isSpeaking = false;
       highlightAudioSentence(-1);
       const icon = document.getElementById("audioPlayIcon");
       const label = document.getElementById("audioPlayLabel");
@@ -2539,9 +2829,40 @@
       }
     }
 
-    // 10. A4 시험지 미리보기 + PDF 저장
+    // ==============================================
+    // 10. A4 시험지 미리보기 + PDF 저장 (화면·태블릿용 정방향 정답 vs 종이 인쇄용 뒤집힌 정답 구분)
+    // ==============================================
+    function setA4AnswerOrientation(mode) {
+      a4AnswerOrientation = mode === "flipped" ? "flipped" : "upright";
+
+      const uprightBtn = document.getElementById("a4OrientUprightBtn");
+      const flippedBtn = document.getElementById("a4OrientFlippedBtn");
+      if (uprightBtn && flippedBtn) {
+        if (a4AnswerOrientation === "upright") {
+          uprightBtn.setAttribute("aria-pressed", "true");
+          uprightBtn.className = "min-h-[34px] px-2.5 py-1.5 rounded-lg bg-volt-400 text-slate-950 text-xs font-black whitespace-nowrap transition cursor-pointer";
+          flippedBtn.setAttribute("aria-pressed", "false");
+          flippedBtn.className = "min-h-[34px] px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white text-xs font-bold whitespace-nowrap transition cursor-pointer";
+        } else {
+          uprightBtn.setAttribute("aria-pressed", "false");
+          uprightBtn.className = "min-h-[34px] px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white text-xs font-bold whitespace-nowrap transition cursor-pointer";
+          flippedBtn.setAttribute("aria-pressed", "true");
+          flippedBtn.className = "min-h-[34px] px-2.5 py-1.5 rounded-lg bg-volt-400 text-slate-950 text-xs font-black whitespace-nowrap transition cursor-pointer";
+        }
+      }
+
+      if (currentJokboData) {
+        const html = buildA4SheetHtml(currentJokboData);
+        const previewEl = document.getElementById("a4PreviewContent");
+        const printSheet = document.getElementById("printOnlySheet");
+        if (previewEl) previewEl.innerHTML = html;
+        if (printSheet) printSheet.innerHTML = html;
+      }
+    }
+
     function buildA4SheetHtml(data) {
       const subjectLabel = SUBJECT_CONFIG[selectedSubjectKey]?.name || "전 과목";
+      const isFlipped = a4AnswerOrientation === "flipped";
 
       const picksHtml = (data.teacherPicks || [])
         .map(p => `<li class="flex items-start gap-1.5"><span class="font-black">★</span><span>${escapeHtml(p)}</span></li>`)
@@ -2556,7 +2877,7 @@
             <div class="border border-slate-400 rounded-lg p-2.5 print-avoid-break space-y-1.5">
               <div class="flex items-center justify-between border-b border-slate-200 pb-1">
                 <strong class="text-[11.5px] font-black text-slate-950">${escapeHtml(c.title)}</strong>
-                ${c.isStarred ? `<span class="text-[9px] font-black border border-slate-800 px-1.5 py-0.5 rounded">출제 1순위</span>` : ""}
+                ${c.isStarred ? `<span class="text-[9px] font-black border border-slate-800 px-1.5 py-0.5 rounded whitespace-nowrap">우선 복습</span>` : ""}
               </div>
               <p class="text-[10.5px] font-semibold text-slate-900 whitespace-pre-line leading-snug">${escapeHtml(core)}</p>
               ${why ? `
@@ -2574,8 +2895,7 @@
         })
         .join("");
 
-      // 이중 이스케이프 방지: 이미 escapeHtml 된 ans를 그대로 사용
-      // 이중 이스케이프 방지: 이미 escapeHtml 된 ans를 그대로 사용 ({{정답}} 형식만 인식)
+      // 이미 escapeHtml 된 ans를 그대로 사용 ({{정답}} 형식만 인식)
       const blankAnswers = [];
       const blanksHtml = (data.blankItems || [])
         .map((item, idx) => {
@@ -2601,6 +2921,15 @@
         .map((q, idx) => `Q${idx + 1}:${escapeHtml(q.answer)}(${escapeHtml(q.trapExplanation)})`)
         .join(" / ");
 
+      const answerDividerText = isFlipped
+        ? "✂ ─────────────────── 접어서 확인하는 미니 정답지 (종이 인쇄용) ─────────────────── ✂"
+        : "─────────────────── 한눈에 확인하는 미니 정답지 (화면·태블릿용) ───────────────────";
+
+      const answerBoxStyle = isFlipped ? 'style="transform: rotate(180deg);"' : "";
+      const answerBoxClass = isFlipped
+        ? "transform rotate-180 bg-slate-50 border border-slate-300 rounded p-2 text-[9px] text-slate-700 leading-snug"
+        : "bg-slate-50 border border-slate-300 rounded p-2 text-[9.5px] text-slate-700 leading-snug";
+
       return `
         <div class="space-y-2 text-slate-900 bg-white">
           <div class="border-b-2 border-slate-900 pb-1.5 flex flex-wrap items-end justify-between gap-2">
@@ -2614,7 +2943,7 @@
           </div>
 
           <div class="border-2 border-slate-900 rounded-lg p-2 bg-slate-50 print-avoid-break">
-            <div class="text-[11px] font-black text-slate-950 mb-0.5">🎯 출제자 시선 · 함정 & 별표(★) 최우선 암기 포인트</div>
+            <div class="text-[11px] font-black text-slate-950 mb-0.5">🎯 출제자 시선 · 함정 & 별표(★) 우선 복습 포인트</div>
             <ul class="space-y-0.5 text-[10.5px] text-slate-900 leading-snug">
               ${picksHtml}
             </ul>
@@ -2642,12 +2971,12 @@
           </div>
 
           <div class="pt-1 border-t border-dashed border-slate-400 print-avoid-break">
-            <div class="text-[9px] text-slate-400 text-center mb-1">✂ ─────────────────── 접어서 확인하는 미니 정답지 ─────────────────── ✂</div>
-            <div style="transform: rotate(180deg);" class="transform rotate-180 bg-slate-50 border border-slate-300 rounded p-2 text-[9px] text-slate-700 leading-snug">
+            <div class="text-[9px] text-slate-400 text-center mb-1">${answerDividerText}</div>
+            <div ${answerBoxStyle} class="${answerBoxClass}">
               <div><strong>[빈칸 정답]</strong> ${blankAnswers.join("  |  ")}</div>
               <div class="mt-0.5"><strong>[OX 정답 및 함정 해설]</strong> ${oxAnswerList}</div>
             </div>
-            <!-- [위치 2] A4 시험지 & PDF 하단 AI 오류(환각) 안내 각주 (스타일 A) -->
+            <!-- A4 시험지 & PDF 하단 AI 오류(환각) 안내 각주 -->
             <div class="mt-1 text-[9px] text-slate-500 text-center leading-snug">
               💡 <strong>AI가 프린트를 분석해 정리한 족보예요!</strong> 가끔 AI도 글씨를 잘못 읽거나 실수할 수 있으니, 헷갈리는 개념과 OX 정답은 <strong>반드시 학교 프린트 원문과 한 번 더 대조</strong>해 보세요.
             </div>
@@ -2661,10 +2990,7 @@
         showToast("먼저 벼락치기 족보를 생성해 주세요!", "⚠️");
         return;
       }
-      const html = buildA4SheetHtml(currentJokboData);
-      document.getElementById("a4PreviewContent").innerHTML = html;
-      const printSheet = document.getElementById("printOnlySheet");
-      if (printSheet) printSheet.innerHTML = html;
+      setA4AnswerOrientation(a4AnswerOrientation);
       document.getElementById("a4PreviewModal").classList.remove("hidden");
       syncBodyScrollLock();
     }
@@ -2824,7 +3150,25 @@
       }
     }
 
-    // 11. 클립보드 복사 (최신 Clipboard API 우선 + execCommand 폴백)
+    // ==============================================
+    // 11. 클립보드 복사 & 토스트 알림
+    // ==============================================
+    function showToast(message, icon = "⚡") {
+      const box = document.getElementById("toastBox");
+      const msgEl = document.getElementById("toastMessage");
+      if (!box || !msgEl) return;
+
+      msgEl.innerHTML = `<span>${escapeHtml(icon)}</span><span>${escapeHtml(message)}</span>`;
+      box.classList.remove("opacity-0", "-translate-y-2");
+      box.classList.add("opacity-100", "translate-y-0");
+
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        box.classList.remove("opacity-100", "translate-y-0");
+        box.classList.add("opacity-0", "-translate-y-2");
+      }, 2600);
+    }
+
     async function copyTextSafely(text) {
       if (navigator.clipboard && window.isSecureContext) {
         try {
