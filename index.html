@@ -139,26 +139,26 @@
   <div id="appContainer" class="max-w-md mx-auto min-h-screen bg-slate-50 shadow-2xl flex flex-col relative overflow-x-hidden">
 
     <!-- 상단 헤더 -->
-    <header class="sticky top-0 z-30 bg-slate-900 text-white px-4 py-3.5 flex items-center justify-between shadow-md">
-      <div class="flex items-center gap-2.5 min-w-0">
+    <header class="sticky top-0 z-30 bg-slate-900 text-white px-3.5 sm:px-4 py-3 flex items-center justify-between gap-2 shadow-md">
+      <div class="flex items-center gap-2 min-w-0">
         <div class="w-9 h-9 rounded-xl bg-volt-400 text-slate-950 flex items-center justify-center text-xl font-black shadow-sm shrink-0">
           ⚡
         </div>
         <div class="min-w-0">
           <div class="flex items-center gap-1.5">
-            <h1 class="text-base font-black tracking-tight leading-none">찍으면 족보</h1>
-            <span class="px-1.5 py-0.5 rounded-md bg-electric-500 text-[10px] font-extrabold text-white">벼락치기</span>
+            <h1 class="text-[15px] sm:text-base font-black tracking-tight leading-none whitespace-nowrap">찍으면 족보</h1>
+            <span class="px-1.5 py-0.5 rounded-md bg-electric-500 text-[10px] font-extrabold text-white whitespace-nowrap">벼락치기</span>
           </div>
           <p class="text-[11px] text-slate-300 mt-1 truncate">국영사과 · <span class="text-volt-400 font-extrabold">by SC 윤T</span></p>
         </div>
       </div>
       <div class="flex items-center gap-1.5 shrink-0">
-        <button type="button" onclick="openArchiveModal()" class="px-2.5 py-1.5 rounded-xl bg-electric-600 hover:bg-electric-500 active:scale-95 transition text-xs font-extrabold text-white flex items-center gap-1 shadow-sm cursor-pointer">
+        <button type="button" onclick="openArchiveModal()" class="min-h-[38px] px-2.5 sm:px-3 py-2 rounded-xl bg-electric-600 hover:bg-electric-500 active:scale-95 transition text-xs font-extrabold text-white flex items-center gap-1 whitespace-nowrap shadow-sm cursor-pointer">
           <span>📚</span>
           <span>보관함</span>
           <span id="headerArchiveCount" class="px-1.5 py-0.5 rounded-full bg-volt-400 text-slate-950 text-[10px] font-black leading-none">0</span>
         </button>
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLScO42jjFdHbOIWRFa_diHEcFKPr5aUX3DIDyef5JioaUa_2_w/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition text-xs font-bold text-volt-400 flex items-center gap-1 cursor-pointer">
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLScO42jjFdHbOIWRFa_diHEcFKPr5aUX3DIDyef5JioaUa_2_w/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer" class="min-h-[38px] px-2.5 sm:px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition text-xs font-bold text-volt-400 flex items-center gap-1 whitespace-nowrap cursor-pointer">
           <span>💬</span>
           <span>후기</span>
         </a>
@@ -173,11 +173,11 @@
       <!-- ============================================== -->
       <section id="view-input" class="p-4 space-y-4 animate-pop">
 
-        <!-- 카카오톡 인앱 브라우저 접속 시 안내 배너 -->
-        <div id="inAppBrowserNotice" class="hidden bg-amber-50 border border-amber-300 rounded-2xl p-3 text-xs text-amber-950 flex items-start gap-2">
-          <span class="text-base shrink-0">💡</span>
-          <p class="leading-snug">
-            <strong>카톡 화면에서 열렸어요!</strong> 만든 족보 보관과 A4 PDF 파일 저장을 안정적으로 쓰려면 우측 하단 <code class="bg-amber-200/70 px-1 rounded font-bold">⋮</code> → <strong>[다른 브라우저로 열기]</strong>를 눌러주세요.
+        <!-- 인앱 브라우저(카톡·인스타·네이버 등) 접속 시 안내 배너 -->
+        <div id="inAppBrowserNotice" class="hidden bg-amber-50 border border-amber-300 rounded-2xl p-3.5 text-xs text-amber-950 flex items-start gap-2.5">
+          <span class="text-base shrink-0 mt-0.5">💡</span>
+          <p class="leading-relaxed">
+            <strong>앱 내 브라우저에서 열렸어요!</strong> 만든 족보 자동 보관과 A4 PDF 파일 저장을 안정적으로 쓰려면 메뉴(<code class="bg-amber-200/70 px-1 rounded font-bold">⋮</code> 또는 공유 아이콘)에서 <strong>[다른 브라우저(크롬·사파리)로 열기]</strong>를 눌러주세요.
           </p>
         </div>
 
@@ -197,17 +197,17 @@
 
         <!-- 📚 내 족보 자동 보관함 (다시 보기) 안내 & 빠른 접근 카드 -->
         <div class="bg-white border-2 border-electric-100 rounded-3xl p-4 shadow-sm space-y-2.5">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-1.5">
               <span class="text-base">🗂️</span>
-              <h3 class="text-xs font-black text-slate-900">내 족보 자동 보관함 (다시 보기)</h3>
+              <h3 class="text-sm font-black text-slate-900">내 족보 자동 보관함 (다시 보기)</h3>
             </div>
-            <button type="button" onclick="openArchiveModal()" class="text-[11px] font-extrabold text-electric-600 hover:text-electric-700 bg-electric-50 px-2.5 py-1 rounded-full cursor-pointer">
-              전체 <span id="cardArchiveCount">0</span>개 보기 ›
+            <button type="button" onclick="openArchiveModal()" class="min-h-[36px] px-3 py-1.5 rounded-full text-xs font-extrabold text-electric-600 hover:text-electric-700 bg-electric-50 inline-flex items-center whitespace-nowrap cursor-pointer">
+              전체 <span id="cardArchiveCount" class="mx-0.5">0</span>개 보기 ›
             </button>
           </div>
 
-          <p class="text-[11px] text-slate-600 leading-relaxed bg-slate-50 rounded-2xl p-2.5 border border-slate-200/70">
+          <p class="text-xs text-slate-600 leading-relaxed bg-slate-50 rounded-2xl p-3 border border-slate-200/70">
             🔒 <strong>로그인 없이 자동 저장돼요!</strong> 한 번 만든 족보는 내 스마트폰 브라우저에 최대 <strong>20개까지 자동 보관</strong>되어, 등굣길 버스나 쉬는 시간에 터치 한 번으로 빈칸 암기와 OX 퀴즈를 다시 풀 수 있습니다.
           </p>
 
@@ -270,12 +270,41 @@
 
           <div id="imageSetContainer" class="hidden space-y-2.5">
             <div id="imageThumbGrid" class="grid grid-cols-3 gap-2"></div>
-            <div class="flex items-center justify-between gap-2 bg-slate-900 text-volt-400 text-[11px] font-bold px-3 py-2 rounded-xl">
+            <div class="flex items-center justify-between gap-2 bg-slate-900 text-volt-400 text-xs font-bold px-3 py-2 rounded-xl">
               <span>✨ 분석 자료 준비 완료!</span>
               <div class="flex items-center gap-2 shrink-0">
-                <button type="button" id="quickCameraAddBtn" onclick="openCameraCapture()" class="px-2 py-1 rounded-lg bg-volt-400 text-slate-950 text-[10px] font-black active:scale-95 transition cursor-pointer">📸 다음 쪽 촬영</button>
-                <button type="button" onclick="clearAllUploadedImages()" class="text-slate-300 hover:text-white underline cursor-pointer">전체 삭제</button>
+                <button type="button" id="quickCameraAddBtn" onclick="openCameraCapture()" class="min-h-[34px] px-2.5 py-1 rounded-lg bg-volt-400 text-slate-950 text-xs font-black active:scale-95 transition cursor-pointer">📸 다음 쪽 촬영</button>
+                <button type="button" onclick="clearAllUploadedImages()" class="min-h-[34px] px-2 py-1 text-slate-300 hover:text-white underline cursor-pointer">전체 삭제</button>
               </div>
+            </div>
+          </div>
+
+          <p class="text-xs text-slate-500 leading-relaxed bg-slate-50 rounded-xl px-3 py-2 border border-slate-200/70">
+            🔒 업로드한 자료는 AI 분석에만 사용되며 서버에 저장되지 않아요. <strong>이름·학번·얼굴</strong> 등 개인정보가 찍히지 않게 주의해 주세요!
+          </p>
+        </div>
+
+        <!-- Step 3: 과목별 핵심 샘플 & 프린트 텍스트 직접 입력 -->
+        <div class="bg-white border border-slate-200 rounded-3xl p-4 shadow-sm space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
+              <span class="w-5 h-5 rounded-full bg-slate-900 text-white text-[11px] flex items-center justify-center">3</span>
+              <span>과목별 샘플 체험 또는 프린트 본문 입력</span>
+            </span>
+          </div>
+
+          <div>
+            <p id="sampleSectionTitle" class="text-xs font-bold text-slate-500 mb-1.5">⚡ [국어] 핵심 프린트 1초 불러오기</p>
+            <div id="sampleButtonsGrid" class="grid grid-cols-3 gap-1.5"></div>
+          </div>
+
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between gap-2">
+              <label for="printTextInput" class="text-xs font-bold text-slate-600">프린트 본문 / 선생님 강조 필기 내용</label>
+              <button type="button" onclick="clearTextInput()" class="min-h-[36px] px-3 py-1.5 rounded-lg hover:bg-slate-100 text-xs font-bold text-slate-500 hover:text-slate-700 inline-flex items-center whitespace-nowrap cursor-pointer">내용 지우기</button>
+            </div>
+            <textarea id="printTextInput" rows="5" placeholder="여기에 수업 프린트 텍스트를 붙여넣거나, 위 핵심 단원 샘플 버튼을 눌러 바로 테스트해 보세요!" class="w-full rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white p-3 text-sm text-slate-800 leading-relaxed placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-electric-500/40 focus:border-electric-500 transition"></textarea>
+          </div>
             </div>
           </div>
         </div>
@@ -332,30 +361,30 @@
 
         <!-- 상단 돌아가기 & 단원 제목 & A4 PDF 버튼 -->
         <div class="flex items-center justify-between gap-2">
-          <button type="button" onclick="backToInput()" class="shrink-0 px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-xs font-extrabold text-slate-700 flex items-center gap-1 active:scale-95 transition cursor-pointer">
+          <button type="button" onclick="backToInput()" class="shrink-0 min-h-[38px] px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-xs font-extrabold text-slate-700 flex items-center gap-1 whitespace-nowrap active:scale-95 transition cursor-pointer">
             <span>←</span>
             <span>홈 / 보관함</span>
           </button>
-          <span id="resultSubjectBadge" class="truncate text-xs font-black text-electric-700 bg-electric-100 px-3 py-1 rounded-full">
+          <span id="resultSubjectBadge" class="truncate text-xs font-black text-electric-700 bg-electric-100 px-3 py-1.5 rounded-full">
             핵심 벼락치기 족보
           </span>
-          <button type="button" onclick="openA4PreviewModal()" class="shrink-0 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-volt-400 text-xs font-black flex items-center gap-1 shadow-sm active:scale-95 transition cursor-pointer">
+          <button type="button" onclick="openA4PreviewModal()" class="shrink-0 min-h-[38px] px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-volt-400 text-xs font-black flex items-center gap-1 whitespace-nowrap shadow-sm active:scale-95 transition cursor-pointer">
             <span>📄</span>
             <span>A4 PDF</span>
           </button>
         </div>
 
         <!-- 자동 저장 완료 안내 뱃지 -->
-        <div id="savedStatusBanner" class="bg-emerald-50 border border-emerald-200 rounded-2xl px-3.5 py-2 flex items-center justify-between text-[11px] text-emerald-900">
+        <div id="savedStatusBanner" class="bg-emerald-50 border border-emerald-200 rounded-2xl px-3.5 py-2 flex items-center justify-between gap-2 text-xs text-emerald-900">
           <span class="font-bold flex items-center gap-1.5">
             <span>✅</span>
             <span>내 스마트폰 <strong>[보관함]</strong>에 자동 저장되었습니다!</span>
           </span>
-          <button type="button" onclick="openArchiveModal()" class="font-black underline text-emerald-700 cursor-pointer">목록 열기</button>
+          <button type="button" onclick="openArchiveModal()" class="min-h-[36px] px-2.5 py-1.5 rounded-lg hover:bg-emerald-100/80 font-black underline text-emerald-700 inline-flex items-center shrink-0 whitespace-nowrap cursor-pointer">목록 열기</button>
         </div>
 
         <!-- [위치 1] AI 오류(환각) 주의 안내 배너 (친근한 1타 강사 톤 - 스타일 A) -->
-        <div id="aiNoticeBanner" class="bg-amber-50/90 border border-amber-200 rounded-2xl px-3.5 py-2.5 flex items-start gap-2 text-[11px] text-amber-950 leading-snug">
+        <div id="aiNoticeBanner" class="bg-amber-50/90 border border-amber-200 rounded-2xl px-3.5 py-3 flex items-start gap-2 text-xs text-amber-950 leading-relaxed">
           <span class="text-sm shrink-0 mt-0.5">💡</span>
           <p>
             <strong>AI가 프린트를 분석해 정리한 족보예요!</strong> 가끔 AI도 글씨를 잘못 읽거나 실수할 수 있으니, 헷갈리는 개념과 OX 정답은 <strong>반드시 학교 프린트 원문과 한 번 더 대조</strong>해 보세요.
@@ -363,50 +392,50 @@
         </div>
 
         <!-- 선생님 별표/출제 1순위 하이라이트 박스 -->
-        <div class="bg-slate-900 text-white rounded-3xl p-4 shadow-md border border-slate-800 space-y-2">
+        <div class="bg-slate-900 text-white rounded-3xl p-4 shadow-md border border-slate-800 space-y-2.5">
           <div class="flex items-center justify-between">
             <span class="text-xs font-black text-volt-400 flex items-center gap-1.5">
               <span>🎯</span>
               <span>출제자 시선 · 함정 & 별표(★) 1순위</span>
             </span>
-            <span class="text-[10px] font-bold bg-white/10 px-2 py-0.5 rounded-full text-slate-300">필수 암기</span>
+            <span class="text-[11px] font-bold bg-white/10 px-2.5 py-0.5 rounded-full text-slate-300">필수 암기</span>
           </div>
-          <ul id="teacherPicksList" class="space-y-1.5 text-xs text-slate-100 leading-relaxed"></ul>
+          <ul id="teacherPicksList" class="space-y-2 text-sm text-slate-100 leading-relaxed"></ul>
         </div>
 
         <!-- 4종 무기 전환 탭 -->
-        <div class="grid grid-cols-4 gap-1.5 bg-slate-200/80 p-1.5 rounded-2xl">
-          <button type="button" id="tab-summary" onclick="switchResultTab('summary')" class="res-tab py-2 rounded-xl bg-white text-slate-900 font-black text-xs shadow-sm transition cursor-pointer">
+        <div role="tablist" aria-label="족보 학습 모드 선택" class="grid grid-cols-4 gap-1 bg-slate-200/80 p-1.5 rounded-2xl">
+          <button type="button" role="tab" aria-selected="true" aria-controls="panel-summary" id="tab-summary" onclick="switchResultTab('summary')" class="res-tab min-h-[40px] py-2 px-1 rounded-xl bg-white text-slate-900 font-black text-[11px] sm:text-xs whitespace-nowrap shadow-sm transition cursor-pointer">
             📖 원리 족보
           </button>
-          <button type="button" id="tab-blank" onclick="switchResultTab('blank')" class="res-tab py-2 rounded-xl text-slate-600 font-bold text-xs hover:text-slate-900 transition cursor-pointer">
+          <button type="button" role="tab" aria-selected="false" aria-controls="panel-blank" id="tab-blank" onclick="switchResultTab('blank')" class="res-tab min-h-[40px] py-2 px-1 rounded-xl text-slate-600 font-bold text-[11px] sm:text-xs whitespace-nowrap hover:text-slate-900 transition cursor-pointer">
             🟩 빈칸 암기
           </button>
-          <button type="button" id="tab-ox" onclick="switchResultTab('ox')" class="res-tab py-2 rounded-xl text-slate-600 font-bold text-xs hover:text-slate-900 transition cursor-pointer">
+          <button type="button" role="tab" aria-selected="false" aria-controls="panel-ox" id="tab-ox" onclick="switchResultTab('ox')" class="res-tab min-h-[40px] py-2 px-1 rounded-xl text-slate-600 font-bold text-[11px] sm:text-xs whitespace-nowrap hover:text-slate-900 transition cursor-pointer">
             ⚔️ 함정 OX
           </button>
-          <button type="button" id="tab-audio" onclick="switchResultTab('audio')" class="res-tab py-2 rounded-xl text-slate-600 font-bold text-xs hover:text-slate-900 transition cursor-pointer">
+          <button type="button" role="tab" aria-selected="false" aria-controls="panel-audio" id="tab-audio" onclick="switchResultTab('audio')" class="res-tab min-h-[40px] py-2 px-1 rounded-xl text-slate-600 font-bold text-[11px] sm:text-xs whitespace-nowrap hover:text-slate-900 transition cursor-pointer">
             🎧 3분 오디오
           </button>
         </div>
 
         <!-- [탭 1] 원리 이해 1페이지 족보 -->
-        <div id="panel-summary" class="space-y-3 animate-pop">
+        <div id="panel-summary" role="tabpanel" aria-labelledby="tab-summary" class="space-y-3 animate-pop">
           <div id="summaryCardsContainer" class="space-y-3"></div>
-          <button type="button" onclick="copyAllSummary()" class="w-full py-3 rounded-2xl bg-white border border-slate-300 hover:bg-slate-100 text-slate-800 font-extrabold text-xs shadow-sm active:scale-95 transition flex items-center justify-center gap-1.5 cursor-pointer">
+          <button type="button" onclick="copyAllSummary()" class="w-full min-h-[44px] py-3 rounded-2xl bg-white border border-slate-300 hover:bg-slate-100 text-slate-800 font-extrabold text-xs shadow-sm active:scale-95 transition flex items-center justify-center gap-1.5 cursor-pointer">
             <span>📋</span>
             <span>원리 이해 족보 텍스트 전체 복사하기</span>
           </button>
         </div>
 
         <!-- [탭 2] 빈칸 뚫기 암기 시트 -->
-        <div id="panel-blank" class="hidden space-y-3 animate-pop">
+        <div id="panel-blank" role="tabpanel" aria-labelledby="tab-blank" class="hidden space-y-3 animate-pop">
           <div class="bg-white border border-slate-200 rounded-3xl p-4 space-y-3 shadow-sm">
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between gap-2">
               <span class="text-xs font-extrabold text-slate-800">노란 빈칸을 터치해 정답을 확인하세요!</span>
-              <div class="flex gap-1">
-                <button type="button" onclick="toggleAllBlanks(false)" class="px-2 py-1 rounded-lg bg-slate-100 text-[11px] font-bold text-slate-600 cursor-pointer">모두 가리기</button>
-                <button type="button" onclick="toggleAllBlanks(true)" class="px-2 py-1 rounded-lg bg-electric-100 text-[11px] font-bold text-electric-700 cursor-pointer">정답 보기</button>
+              <div class="flex gap-1.5 shrink-0">
+                <button type="button" onclick="toggleAllBlanks(false)" class="min-h-[36px] px-2.5 py-1.5 rounded-lg bg-slate-100 text-xs font-bold text-slate-600 whitespace-nowrap cursor-pointer">모두 가리기</button>
+                <button type="button" onclick="toggleAllBlanks(true)" class="min-h-[36px] px-2.5 py-1.5 rounded-lg bg-electric-100 text-xs font-bold text-electric-700 whitespace-nowrap cursor-pointer">정답 보기</button>
               </div>
             </div>
             <div id="blankListContainer" class="space-y-2.5"></div>
@@ -414,23 +443,34 @@
         </div>
 
         <!-- [탭 3] 출제자 말장난 함정 OX 퀴즈 -->
-        <div id="panel-ox" class="hidden space-y-3 animate-pop">
-          <div class="bg-white border border-slate-200 rounded-2xl p-3 flex items-center justify-between">
-            <span class="text-xs font-extrabold text-slate-700">내신 말장난 함정 돌파 현황</span>
-            <span id="oxScoreBadge" class="px-2.5 py-1 rounded-full bg-electric-100 text-electric-700 text-xs font-black">0 / 5 문제 완료</span>
+        <div id="panel-ox" role="tabpanel" aria-labelledby="tab-ox" class="hidden space-y-3 animate-pop">
+          <div class="bg-white border border-slate-200 rounded-2xl p-3 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-extrabold text-slate-700">내신 말장난 함정 돌파 현황</span>
+              <span id="oxScoreBadge" class="px-2.5 py-1 rounded-full bg-electric-100 text-electric-700 text-xs font-black whitespace-nowrap">0 / 5 문제 완료</span>
+            </div>
+            <div id="oxActionRow" class="hidden flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
+              <button type="button" id="oxWrongOnlyBtn" onclick="toggleWrongOnlyOx()" class="min-h-[36px] px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-xs font-black flex items-center gap-1 transition active:scale-95 cursor-pointer">
+                <span>🔄</span>
+                <span id="oxWrongOnlyLabel">틀린 문제만 다시 풀기</span>
+              </button>
+              <button type="button" onclick="resetOxAnswers()" class="min-h-[36px] px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition cursor-pointer">
+                ↺ 전체 초기화
+              </button>
+            </div>
           </div>
           <div id="oxQuizContainer" class="space-y-3"></div>
         </div>
 
         <!-- [탭 4] 등굣길 3분 오디오 브리핑 -->
-        <div id="panel-audio" class="hidden space-y-3 animate-pop">
+        <div id="panel-audio" role="tabpanel" aria-labelledby="tab-audio" class="hidden space-y-3 animate-pop">
           <div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-3xl p-5 shadow-lg space-y-4">
             <div class="flex items-start justify-between gap-2">
               <div>
-                <span class="text-[11px] font-bold text-volt-400">🎧 호흡 튜닝 · 등굣길 이어폰 벼락치기</span>
+                <span class="text-xs font-bold text-volt-400">🎧 호흡 튜닝 · 등굣길 이어폰 벼락치기</span>
                 <h3 class="text-base font-black mt-0.5">1타 강사 시험 직전 핵심 브리핑</h3>
               </div>
-              <select id="audioRateSelect" onchange="updateAudioRate()" class="shrink-0 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-bold px-2.5 py-1.5 focus:outline-none">
+              <select id="audioRateSelect" aria-label="오디오 재생 속도" onchange="updateAudioRate()" class="shrink-0 min-h-[36px] rounded-xl bg-white/10 border border-white/20 text-white text-xs font-bold px-2.5 py-1.5 focus:outline-none">
                 <option value="0.95" class="text-slate-900">0.95x 차분</option>
                 <option value="1.05" selected class="text-slate-900">1.05x 자연</option>
                 <option value="1.2" class="text-slate-900">1.2x 집중</option>
@@ -440,27 +480,27 @@
 
             <!-- 기기 내 최고급 한국어 보이스 자동 선택 및 변경 바 -->
             <div class="bg-white/10 border border-white/15 rounded-2xl p-2.5 flex items-center justify-between gap-2">
-              <span class="text-[11px] font-bold text-slate-300 shrink-0">🗣️ 목소리 선택</span>
-              <select id="voiceSelect" onchange="onVoiceChange()" class="flex-1 min-w-0 bg-slate-900/70 text-volt-400 text-[11px] font-bold rounded-xl px-2.5 py-1.5 border border-white/10 focus:outline-none truncate">
+              <span class="text-xs font-bold text-slate-300 shrink-0">🗣️ 목소리 선택</span>
+              <select id="voiceSelect" aria-label="한국어 음성 선택" onchange="onVoiceChange()" class="flex-1 min-w-0 min-h-[36px] bg-slate-900/70 text-volt-400 text-xs font-bold rounded-xl px-2.5 py-1.5 border border-white/10 focus:outline-none truncate">
                 <option value="">기기 최적 한국어 보이스 탐색 중...</option>
               </select>
             </div>
 
             <div class="flex items-center gap-2">
-              <button type="button" id="audioPlayBtn" onclick="toggleAudioBriefing()" class="flex-1 py-3.5 rounded-2xl bg-volt-400 hover:bg-volt-500 text-slate-950 font-black text-sm shadow-md active:scale-95 transition flex items-center justify-center gap-2 cursor-pointer">
+              <button type="button" id="audioPlayBtn" onclick="toggleAudioBriefing()" class="flex-1 min-h-[46px] py-3.5 rounded-2xl bg-volt-400 hover:bg-volt-500 text-slate-950 font-black text-sm shadow-md active:scale-95 transition flex items-center justify-center gap-2 cursor-pointer">
                 <span id="audioPlayIcon">▶️</span>
                 <span id="audioPlayLabel">자연스러운 호흡으로 재생하기</span>
               </button>
-              <button type="button" onclick="stopAudioBriefing()" class="px-4 py-3.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs transition cursor-pointer">
+              <button type="button" onclick="stopAudioBriefing()" class="min-h-[46px] px-4 py-3.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs transition cursor-pointer">
                 ⏹️ 정지
               </button>
             </div>
 
             <!-- 문장별 하이라이트 대본 박스 -->
-            <div class="bg-white/10 rounded-2xl p-3.5 text-xs text-slate-200 leading-loose space-y-1">
+            <div class="bg-white/10 rounded-2xl p-3.5 text-sm text-slate-100 leading-relaxed space-y-1">
               <div id="audioScriptContainer"></div>
             </div>
-            <p class="text-[10px] text-slate-400 leading-snug">
+            <p class="text-xs text-slate-300 leading-relaxed">
               💡 문장마다 자연스러운 숨 고르기(0.25초)를 적용해 기계음 느낌을 줄였어요. 기기에 따라 아이폰(Yuna/Sora)·크롬(Google 한국의) 보이스가 가장 자연스럽습니다.
             </p>
           </div>
@@ -494,22 +534,22 @@
   <!-- ============================================== -->
   <!-- A4 시험지 미리보기 & 인쇄 / PDF 저장 모달       -->
   <!-- ============================================== -->
-  <div id="a4PreviewModal" onclick="if (event.target === this) closeA4PreviewModal()" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex flex-col">
+  <div id="a4PreviewModal" role="dialog" aria-modal="true" aria-labelledby="a4ModalTitle" onclick="if (event.target === this) closeA4PreviewModal()" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex flex-col">
     <div class="bg-slate-900 text-white px-4 py-3 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 shrink-0">
       <div class="min-w-0">
-        <h3 class="text-sm font-black text-volt-400 truncate">📄 찍으면 족보 · A4 벼락치기 시험지</h3>
-        <p class="text-[10px] text-slate-300">선명한 글자·다쪽 인쇄는 [선명한 PDF/인쇄], 모바일 1장 저장은 [1장 바로 저장]!</p>
+        <h3 id="a4ModalTitle" class="text-sm font-black text-volt-400 truncate">📄 찍으면 족보 · A4 벼락치기 시험지</h3>
+        <p class="text-[11px] text-slate-300">선명한 글자·다쪽 인쇄는 [선명한 PDF/인쇄], 모바일 1장 저장은 [1장 바로 저장]!</p>
       </div>
       <div class="flex items-center gap-1.5 shrink-0">
-        <button type="button" onclick="printA4Sheet()" class="px-3 py-2 rounded-xl bg-electric-500 hover:bg-electric-600 text-white text-xs font-black shadow-sm active:scale-95 transition flex items-center gap-1 cursor-pointer">
+        <button type="button" onclick="printA4Sheet()" class="min-h-[38px] px-3 py-2 rounded-xl bg-electric-500 hover:bg-electric-600 text-white text-xs font-black shadow-sm active:scale-95 transition flex items-center gap-1 cursor-pointer">
           <span>🖨️</span>
           <span>선명한 PDF/인쇄</span>
         </button>
-        <button type="button" id="downloadPdfBtn" onclick="downloadA4Pdf()" class="px-3 py-2 rounded-xl bg-volt-400 hover:bg-volt-500 disabled:opacity-60 text-slate-950 text-xs font-black shadow-sm active:scale-95 transition flex items-center gap-1 cursor-pointer">
+        <button type="button" id="downloadPdfBtn" onclick="downloadA4Pdf()" class="min-h-[38px] px-3 py-2 rounded-xl bg-volt-400 hover:bg-volt-500 disabled:opacity-60 text-slate-950 text-xs font-black shadow-sm active:scale-95 transition flex items-center gap-1 cursor-pointer">
           <span>📥</span>
           <span id="downloadPdfLabel">1장 바로 저장</span>
         </button>
-        <button type="button" onclick="closeA4PreviewModal()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 font-black text-sm flex items-center justify-center cursor-pointer">✕</button>
+        <button type="button" aria-label="A4 미리보기 닫기" onclick="closeA4PreviewModal()" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 font-black text-sm flex items-center justify-center cursor-pointer">✕</button>
       </div>
     </div>
 
@@ -523,27 +563,27 @@
   <!-- ============================================== -->
   <!-- 내 족보 자동 보관함 모달                        -->
   <!-- ============================================== -->
-  <div id="archiveModal" onclick="if (event.target === this) closeArchiveModal()" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
+  <div id="archiveModal" role="dialog" aria-modal="true" aria-labelledby="archiveModalTitle" onclick="if (event.target === this) closeArchiveModal()" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[82vh]">
       <div class="bg-slate-900 text-white px-4 py-3.5 flex items-center justify-between shrink-0">
         <div>
-          <h3 class="text-sm font-black text-volt-400">📚 내 족보 자동 보관함</h3>
-          <p class="text-[10px] text-slate-300">최근 만든 족보 최대 20개가 자동 저장됩니다</p>
+          <h3 id="archiveModalTitle" class="text-sm font-black text-volt-400">📚 내 족보 자동 보관함</h3>
+          <p class="text-[11px] text-slate-300">최근 만든 족보 최대 20개가 자동 저장됩니다</p>
         </div>
         <div class="flex items-center gap-1.5">
-          <button type="button" onclick="requestClearAllArchive()" class="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-red-500/80 text-[11px] font-bold text-slate-200 hover:text-white transition cursor-pointer">
+          <button type="button" onclick="requestClearAllArchive()" class="min-h-[36px] px-3 py-1.5 rounded-xl bg-white/10 hover:bg-red-500/80 text-xs font-bold text-slate-200 hover:text-white transition cursor-pointer">
             전체 비우기
           </button>
-          <button type="button" onclick="closeArchiveModal()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 font-black text-sm flex items-center justify-center cursor-pointer">✕</button>
+          <button type="button" aria-label="보관함 닫기" onclick="closeArchiveModal()" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 font-black text-sm flex items-center justify-center cursor-pointer">✕</button>
         </div>
       </div>
 
       <!-- 전체 비우기 2단계 안전 확인 바 -->
       <div id="clearArchiveConfirmBar" class="hidden bg-red-50 border-b border-red-200 px-4 py-2.5 flex items-center justify-between gap-2 shrink-0">
-        <span class="text-[11px] font-bold text-red-800">저장된 족보를 모두 삭제할까요?</span>
+        <span class="text-xs font-bold text-red-800">저장된 족보를 모두 삭제할까요?</span>
         <div class="flex items-center gap-1.5 shrink-0">
-          <button type="button" onclick="cancelClearAllArchive()" class="px-2.5 py-1 rounded-lg bg-white border border-slate-300 text-[11px] font-bold text-slate-700 cursor-pointer">취소</button>
-          <button type="button" onclick="confirmClearAllArchive()" class="px-2.5 py-1 rounded-lg bg-red-600 text-white text-[11px] font-black cursor-pointer">모두 삭제</button>
+          <button type="button" onclick="cancelClearAllArchive()" class="min-h-[36px] px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-bold text-slate-700 cursor-pointer">취소</button>
+          <button type="button" onclick="confirmClearAllArchive()" class="min-h-[36px] px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-black cursor-pointer">모두 삭제</button>
         </div>
       </div>
 
@@ -555,7 +595,7 @@
   <div id="printOnlySheet"></div>
 
   <!-- 토스트 알림 -->
-  <div id="toastBox" class="fixed top-16 left-1/2 -translate-x-1/2 z-[60] pointer-events-none opacity-0 transition-all duration-300 transform -translate-y-2">
+  <div id="toastBox" role="status" aria-live="polite" class="fixed top-16 left-1/2 -translate-x-1/2 z-[60] pointer-events-none opacity-0 transition-all duration-300 transform -translate-y-2">
     <div id="toastMessage" class="bg-slate-950/95 text-white px-4 py-2.5 rounded-2xl shadow-xl text-xs font-bold flex items-center gap-2 whitespace-nowrap border border-white/10">
       <span>⚡</span>
       <span>알림</span>
@@ -1213,7 +1253,9 @@
     let uploadedImages = []; // 이미지 및 PDF 파일 객체 배열
     let currentSampleKey = null;
     let currentJokboData = null;
-    let oxAnswersState = {};
+    let currentArchiveId = null;
+    let oxUserChoices = {};      // { [문항인덱스]: 'O' | 'X' }
+    let oxFilterWrongOnly = false;
 
     // 오디오 상태
     let isSpeaking = false;
@@ -1273,15 +1315,17 @@
       if (!jokboData || !jokboData.subjectTitle) return;
       const list = getSavedArchiveList();
       const cfg = SUBJECT_CONFIG[subjKey] || { name: "전 과목", icon: "📘" };
+      const newId = "jk_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
 
       const newEntry = {
-        id: "jk_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+        id: newId,
         createdAt: Date.now(),
         subjectKey: subjKey,
         subjectName: cfg.name,
         subjectIcon: cfg.icon,
         title: jokboData.subjectTitle,
-        data: jokboData
+        data: jokboData,
+        oxUserChoices: {}
       };
 
       list.unshift(newEntry);
@@ -1289,8 +1333,18 @@
         list.length = MAX_ARCHIVE_ITEMS;
       }
 
+      currentArchiveId = newId;
       setSavedArchiveList(list);
       renderArchiveUI();
+    }
+
+    function syncOxChoicesToArchive() {
+      if (!currentArchiveId) return;
+      const list = getSavedArchiveList();
+      const target = list.find(it => it.id === currentArchiveId);
+      if (!target) return;
+      target.oxUserChoices = { ...oxUserChoices };
+      setSavedArchiveList(list);
     }
 
     function renderArchiveUI() {
@@ -1305,7 +1359,7 @@
         previewBox.innerHTML = "";
         if (list.length === 0) {
           previewBox.innerHTML = `
-            <div class="text-center py-3 px-2 rounded-2xl border border-dashed border-slate-200 text-[11px] text-slate-400">
+            <div class="text-center py-3 px-2 rounded-2xl border border-dashed border-slate-200 text-xs text-slate-400">
               아직 저장된 족보가 없어요. 아래에서 프린트를 올리면 이곳에 자동 저장됩니다!
             </div>
           `;
@@ -1314,13 +1368,13 @@
             const btn = document.createElement("button");
             btn.type = "button";
             btn.onclick = () => openSavedJokboById(item.id);
-            btn.className = "w-full p-2.5 rounded-2xl bg-slate-50 hover:bg-electric-50/70 border border-slate-200/90 hover:border-electric-400 flex items-center justify-between gap-2 text-left transition active:scale-[0.99] cursor-pointer";
+            btn.className = "w-full min-h-[44px] p-2.5 rounded-2xl bg-slate-50 hover:bg-electric-50/70 border border-slate-200/90 hover:border-electric-400 flex items-center justify-between gap-2 text-left transition active:scale-[0.99] cursor-pointer";
             btn.innerHTML = `
               <div class="min-w-0 flex items-center gap-2">
-                <span class="shrink-0 px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-[10px] font-black text-electric-700">${item.subjectIcon} ${escapeHtml(item.subjectName)}</span>
+                <span class="shrink-0 px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-[11px] font-black text-electric-700">${item.subjectIcon} ${escapeHtml(item.subjectName)}</span>
                 <span class="truncate text-xs font-extrabold text-slate-800">${escapeHtml(item.title)}</span>
               </div>
-              <span class="shrink-0 text-[10px] font-bold text-slate-400">${formatKoreanDateTime(item.createdAt)} ›</span>
+              <span class="shrink-0 text-[11px] font-bold text-slate-400">${formatKoreanDateTime(item.createdAt)} ›</span>
             `;
             previewBox.appendChild(btn);
           });
@@ -1334,8 +1388,8 @@
           modalList.innerHTML = `
             <div class="text-center py-12 space-y-1.5">
               <div class="text-3xl">📭</div>
-              <p class="text-xs font-extrabold text-slate-600">보관함이 아직 비어 있어요</p>
-              <p class="text-[11px] text-slate-400">프린트 사진이나 PDF, 샘플로 족보를 만들면 자동으로 저장됩니다.</p>
+              <p class="text-sm font-extrabold text-slate-600">보관함이 아직 비어 있어요</p>
+              <p class="text-xs text-slate-400">프린트 사진이나 PDF, 샘플로 족보를 만들면 자동으로 저장됩니다.</p>
             </div>
           `;
         } else {
@@ -1343,14 +1397,14 @@
             const row = document.createElement("div");
             row.className = "p-3 rounded-2xl bg-slate-50 hover:bg-electric-50/50 border border-slate-200 flex items-center justify-between gap-2 transition";
             row.innerHTML = `
-              <button type="button" class="open-item-btn flex-1 min-w-0 text-left space-y-1 cursor-pointer">
+              <button type="button" class="open-item-btn flex-1 min-w-0 min-h-[40px] text-left space-y-1 cursor-pointer">
                 <div class="flex items-center gap-1.5">
-                  <span class="px-2 py-0.5 rounded-md bg-electric-100 text-electric-700 text-[10px] font-black">${item.subjectIcon} ${escapeHtml(item.subjectName)}</span>
-                  <span class="text-[10px] font-semibold text-slate-400">${formatKoreanDateTime(item.createdAt)} 저장</span>
+                  <span class="px-2 py-0.5 rounded-md bg-electric-100 text-electric-700 text-[11px] font-black">${item.subjectIcon} ${escapeHtml(item.subjectName)}</span>
+                  <span class="text-[11px] font-semibold text-slate-400">${formatKoreanDateTime(item.createdAt)} 저장</span>
                 </div>
-                <p class="text-xs font-black text-slate-900 truncate">${escapeHtml(item.title)}</p>
+                <p class="text-sm font-black text-slate-900 truncate">${escapeHtml(item.title)}</p>
               </button>
-              <button type="button" title="삭제" class="del-item-btn shrink-0 w-7 h-7 rounded-xl bg-white hover:bg-red-50 border border-slate-200 text-slate-400 hover:text-red-600 text-xs font-black flex items-center justify-center cursor-pointer">✕</button>
+              <button type="button" aria-label="저장된 족보 삭제" title="삭제" class="del-item-btn shrink-0 w-9 h-9 rounded-xl bg-white hover:bg-red-50 border border-slate-200 text-slate-400 hover:text-red-600 text-xs font-black flex items-center justify-center cursor-pointer">✕</button>
             `;
             row.querySelector(".open-item-btn").onclick = () => openSavedJokboById(item.id);
             row.querySelector(".del-item-btn").onclick = (e) => {
@@ -1375,11 +1429,15 @@
       if (found.subjectKey && SUBJECT_CONFIG[found.subjectKey]) {
         selectSubject(found.subjectKey, true);
       }
+      currentArchiveId = found.id;
       currentJokboData = JSON.parse(JSON.stringify(found.data));
+      const savedChoices = found.oxUserChoices && typeof found.oxUserChoices === "object"
+        ? { ...found.oxUserChoices }
+        : {};
 
       closeArchiveModal();
       hideGenerateError();
-      renderJokboResult(currentJokboData);
+      renderJokboResult(currentJokboData, savedChoices);
 
       const banner = document.getElementById("savedStatusBanner");
       if (banner) {
@@ -1388,7 +1446,7 @@
             <span>📚</span>
             <span>보관함에서 불러온 자료 (${formatKoreanDateTime(found.createdAt)} 저장)</span>
           </span>
-          <button type="button" onclick="openArchiveModal()" class="font-black underline text-emerald-700 cursor-pointer">목록 열기</button>
+          <button type="button" onclick="openArchiveModal()" class="min-h-[36px] px-2.5 py-1.5 rounded-lg hover:bg-emerald-100/80 font-black underline text-emerald-700 inline-flex items-center shrink-0 whitespace-nowrap cursor-pointer">목록 열기</button>
         `;
       }
 
@@ -1400,6 +1458,7 @@
     }
 
     function deleteArchiveItemById(itemId) {
+      if (currentArchiveId === itemId) currentArchiveId = null;
       const list = getSavedArchiveList().filter(it => it.id !== itemId);
       setSavedArchiveList(list);
       renderArchiveUI();
@@ -1423,6 +1482,7 @@
     }
 
     function confirmClearAllArchive() {
+      currentArchiveId = null;
       setSavedArchiveList([]);
       cancelClearAllArchive();
       renderArchiveUI();
@@ -1894,11 +1954,11 @@
               <span>✅</span>
               <span>내 스마트폰 <strong>[보관함]</strong>에 자동 저장되었습니다!</span>
             </span>
-            <button type="button" onclick="openArchiveModal()" class="font-black underline text-emerald-700 cursor-pointer">목록 열기</button>
+            <button type="button" onclick="openArchiveModal()" class="min-h-[36px] px-2.5 py-1.5 rounded-lg hover:bg-emerald-100/80 font-black underline text-emerald-700 inline-flex items-center shrink-0 whitespace-nowrap cursor-pointer">목록 열기</button>
           `;
         }
 
-        renderJokboResult(currentJokboData);
+        renderJokboResult(currentJokboData, {});
         document.getElementById("view-input").classList.add("hidden");
         document.getElementById("view-result").classList.remove("hidden");
         switchResultTab("summary");
@@ -1933,148 +1993,44 @@
         mimeType: img.mimeType
       }));
 
-      if (window.location.protocol.startsWith("http") && !window.location.hostname.includes("usercontent")) {
-        const serverRes = await fetchWithTimeout("/api/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ images: cleanImages, text, subject: subjectName })
-        }, 55000);
-
-        if (serverRes.ok) {
-          const serverData = await serverRes.json();
-          if (serverData && serverData.subjectTitle) {
-            return serverData;
-          }
-        }
-        let errDetail = `HTTP ${serverRes.status}`;
-        try {
-          const errJson = await serverRes.json();
-          if (errJson?.error) {
-            errDetail = errJson.error;
-          }
-        } catch (_) {
-          if (serverRes.status === 504) {
-            errDetail = "HTTP 504";
-          } else if (serverRes.status === 413) {
-            errDetail = "HTTP 413";
-          }
-        }
-        throw new Error(errDetail);
+      if (!window.location.protocol.startsWith("http") || window.location.hostname.includes("usercontent")) {
+        throw new Error("웹 배포 주소(https)로 접속해야 AI 분석 서버를 이용할 수 있어요.");
       }
 
-      const apiKey = "";
-      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-
-      const subjectGuides = {
-        "국어": "국어(문법·문학·독서) 규칙이 '왜 그렇게 적용되는지' 문법적 원리를 설명하고 구체적 단어나 문장 예시를 단계별로 분석하세요. 음운 변동 등 다단계 과정은 중간 단계(예: 음절의 끝소리 규칙 ㅌ→ㄷ 등)를 누락하지 마세요. 중세 국어 옛한글은 표준 유니코드 첫가끝 조합형으로 쓰되, 반모음은 깨지는 결합 기호 대신 반드시 '반모음 ㅣ[j]'로 표기하세요.",
-        "영어": "지문의 논리적 인과 흐름이나 내신 어법(수일치·분사구문·관계사 what vs that)의 문장 구조 원리를 명쾌하게 설명하고 실제 문장 예시로 판별 과정을 보여주세요.",
-        "통합과학": "물리·화학·생명·지구과학 현상이 '왜 일어나는지' 과학적 인과관계를 설명하고, 상태 조건·그래프 해석·예외 사례를 구체적 예시로 적용해 보여주세요.",
-        "통합사회": "유사 개념(자유권 vs 사회권, 기회비용 vs 매몰비용 등)의 등장 배경과 판단 기준을 설명하고, 실제 사례나 계산 과정을 단계별로 풀이해 보여주세요."
-      };
-
-      const systemPrompt = `당신은 대한민국 고등학교 내신 [${subjectName}] 베테랑 1타 강사입니다.
-업로드된 학교 프린트 이미지·PDF 문서(또는 텍스트)를 통합 분석하여, 학생이 원리를 완벽히 이해하고 시험 직전에 바로 쓸 수 있는 고품질 벼락치기 4종 세트를 JSON으로 출력하세요.
-
-[과목 지침 - ${subjectName}]
-${subjectGuides[subjectName] || ""}
-
-[필수 정확성 및 오탈자·OCR 검증 규칙 (최우선)]
-1. 입력 텍스트나 사진(OCR)에 오탈자·오독 또는 표준 교과 지식과 충돌하는 표현(예: '곳간·툇간'을 '고간·톱간'으로 오기)이 발견되면, 절대 그대로 "반드시 암기"라고 단정 짓지 마세요.
-2. 오탈자나 오독이 의심되는 항목은 표준 교과 용어로 바로잡아 안내하되 "(원문 확인 필요: 입력에는 '○○'로 표기됨)"처럼 명확히 밝히세요. 빈칸 정답({{정답}})과 오디오 대본에는 오탈자·비표준어를 절대 넣지 마세요.
-3. 업로드된 자료에서 흐릿하거나 잘려 판독이 불가능한 글씨는 추측해 지어내지 말고, 판독 가능한 핵심 내용 위주로만 정리하세요.
-4. 교육과정 표준 용어만 정확히 사용하세요. 존재하지 않는 임의 합성어(예: "거센 된소리화" 등)를 절대 만들어내지 마세요.
-5. 국어 음운 표기 시 깨지는 유니코드 결합 기호 대신 반드시 '반모음 ㅣ[j]' 형태로 표기하세요.
-
-[고품질 작성 규칙 (예시 수준 유지)]
-1. teacherPicks: 별표(★), 밑줄, 형광펜, '중요/주의/예외' 표시가 있다면 최우선 출제 포인트 2~3개로 뽑으세요.
-2. summaryCards: 핵심 개념 3개로 구성하세요. 각 카드마다 아래 항목을 충실히 작성하세요.
-   - coreSummary: 핵심 개념과 대조 기준, 대표 예시를 불릿(•) 2~3개로 명쾌하게 구조화.
-   - whyExplanation: 단순 정의 반복 금지! 억지 비유 없이 '왜 그런 규칙·현상이 성립하는지' 근본 원리와 인과관계를 3~4문장으로 깊이 있게 설명.
-   - stepByStepExample: '① [사례 제목]:'으로 시작해 '• 1단계: ... / • 2단계: ...' 형태로 실제 문제·단어·사례를 단계별로 해부 (중간 변동·풀이 단계 누락 금지).
-   - isStarred: 출제 최우선 핵심 개념이면 true.
-3. blankItems: 핵심 원리·조건·예외를 묻는 암기 문장 정확히 4개를 작성하세요. 각 문장에서 핵심 키워드 1~2개만 {{정답}} 형식으로 감싸세요.
-4. oxQuiz: 정확히 5문제를 출제하세요. 애매한 어휘 트집이나 모호한 표현으로 혼동을 주는 문제는 금지하며, 내신에서 실제로 자주 출제되는 '개념 대조·조건 누락·예외 적용·인과 역전' 유형으로 명확하게 출제하고, trapExplanation에 O/X 판단의 핵심 근거를 1~2문장으로 명쾌하게 적으세요.
-5. audioScript: 등굣길에 듣는 220~280자 자연스러운 1타 강사 구어체 브리핑 대본으로, 괄호·특수기호 없이 핵심 원리 2~3가지를 짚어주세요.`;
-
-      const parts = [];
-      cleanImages.forEach((fileItem, idx) => {
-        const labelText = fileItem.mimeType === "application/pdf"
-          ? `[${subjectName} PDF 학습 자료 ${idx + 1}]`
-          : `[${subjectName} 프린트 ${idx + 1}쪽]`;
-        parts.push({ text: labelText });
-        parts.push({
-          inlineData: {
-            mimeType: fileItem.mimeType,
-            data: fileItem.base64
-          }
-        });
-      });
-
-      parts.push({
-        text: text
-          ? `위 [${subjectName}] 자료(${cleanImages.length}개)와 아래 필기를 통합 분석해 벼락치기 4종 세트 JSON을 만들어줘:\n${text}`
-          : `첨부된 [${subjectName}] 자료(${cleanImages.length}개) 속 본문과 필기를 읽고 핵심 원리 풀이 4종 세트 JSON을 만들어줘.`
-      });
-
-      const response = await fetchWithTimeout(apiUrl, {
+      const serverRes = await fetchWithTimeout("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts }],
-          systemInstruction: { parts: [{ text: systemPrompt }] },
-          generationConfig: {
-            responseMimeType: "application/json",
-            responseSchema: {
-              type: "OBJECT",
-              properties: {
-                subjectTitle: { type: "STRING" },
-                teacherPicks: { type: "ARRAY", items: { type: "STRING" } },
-                summaryCards: {
-                  type: "ARRAY",
-                  items: {
-                    type: "OBJECT",
-                    properties: {
-                      title: { type: "STRING" },
-                      coreSummary: { type: "STRING" },
-                      whyExplanation: { type: "STRING" },
-                      stepByStepExample: { type: "STRING" },
-                      isStarred: { type: "BOOLEAN" }
-                    },
-                    required: ["title", "coreSummary", "whyExplanation", "stepByStepExample", "isStarred"]
-                  }
-                },
-                blankItems: { type: "ARRAY", items: { type: "STRING" } },
-                oxQuiz: {
-                  type: "ARRAY",
-                  items: {
-                    type: "OBJECT",
-                    properties: {
-                      question: { type: "STRING" },
-                      answer: { type: "STRING" },
-                      trapExplanation: { type: "STRING" }
-                    },
-                    required: ["question", "answer", "trapExplanation"]
-                  }
-                },
-                audioScript: { type: "STRING" }
-              },
-              required: ["subjectTitle", "teacherPicks", "summaryCards", "blankItems", "oxQuiz", "audioScript"]
-            }
-          }
-        })
+        body: JSON.stringify({ images: cleanImages, text, subject: subjectName })
       }, 55000);
 
-      if (!response.ok) throw new Error(`API HTTP ${response.status}`);
-      const result = await response.json();
-      const rawJson = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!rawJson) throw new Error("Empty AI response");
-      return JSON.parse(rawJson);
+      if (serverRes.ok) {
+        const serverData = await serverRes.json();
+        if (serverData && serverData.subjectTitle) {
+          return serverData;
+        }
+      }
+
+      let errDetail = `HTTP ${serverRes.status}`;
+      try {
+        const errJson = await serverRes.json();
+        if (errJson?.error) {
+          errDetail = errJson.error;
+        }
+      } catch (_) {
+        if (serverRes.status === 504) {
+          errDetail = "HTTP 504";
+        } else if (serverRes.status === 413) {
+          errDetail = "HTTP 413";
+        }
+      }
+      throw new Error(errDetail);
     }
 
     // 6. 결과 화면 렌더링
-    function renderJokboResult(data) {
+    function renderJokboResult(data, restoredOxChoices = {}) {
       stopAudioBriefing();
-      oxAnswersState = {};
+      oxUserChoices = restoredOxChoices && typeof restoredOxChoices === "object" ? { ...restoredOxChoices } : {};
+      oxFilterWrongOnly = false;
 
       document.getElementById("resultSubjectBadge").textContent = data.subjectTitle || "벼락치기 핵심 족보";
 
@@ -2100,33 +2056,33 @@ ${subjectGuides[subjectName] || ""}
         const stepText = card.stepByStepExample || "";
 
         div.innerHTML = `
-          <div class="flex items-start justify-between gap-2 pb-2 border-b border-slate-100">
-            <h4 class="text-xs font-black text-slate-950 leading-snug">${escapeHtml(card.title)}</h4>
-            ${card.isStarred ? `<span class="shrink-0 px-2 py-0.5 rounded-full bg-volt-400 text-slate-950 text-[10px] font-black">★ 출제 99%</span>` : ""}
+          <div class="flex items-start justify-between gap-2 pb-2.5 border-b border-slate-100">
+            <h4 class="text-sm font-black text-slate-950 leading-snug">${escapeHtml(card.title)}</h4>
+            ${card.isStarred ? `<span class="shrink-0 px-2.5 py-0.5 rounded-full bg-volt-400 text-slate-950 text-[11px] font-black">★ 출제 99%</span>` : ""}
           </div>
 
-          <div class="space-y-1">
-            <span class="text-[11px] font-extrabold text-slate-500">📌 핵심 정리</span>
-            <p class="text-xs font-semibold text-slate-800 whitespace-pre-line leading-relaxed">${escapeHtml(coreText)}</p>
+          <div class="space-y-1.5">
+            <span class="text-xs font-extrabold text-slate-500">📌 핵심 정리</span>
+            <p class="text-sm font-semibold text-slate-800 whitespace-pre-line leading-relaxed">${escapeHtml(coreText)}</p>
           </div>
 
           ${whyText ? `
-            <div class="bg-electric-50/70 border border-electric-100 rounded-2xl p-3 space-y-1">
-              <span class="inline-flex items-center gap-1 text-[11px] font-black text-electric-700">
+            <div class="bg-electric-50/70 border border-electric-100 rounded-2xl p-3.5 space-y-1.5">
+              <span class="inline-flex items-center gap-1 text-xs font-black text-electric-700">
                 <span>📖</span>
                 <span>왜 그럴까? · 원리 이해 풀이</span>
               </span>
-              <p class="text-xs text-slate-800 whitespace-pre-line leading-relaxed">${escapeHtml(whyText)}</p>
+              <p class="text-sm text-slate-800 whitespace-pre-line leading-relaxed">${escapeHtml(whyText)}</p>
             </div>
           ` : ""}
 
           ${stepText ? `
-            <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 space-y-1">
-              <span class="inline-flex items-center gap-1 text-[11px] font-black text-slate-800">
+            <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 space-y-1.5">
+              <span class="inline-flex items-center gap-1 text-xs font-black text-slate-800">
                 <span>🔍</span>
                 <span>실전 예시 단계별 해부</span>
               </span>
-              <p class="text-xs text-slate-700 whitespace-pre-line leading-relaxed">${escapeHtml(stepText)}</p>
+              <p class="text-sm text-slate-700 whitespace-pre-line leading-relaxed">${escapeHtml(stepText)}</p>
             </div>
           ` : ""}
         `;
@@ -2137,39 +2093,17 @@ ${subjectGuides[subjectName] || ""}
       blankBox.innerHTML = "";
       (data.blankItems || []).forEach((item, idx) => {
         const p = document.createElement("div");
-        p.className = "p-3 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs text-slate-800 leading-loose";
+        p.className = "p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 text-sm text-slate-800 leading-loose";
         const escapedItem = escapeHtml(item);
-        const blankPattern = /\{\{(.+?)\}\}/.test(escapedItem) ? /\{\{(.+?)\}\}/g : /\[([^\]]+?)\]/g;
-        const formattedHtml = escapedItem.replace(blankPattern, (_, ans) => {
-          return `<button type="button" data-answer="${ans}" data-revealed="false" onclick="toggleSingleBlank(this)" class="blank-pill inline-flex items-center justify-center px-2.5 py-0.5 mx-0.5 rounded-lg bg-volt-400 text-slate-950 font-black shadow-sm cursor-pointer">  ?  </button>`;
+        // 국어 표준 발음 표기([구지], [반니랑] 등) 오작동 방지를 위해 {{정답}} 형식만 빈칸 처리
+        const formattedHtml = escapedItem.replace(/\{\{(.+?)\}\}/g, (_, ans) => {
+          return `<button type="button" data-answer="${ans}" data-revealed="false" aria-label="빈칸 정답 보기" onclick="toggleSingleBlank(this)" class="blank-pill inline-flex items-center justify-center min-h-[32px] px-3 py-0.5 mx-0.5 rounded-lg bg-volt-400 text-slate-950 text-sm font-black shadow-sm cursor-pointer">  ?  </button>`;
         });
         p.innerHTML = `<span class="font-black text-electric-600 mr-1.5">Q${idx + 1}.</span>${formattedHtml}`;
         blankBox.appendChild(p);
       });
 
-      const oxBox = document.getElementById("oxQuizContainer");
-      oxBox.innerHTML = "";
-      const totalOx = (data.oxQuiz || []).length;
-      document.getElementById("oxScoreBadge").textContent = `0 / ${totalOx} 문제 완료`;
-
-      (data.oxQuiz || []).forEach((qItem, idx) => {
-        const card = document.createElement("div");
-        card.id = `ox-card-${idx}`;
-        card.className = "bg-white border border-slate-200 rounded-3xl p-4 shadow-sm space-y-3";
-        card.innerHTML = `
-          <div class="flex items-start gap-2">
-            <span class="px-2 py-0.5 rounded-lg bg-slate-900 text-volt-400 text-[11px] font-black shrink-0">OX ${idx + 1}</span>
-            <p class="text-xs font-bold text-slate-800 leading-relaxed">${escapeHtml(qItem.question)}</p>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" onclick="answerOx(${idx}, 'O')" id="ox-btn-${idx}-O" class="py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50 font-black text-sm text-blue-600 transition active:scale-95 cursor-pointer">⭕ O (맞다)</button>
-            <button type="button" onclick="answerOx(${idx}, 'X')" id="ox-btn-${idx}-X" class="py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-red-50 font-black text-sm text-red-600 transition active:scale-95 cursor-pointer">❌ X (틀리다)</button>
-          </div>
-          <div id="ox-exp-${idx}" class="hidden rounded-2xl p-3 text-xs leading-relaxed"></div>
-        `;
-        oxBox.appendChild(card);
-      });
-
+      renderOxQuizSection();
       renderAudioSentences(data.audioScript || "");
 
       // 브라우저 기본 인쇄(Ctrl+P) 시에도 정상 출력되도록 printOnlySheet 동기화
@@ -2195,10 +2129,12 @@ ${subjectGuides[subjectName] || ""}
 
         if (k === tabKey) {
           panel.classList.remove("hidden");
-          btn.className = "res-tab py-2 rounded-xl bg-white text-slate-900 font-black text-xs shadow-sm transition cursor-pointer";
+          btn.setAttribute("aria-selected", "true");
+          btn.className = "res-tab min-h-[40px] py-2 px-1 rounded-xl bg-white text-slate-900 font-black text-[11px] sm:text-xs whitespace-nowrap shadow-sm transition cursor-pointer";
         } else {
           panel.classList.add("hidden");
-          btn.className = "res-tab py-2 rounded-xl text-slate-600 font-bold text-xs hover:text-slate-900 transition cursor-pointer";
+          btn.setAttribute("aria-selected", "false");
+          btn.className = "res-tab min-h-[40px] py-2 px-1 rounded-xl text-slate-600 font-bold text-[11px] sm:text-xs whitespace-nowrap hover:text-slate-900 transition cursor-pointer";
         }
       });
 
@@ -2221,12 +2157,14 @@ ${subjectGuides[subjectName] || ""}
       const ans = btn.getAttribute("data-answer");
       if (revealed) {
         btn.setAttribute("data-revealed", "false");
+        btn.setAttribute("aria-label", "빈칸 정답 보기");
         btn.textContent = "  ?  ";
-        btn.className = "blank-pill inline-flex items-center justify-center px-2.5 py-0.5 mx-0.5 rounded-lg bg-volt-400 text-slate-950 font-black shadow-sm cursor-pointer";
+        btn.className = "blank-pill inline-flex items-center justify-center min-h-[32px] px-3 py-0.5 mx-0.5 rounded-lg bg-volt-400 text-slate-950 text-sm font-black shadow-sm cursor-pointer";
       } else {
         btn.setAttribute("data-revealed", "true");
+        btn.setAttribute("aria-label", `정답: ${ans}`);
         btn.textContent = ans;
-        btn.className = "blank-pill inline-flex items-center justify-center px-2.5 py-0.5 mx-0.5 rounded-lg bg-electric-600 text-white font-black shadow-sm cursor-pointer";
+        btn.className = "blank-pill inline-flex items-center justify-center min-h-[32px] px-3 py-0.5 mx-0.5 rounded-lg bg-electric-600 text-white text-sm font-black shadow-sm cursor-pointer";
       }
     }
 
@@ -2235,46 +2173,193 @@ ${subjectGuides[subjectName] || ""}
         const ans = btn.getAttribute("data-answer");
         if (show) {
           btn.setAttribute("data-revealed", "true");
+          btn.setAttribute("aria-label", `정답: ${ans}`);
           btn.textContent = ans;
-          btn.className = "blank-pill inline-flex items-center justify-center px-2.5 py-0.5 mx-0.5 rounded-lg bg-electric-600 text-white font-black shadow-sm cursor-pointer";
+          btn.className = "blank-pill inline-flex items-center justify-center min-h-[32px] px-3 py-0.5 mx-0.5 rounded-lg bg-electric-600 text-white text-sm font-black shadow-sm cursor-pointer";
         } else {
           btn.setAttribute("data-revealed", "false");
+          btn.setAttribute("aria-label", "빈칸 정답 보기");
           btn.textContent = "  ?  ";
-          btn.className = "blank-pill inline-flex items-center justify-center px-2.5 py-0.5 mx-0.5 rounded-lg bg-volt-400 text-slate-950 font-black shadow-sm cursor-pointer";
+          btn.className = "blank-pill inline-flex items-center justify-center min-h-[32px] px-3 py-0.5 mx-0.5 rounded-lg bg-volt-400 text-slate-950 text-sm font-black shadow-sm cursor-pointer";
         }
       });
     }
 
-    // 8. 함정 OX 퀴즈 인터랙션
-    function answerOx(idx, choice) {
+    // 8. 함정 OX 퀴즈 인터랙션 (기록 보관 & 틀린 문제만 다시 풀기 지원)
+    function isOxChoiceCorrect(qItem, choice) {
+      const normalizedAnswer = String(qItem?.answer || "").trim().toUpperCase();
+      return normalizedAnswer.startsWith(choice);
+    }
+
+    function getWrongOxIndices() {
+      if (!currentJokboData || !Array.isArray(currentJokboData.oxQuiz)) return [];
+      return currentJokboData.oxQuiz
+        .map((qItem, idx) => ({ qItem, idx }))
+        .filter(({ qItem, idx }) => {
+          const choice = oxUserChoices[idx];
+          return (choice === "O" || choice === "X") && !isOxChoiceCorrect(qItem, choice);
+        })
+        .map(({ idx }) => idx);
+    }
+
+    function updateOxStatusBar() {
+      if (!currentJokboData) return;
+      const quizList = currentJokboData.oxQuiz || [];
+      const total = quizList.length;
+      const answeredIndices = Object.keys(oxUserChoices).filter(
+        k => oxUserChoices[k] === "O" || oxUserChoices[k] === "X"
+      );
+      const answeredCount = answeredIndices.length;
+      const correctCount = answeredIndices.filter(k => isOxChoiceCorrect(quizList[Number(k)], oxUserChoices[k])).length;
+      const wrongCount = answeredCount - correctCount;
+
+      const scoreBadge = document.getElementById("oxScoreBadge");
+      if (scoreBadge) {
+        scoreBadge.textContent = answeredCount > 0
+          ? `${answeredCount} / ${total} 완료 (정답 ${correctCount}개)`
+          : `0 / ${total} 문제 완료`;
+      }
+
+      const actionRow = document.getElementById("oxActionRow");
+      const wrongOnlyBtn = document.getElementById("oxWrongOnlyBtn");
+      const wrongOnlyLabel = document.getElementById("oxWrongOnlyLabel");
+
+      if (actionRow && wrongOnlyBtn && wrongOnlyLabel) {
+        if (answeredCount > 0 || oxFilterWrongOnly) {
+          actionRow.classList.remove("hidden");
+        } else {
+          actionRow.classList.add("hidden");
+        }
+
+        if (oxFilterWrongOnly) {
+          wrongOnlyBtn.classList.remove("hidden");
+          wrongOnlyBtn.className = "min-h-[36px] px-3 py-1.5 rounded-xl bg-electric-600 hover:bg-electric-700 text-white text-xs font-black flex items-center gap-1 transition active:scale-95 cursor-pointer";
+          wrongOnlyLabel.textContent = "📋 전체 문제 보기";
+        } else if (wrongCount > 0) {
+          wrongOnlyBtn.classList.remove("hidden");
+          wrongOnlyBtn.className = "min-h-[36px] px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-xs font-black flex items-center gap-1 transition active:scale-95 cursor-pointer";
+          wrongOnlyLabel.textContent = `🔄 틀린 문제만 다시 풀기 (${wrongCount}개)`;
+        } else {
+          wrongOnlyBtn.classList.add("hidden");
+        }
+      }
+    }
+
+    function renderOxQuizSection() {
+      const oxBox = document.getElementById("oxQuizContainer");
+      if (!oxBox || !currentJokboData) return;
+      oxBox.innerHTML = "";
+
+      const quizList = currentJokboData.oxQuiz || [];
+      const entries = quizList
+        .map((qItem, idx) => ({ qItem, idx }))
+        .filter(({ qItem, idx }) => {
+          if (!oxFilterWrongOnly) return true;
+          const choice = oxUserChoices[idx];
+          return (choice === "O" || choice === "X") && !isOxChoiceCorrect(qItem, choice);
+        });
+
+      if (oxFilterWrongOnly && entries.length === 0) {
+        oxFilterWrongOnly = false;
+        renderOxQuizSection();
+        return;
+      }
+
+      entries.forEach(({ qItem, idx }) => {
+        const card = document.createElement("div");
+        card.id = `ox-card-${idx}`;
+        card.className = "bg-white border border-slate-200 rounded-3xl p-4 shadow-sm space-y-3";
+        card.innerHTML = `
+          <div class="flex items-start gap-2">
+            <span class="px-2 py-0.5 rounded-lg bg-slate-900 text-volt-400 text-xs font-black shrink-0">OX ${idx + 1}</span>
+            <p class="text-sm font-bold text-slate-800 leading-relaxed">${escapeHtml(qItem.question)}</p>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="answerOx(${idx}, 'O')" id="ox-btn-${idx}-O" class="min-h-[42px] py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50 font-black text-sm text-blue-600 transition active:scale-95 cursor-pointer">⭕ O (맞다)</button>
+            <button type="button" onclick="answerOx(${idx}, 'X')" id="ox-btn-${idx}-X" class="min-h-[42px] py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-red-50 font-black text-sm text-red-600 transition active:scale-95 cursor-pointer">❌ X (틀리다)</button>
+          </div>
+          <div id="ox-exp-${idx}" class="hidden rounded-2xl p-3.5 text-sm leading-relaxed"></div>
+        `;
+        oxBox.appendChild(card);
+
+        const savedChoice = oxUserChoices[idx];
+        if (savedChoice === "O" || savedChoice === "X") {
+          applyOxCardVisual(idx, savedChoice);
+        }
+      });
+
+      updateOxStatusBar();
+    }
+
+    function applyOxCardVisual(idx, choice) {
       if (!currentJokboData || !currentJokboData.oxQuiz[idx]) return;
       const q = currentJokboData.oxQuiz[idx];
-      const normalizedAnswer = String(q.answer || "").trim().toUpperCase();
-      const isCorrect = normalizedAnswer.startsWith(choice);
-      oxAnswersState[idx] = isCorrect;
+      const isCorrect = isOxChoiceCorrect(q, choice);
 
       const btnO = document.getElementById(`ox-btn-${idx}-O`);
       const btnX = document.getElementById(`ox-btn-${idx}-X`);
       const expEl = document.getElementById(`ox-exp-${idx}`);
+      if (!btnO || !btnX || !expEl) return;
 
-      btnO.className = "py-2.5 rounded-xl border border-slate-200 bg-slate-50 font-black text-sm text-slate-400 transition cursor-pointer";
-      btnX.className = "py-2.5 rounded-xl border border-slate-200 bg-slate-50 font-black text-sm text-slate-400 transition cursor-pointer";
+      btnO.className = "min-h-[42px] py-2.5 rounded-xl border border-slate-200 bg-slate-50 font-black text-sm text-slate-400 transition cursor-pointer";
+      btnX.className = "min-h-[42px] py-2.5 rounded-xl border border-slate-200 bg-slate-50 font-black text-sm text-slate-400 transition cursor-pointer";
 
       const selectedBtn = choice === "O" ? btnO : btnX;
       selectedBtn.className = isCorrect
-        ? "py-2.5 rounded-xl border-2 border-emerald-500 bg-emerald-50 font-black text-sm text-emerald-700 transition cursor-pointer"
-        : "py-2.5 rounded-xl border-2 border-red-500 bg-red-50 font-black text-sm text-red-700 transition cursor-pointer";
+        ? "min-h-[42px] py-2.5 rounded-xl border-2 border-emerald-500 bg-emerald-50 font-black text-sm text-emerald-700 transition cursor-pointer"
+        : "min-h-[42px] py-2.5 rounded-xl border-2 border-red-500 bg-red-50 font-black text-sm text-red-700 transition cursor-pointer";
 
       expEl.classList.remove("hidden");
       expEl.className = isCorrect
-        ? "rounded-2xl p-3 text-xs leading-relaxed bg-emerald-50 text-emerald-900 border border-emerald-200"
-        : "rounded-2xl p-3 text-xs leading-relaxed bg-red-50 text-red-900 border border-red-200";
-      expEl.innerHTML = `<strong class="block mb-0.5">${isCorrect ? "🎉 정답! 함정 돌파 성공!" : `🚨 앗, 함정에 낚였어요! (정답: ${q.answer})`}</strong>${escapeHtml(q.trapExplanation)}`;
+        ? "rounded-2xl p-3.5 text-sm leading-relaxed bg-emerald-50 text-emerald-900 border border-emerald-200"
+        : "rounded-2xl p-3.5 text-sm leading-relaxed bg-red-50 text-red-900 border border-red-200";
+      expEl.innerHTML = `<strong class="block mb-1">${isCorrect ? "🎉 정답! 함정 돌파 성공!" : `🚨 앗, 함정에 낚였어요! (정답: ${escapeHtml(q.answer)})`}</strong>${escapeHtml(q.trapExplanation)}`;
+    }
 
-      const answeredCount = Object.keys(oxAnswersState).length;
-      const correctCount = Object.values(oxAnswersState).filter(Boolean).length;
-      const total = currentJokboData.oxQuiz.length;
-      document.getElementById("oxScoreBadge").textContent = `${answeredCount} / ${total} 완료 (정답 ${correctCount}개)`;
+    function answerOx(idx, choice) {
+      if (!currentJokboData || !currentJokboData.oxQuiz[idx]) return;
+      oxUserChoices[idx] = choice;
+      applyOxCardVisual(idx, choice);
+      updateOxStatusBar();
+      syncOxChoicesToArchive();
+    }
+
+    function toggleWrongOnlyOx() {
+      if (oxFilterWrongOnly) {
+        oxFilterWrongOnly = false;
+        renderOxQuizSection();
+        showToast("전체 OX 문제를 다시 표시합니다.", "📋");
+        return;
+      }
+
+      const wrongIndices = getWrongOxIndices();
+      if (wrongIndices.length === 0) {
+        showToast("틀린 문제가 없어요! 완벽합니다 🎉", "✅");
+        return;
+      }
+
+      // 틀린 문항만 필터링한 뒤, 다시 풀 수 있도록 해당 문항들의 선택 기록을 초기화
+      oxFilterWrongOnly = true;
+      renderOxQuizSection();
+      wrongIndices.forEach(idx => {
+        delete oxUserChoices[idx];
+        const btnO = document.getElementById(`ox-btn-${idx}-O`);
+        const btnX = document.getElementById(`ox-btn-${idx}-X`);
+        const expEl = document.getElementById(`ox-exp-${idx}`);
+        if (btnO) btnO.className = "min-h-[42px] py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50 font-black text-sm text-blue-600 transition active:scale-95 cursor-pointer";
+        if (btnX) btnX.className = "min-h-[42px] py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-red-50 font-black text-sm text-red-600 transition active:scale-95 cursor-pointer";
+        if (expEl) expEl.classList.add("hidden");
+      });
+      syncOxChoicesToArchive();
+      showToast(`틀렸던 ${wrongIndices.length}문제만 모아왔어요! 다시 풀어보세요 🔥`, "🔄");
+    }
+
+    function resetOxAnswers() {
+      oxUserChoices = {};
+      oxFilterWrongOnly = false;
+      renderOxQuizSection();
+      syncOxChoicesToArchive();
+      showToast("OX 풀이 기록을 초기화했습니다.", "↺");
     }
 
     // 9. 기기 최고급 한국어 보이스 자동 탐색 + 문장 단위 호흡 튜닝 오디오
@@ -2490,12 +2575,12 @@ ${subjectGuides[subjectName] || ""}
         .join("");
 
       // 이중 이스케이프 방지: 이미 escapeHtml 된 ans를 그대로 사용
+      // 이중 이스케이프 방지: 이미 escapeHtml 된 ans를 그대로 사용 ({{정답}} 형식만 인식)
       const blankAnswers = [];
       const blanksHtml = (data.blankItems || [])
         .map((item, idx) => {
           const escapedItem = escapeHtml(item);
-          const blankPattern = /\{\{(.+?)\}\}/.test(escapedItem) ? /\{\{(.+?)\}\}/g : /\[([^\]]+?)\]/g;
-          const blankLine = escapedItem.replace(blankPattern, (_, ans) => {
+          const blankLine = escapedItem.replace(/\{\{(.+?)\}\}/g, (_, ans) => {
             blankAnswers.push(`(${idx + 1}) ${ans}`);
             return `<span class="inline-block min-w-[66px] border-b-2 border-slate-900 text-center font-bold text-slate-300 select-none mx-0.5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>`;
           });
@@ -2827,7 +2912,7 @@ ${subjectGuides[subjectName] || ""}
         window.speechSynthesis.onvoiceschanged = loadBestKoreanVoices;
       }
 
-      if (/KAKAOTALK/i.test(navigator.userAgent || "")) {
+      if (/KAKAOTALK|Instagram|NAVER|FBAN|FBAV|Line|DaumApps/i.test(navigator.userAgent || "")) {
         const notice = document.getElementById("inAppBrowserNotice");
         if (notice) notice.classList.remove("hidden");
       }
